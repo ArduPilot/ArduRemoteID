@@ -1,0 +1,9 @@
+[submodule "modules/uav_electronic_ids"]
+	path = modules/uav_electronic_ids
+	url = https://github.com/sxjack/uav_electronic_ids.git
+[submodule "modules/opendroneid-core-c"]
+	path = modules/opendroneid-core-c
+	url = https://github.com/opendroneid/opendroneid-core-c.git
+[submodule "modules/mavlink"]
+	path = modules/mavlink
+	url = https://github.com/ArduPilot/mavlink.git
