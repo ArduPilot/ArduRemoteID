@@ -14,8 +14,10 @@
 
 #include <id_open.h>
 #include "mavlink.h"
+#include "DroneCAN.h"
 
 static ID_OpenDrone          squitter;
+static DroneCAN              dronecan;
 
 static MAVLinkSerial mavlink{Serial1, MAVLINK_COMM_0};
 
@@ -43,6 +45,7 @@ void setup()
     Serial1.begin(MAVLINK_BAUDRATE, SERIAL_8N1, RX_PIN, TX_PIN);
 
     mavlink.init();
+    dronecan.init();
 }
 
 static void init_squitter(void)
@@ -72,6 +75,7 @@ void loop()
     static uint32_t last_update;
 
     mavlink.update();
+    dronecan.update();
 
     if (!mavlink.initialised()) {
         return;
