@@ -9,6 +9,11 @@
 #include <uavcan.protocol.GetNodeInfo.h>
 #include <uavcan.protocol.RestartNode.h>
 #include <uavcan.protocol.dynamic_node_id.Allocation.h>
+#include <dronecan.remoteid.BasicID.h>
+#include <dronecan.remoteid.Location.h>
+#include <dronecan.remoteid.SelfID.h>
+#include <dronecan.remoteid.System.h>
+#include <dronecan.remoteid.OperatorID.h>
 
 #define FW_VERSION_MAJOR 1
 #define FW_VERSION_MINOR 0
@@ -25,7 +30,7 @@ static bool shouldAcceptTransfer_trampoline(const CanardInstance* ins, uint64_t*
                                             CanardTransferType transfer_type,
                                             uint8_t source_node_id);
 
-static uavcan_protocol_NodeStatus node_status;
+// decoded messages
 
 void DroneCAN::init(void)
 {
@@ -82,6 +87,8 @@ void DroneCAN::onTransferReceived(CanardInstance* ins,
         return;
     }
 
+    const uint32_t now_ms = millis();
+
     switch (transfer->data_type_id) {
     case UAVCAN_PROTOCOL_GETNODEINFO_ID:
         handle_get_node_info(ins, transfer);
@@ -91,7 +98,32 @@ void DroneCAN::onTransferReceived(CanardInstance* ins,
         delay(20);
         esp_restart();
         break;
-    defauult:
+    case DRONECAN_REMOTEID_BASICID_ID:
+        Serial.printf("Got BasicID\n");
+        dronecan_remoteid_BasicID_decode(transfer, &msg_BasicID);
+        last_basic_id_ms = now_ms;
+        break;
+    case DRONECAN_REMOTEID_LOCATION_ID:
+        Serial.printf("Got Location\n");
+        dronecan_remoteid_Location_decode(transfer, &msg_Location);
+        last_location_ms = now_ms;
+        break;
+    case DRONECAN_REMOTEID_SELFID_ID:
+        Serial.printf("Got SelfID\n");
+        dronecan_remoteid_SelfID_decode(transfer, &msg_SelfID);
+        last_self_id_ms = now_ms;
+        break;
+    case DRONECAN_REMOTEID_SYSTEM_ID:
+        Serial.printf("Got System\n");
+        dronecan_remoteid_System_decode(transfer, &msg_System);
+        last_system_ms = now_ms;
+        break;
+    case DRONECAN_REMOTEID_OPERATORID_ID:
+        Serial.printf("Got OperatorID\n");
+        dronecan_remoteid_OperatorID_decode(transfer, &msg_OperatorID);
+        last_operator_id_ms = now_ms;
+        break;
+    default:
         //Serial.printf("reject %u\n", transfer->data_type_id);
         break;
     }
@@ -109,12 +141,15 @@ bool DroneCAN::shouldAcceptTransfer(const CanardInstance* ins,
         return true;
     }
 
+#define ACCEPT_ID(name) case name ## _ID: *out_data_type_signature = name ## _SIGNATURE; return true
     switch (data_type_id) {
-    case UAVCAN_PROTOCOL_GETNODEINFO_ID:
-        *out_data_type_signature = UAVCAN_PROTOCOL_GETNODEINFO_SIGNATURE;
-        return true;
-    case UAVCAN_PROTOCOL_RESTARTNODE_ID:
-        *out_data_type_signature = UAVCAN_PROTOCOL_RESTARTNODE_SIGNATURE;
+        ACCEPT_ID(UAVCAN_PROTOCOL_GETNODEINFO);
+        ACCEPT_ID(UAVCAN_PROTOCOL_RESTARTNODE);
+        ACCEPT_ID(DRONECAN_REMOTEID_BASICID);
+        ACCEPT_ID(DRONECAN_REMOTEID_LOCATION);
+        ACCEPT_ID(DRONECAN_REMOTEID_SELFID);
+        ACCEPT_ID(DRONECAN_REMOTEID_OPERATORID);
+        ACCEPT_ID(DRONECAN_REMOTEID_SYSTEM);
         return true;
     }
     //Serial.printf("%u: reject ID 0x%x\n", millis(), data_type_id);
@@ -383,6 +418,30 @@ bool DroneCAN::do_DNA(void)
 void DroneCAN::readUniqueID(uint8_t id[6])
 {
     esp_efuse_mac_get_default(id);
+}
+
+bool DroneCAN::system_valid(void)
+{
+    uint32_t now_ms = millis();
+    uint32_t max_ms = 15000;
+    if (last_system_ms == 0 ||
+        last_self_id_ms == 0 ||
+        last_basic_id_ms == 0 ||
+        last_system_ms == 0 ||
+        last_operator_id_ms == 0) {
+        return false;
+    }
+    return (now_ms - last_system_ms < max_ms &&
+            now_ms - last_self_id_ms < max_ms &&
+            now_ms - last_basic_id_ms < max_ms &&
+            now_ms - last_operator_id_ms < max_ms);
+}
+
+bool DroneCAN::location_valid(void)
+{
+    uint32_t now_ms = millis();
+    uint32_t max_ms = 2000;
+    return last_location_ms != 0 && now_ms - last_location_ms < max_ms;
 }
 
 #if 0

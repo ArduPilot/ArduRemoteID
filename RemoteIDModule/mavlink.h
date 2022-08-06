@@ -58,9 +58,18 @@ public:
         return operator_id;
     }
 
+    uint32_t last_location_ms;
+    uint32_t last_basic_id_ms;
+    uint32_t last_self_id_ms;
+    uint32_t last_operator_id_ms;
+    uint32_t last_system_ms;
+
     // return true when we have the key messages available
     bool initialised(void);
-    
+
+    bool system_valid(void);
+    bool location_valid(void);
+
 private:
     HardwareSerial &serial;
     mavlink_channel_t chan;
