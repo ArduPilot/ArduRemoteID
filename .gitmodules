@@ -7,3 +7,12 @@
 [submodule "modules/mavlink"]
 	path = modules/mavlink
 	url = https://github.com/ArduPilot/mavlink.git
+[submodule "modules/DSDL"]
+	path = modules/DSDL
+	url = https://github.com/dronecan/DSDL.git
+[submodule "modules/libcanard"]
+	path = modules/libcanard
+	url = https://github.com/dronecan/libcanard.git
+[submodule "modules/dronecan_dsdlc"]
+	path = modules/dronecan_dsdlc
+	url = https://github.com/dronecan/dronecan_dsdlc.git
