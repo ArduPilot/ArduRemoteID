@@ -37,6 +37,20 @@ https://github.com/dronecan/DSDL/tree/master/dronecan/remoteid
 The DroneCAN messages are an exact mirror of the MAVLink messages to
 make a dual-transport implementation easy.
 
+## Releases
+
+Pre-built releases are in the releases folder on github
+
+## Flashing
+
+To flash to an ESP32-S3 board use the espressif FlashTool from
+https://www.espressif.com/en/support/download/other-tools
+
+and use the pre-built binary in the releases folder then flash using
+the following options:
+
+![Flashing with FlashTool](FlashTool.jpg "Flashing")
+
 ## ArduPilot Support
 
 A pull-request with support for both MAVLink and DroneCAN is here:
