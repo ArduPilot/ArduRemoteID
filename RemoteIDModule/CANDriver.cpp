@@ -224,14 +224,14 @@ bool CANDriver::send(const CANFrame &frame)
     message.data_length_code = frame.dlc;
     memcpy(message.data, frame.data, 8);
 
-    const esp_err_t sts = twai_transmit(&message, pdMS_TO_TICKS(2));
+    const esp_err_t sts = twai_transmit(&message, pdMS_TO_TICKS(5));
     return (sts == ESP_OK);
 }
 
 bool CANDriver::receive(CANFrame &out_frame)
 {
     twai_message_t message {};
-    esp_err_t recverr = twai_receive(&message, pdMS_TO_TICKS(2));
+    esp_err_t recverr = twai_receive(&message, pdMS_TO_TICKS(5));
     if (recverr != ESP_OK) {
         return false;
     }
