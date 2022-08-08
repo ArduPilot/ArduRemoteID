@@ -49,7 +49,7 @@ https://www.espressif.com/en/support/download/other-tools
 and use the pre-built binary in the releases folder then flash using
 the following options:
 
-![Flashing with FlashTool](FlashTool.jpg "Flashing")
+![Flashing with FlashTool](images/FlashTool.jpg "Flashing")
 
 ## ArduPilot Support
 
