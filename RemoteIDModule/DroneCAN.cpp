@@ -84,16 +84,20 @@ void DroneCAN::arm_status_send(void)
     dronecan_remoteid_ArmStatus arm_status {};
 
     const uint32_t max_age_location_ms = 3000;
-    const uint32_t max_age_other_ms = 2200;
+    const uint32_t max_age_other_ms = 22000;
     const uint32_t now_ms = millis();
     const char *reason = "";
     arm_status.status = DRONECAN_REMOTEID_ARMSTATUS_ODID_ARM_STATUS_FAIL_GENERIC;
-    if (last_location_ms == 0 || now_ms - last_location_ms > max_age_location_ms ||
-        last_basic_id_ms == 0 || now_ms - last_basic_id_ms > max_age_other_ms ||
-        last_self_id_ms == 0  || now_ms - last_self_id_ms > max_age_other_ms ||
-        last_operator_id_ms == 0 || now_ms - last_operator_id_ms > max_age_other_ms ||
-        last_system_ms == 0 || now_ms - last_system_ms > max_age_other_ms) {
-        reason = "missing ODID messages";
+    if (last_location_ms == 0 || now_ms - last_location_ms > max_age_location_ms) {
+        reason = "missing location message";
+    } else if (last_basic_id_ms == 0 || now_ms - last_basic_id_ms > max_age_other_ms) {
+        reason = "missing basic_id message";
+    } else if (last_self_id_ms == 0  || now_ms - last_self_id_ms > max_age_other_ms) {
+        reason = "missing self_id message";
+    } else if (last_operator_id_ms == 0 || now_ms - last_operator_id_ms > max_age_other_ms) {
+        reason = "missing operator_id message";
+    } else if (last_system_ms == 0 || now_ms - last_system_ms > max_age_other_ms) {
+        reason = "missing system message";
     } else if (msg_Location.latitude == 0 && msg_Location.longitude == 0) {
         reason = "Bad location";
     } else if (msg_System.operator_latitude == 0 && msg_System.operator_longitude == 0) {
@@ -233,7 +237,6 @@ void DroneCAN::processTx(void)
             canardPopTxQueue(&canard);
             tx_fail_count = 0;
         } else {
-            Serial.printf("can send fail\n");
             if (tx_fail_count < 8) {
                 tx_fail_count++;
             } else {

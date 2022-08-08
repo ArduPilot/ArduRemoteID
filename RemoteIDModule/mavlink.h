@@ -97,7 +97,5 @@ private:
     mavlink_open_drone_id_system_t system;
     mavlink_open_drone_id_operator_id_t operator_id;
 
-    uint32_t last_system_msg_ms;
-
     uint32_t packets_received_mask;
 };

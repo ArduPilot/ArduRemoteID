@@ -134,7 +134,7 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
         dev_printf("Got OPEN_DRONE_ID_SYSTEM\n");
         mavlink_msg_open_drone_id_system_decode(&msg, &system);
         packets_received_mask |= PKT_SYSTEM;
-        last_system_msg_ms = now_ms;
+        last_system_ms = now_ms;
         break;
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_OPERATOR_ID: {
@@ -153,17 +153,21 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
 void MAVLinkSerial::arm_status_send(void)
 {
     const uint32_t max_age_location_ms = 3000;
-    const uint32_t max_age_other_ms = 2200;
+    const uint32_t max_age_other_ms = 22000;
     const uint32_t now_ms = millis();
     const char *reason = "";
     uint8_t status = MAV_ODID_PRE_ARM_FAIL_GENERIC;
 
-    if (last_location_ms == 0 || now_ms - last_location_ms > max_age_location_ms ||
-        last_basic_id_ms == 0 || now_ms - last_basic_id_ms > max_age_other_ms ||
-        last_self_id_ms == 0  || now_ms - last_self_id_ms > max_age_other_ms ||
-        last_operator_id_ms == 0 || now_ms - last_operator_id_ms > max_age_other_ms ||
-        last_system_ms == 0 || now_ms - last_system_ms > max_age_other_ms) {
-        reason = "missing ODID messages";
+    if (last_location_ms == 0 || now_ms - last_location_ms > max_age_location_ms) {
+        reason = "missing location message";
+    } else if (last_basic_id_ms == 0 || now_ms - last_basic_id_ms > max_age_other_ms) {
+        reason = "missing basic_id message";
+    } else if (last_self_id_ms == 0  || now_ms - last_self_id_ms > max_age_other_ms) {
+        reason = "missing self_id message";
+    } else if (last_operator_id_ms == 0 || now_ms - last_operator_id_ms > max_age_other_ms) {
+        reason = "missing operator_id message";
+    } else if (last_system_ms == 0 || now_ms - last_system_ms > max_age_other_ms) {
+        reason = "missing system message";
     } else if (location.latitude == 0 && location.longitude == 0) {
         reason = "Bad location";
     } else if (system.operator_latitude == 0 && system.operator_longitude == 0) {
@@ -194,7 +198,6 @@ bool MAVLinkSerial::system_valid(void)
     if (last_system_ms == 0 ||
         last_self_id_ms == 0 ||
         last_basic_id_ms == 0 ||
-        last_system_ms == 0 ||
         last_operator_id_ms == 0) {
         return false;
     }
