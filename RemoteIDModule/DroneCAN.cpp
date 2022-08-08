@@ -14,6 +14,7 @@
 #include <dronecan.remoteid.SelfID.h>
 #include <dronecan.remoteid.System.h>
 #include <dronecan.remoteid.OperatorID.h>
+#include <dronecan.remoteid.ArmStatus.h>
 
 #define FW_VERSION_MAJOR 1
 #define FW_VERSION_MINOR 0
@@ -51,6 +52,7 @@ void DroneCAN::update(void)
         if (now_ms - last_node_status_ms >= 1000) {
             last_node_status_ms = now_ms;
             node_status_send();
+            arm_status_send();
         }
     }
     processTx();
@@ -70,6 +72,45 @@ void DroneCAN::node_status_send(void)
     canardBroadcast(&canard,
                     UAVCAN_PROTOCOL_NODESTATUS_SIGNATURE,
                     UAVCAN_PROTOCOL_NODESTATUS_ID,
+                    &tx_id,
+                    CANARD_TRANSFER_PRIORITY_LOW,
+                    (void*)buffer,
+                    len);
+}
+
+void DroneCAN::arm_status_send(void)
+{
+    uint8_t buffer[DRONECAN_REMOTEID_ARMSTATUS_MAX_SIZE];
+    dronecan_remoteid_ArmStatus arm_status {};
+
+    const uint32_t max_age_location_ms = 3000;
+    const uint32_t max_age_other_ms = 2200;
+    const uint32_t now_ms = millis();
+    const char *reason = "";
+    arm_status.status = DRONECAN_REMOTEID_ARMSTATUS_ODID_ARM_STATUS_FAIL_GENERIC;
+    if (last_location_ms == 0 || now_ms - last_location_ms > max_age_location_ms ||
+        last_basic_id_ms == 0 || now_ms - last_basic_id_ms > max_age_other_ms ||
+        last_self_id_ms == 0  || now_ms - last_self_id_ms > max_age_other_ms ||
+        last_operator_id_ms == 0 || now_ms - last_operator_id_ms > max_age_other_ms ||
+        last_system_ms == 0 || now_ms - last_system_ms > max_age_other_ms) {
+        reason = "missing ODID messages";
+    } else if (msg_Location.latitude == 0 && msg_Location.longitude == 0) {
+        reason = "Bad location";
+    } else if (msg_System.operator_latitude == 0 && msg_System.operator_longitude == 0) {
+        reason = "Bad operator location";
+    } else {
+        arm_status.status = DRONECAN_REMOTEID_ARMSTATUS_ODID_ARM_STATUS_GOOD_TO_ARM;
+    }
+
+    arm_status.error.len = strlen(reason);
+    strncpy((char*)arm_status.error.data, reason, sizeof(arm_status.error.data));
+
+    const uint16_t len = dronecan_remoteid_ArmStatus_encode(&arm_status, buffer);
+
+    static uint8_t tx_id;
+    canardBroadcast(&canard,
+                    DRONECAN_REMOTEID_ARMSTATUS_SIGNATURE,
+                    DRONECAN_REMOTEID_ARMSTATUS_ID,
                     &tx_id,
                     CANARD_TRANSFER_PRIORITY_LOW,
                     (void*)buffer,

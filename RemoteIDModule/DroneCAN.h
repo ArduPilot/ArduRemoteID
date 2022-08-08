@@ -25,6 +25,7 @@ private:
     uint32_t canard_memory_pool[CAN_POOL_SIZE/sizeof(uint32_t)];
 
     void node_status_send(void);
+    void arm_status_send(void);
 
     uint8_t tx_fail_count;
 

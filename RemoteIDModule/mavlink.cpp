@@ -58,6 +58,9 @@ void MAVLinkSerial::update_send(void)
             0,
             0,
             0);
+
+        // send arming status
+        arm_status_send();
     }
 }
 
@@ -145,6 +148,34 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
         // we don't care about other packets
         break;
     }
+}
+
+void MAVLinkSerial::arm_status_send(void)
+{
+    const uint32_t max_age_location_ms = 3000;
+    const uint32_t max_age_other_ms = 2200;
+    const uint32_t now_ms = millis();
+    const char *reason = "";
+    uint8_t status = MAV_ODID_PRE_ARM_FAIL_GENERIC;
+
+    if (last_location_ms == 0 || now_ms - last_location_ms > max_age_location_ms ||
+        last_basic_id_ms == 0 || now_ms - last_basic_id_ms > max_age_other_ms ||
+        last_self_id_ms == 0  || now_ms - last_self_id_ms > max_age_other_ms ||
+        last_operator_id_ms == 0 || now_ms - last_operator_id_ms > max_age_other_ms ||
+        last_system_ms == 0 || now_ms - last_system_ms > max_age_other_ms) {
+        reason = "missing ODID messages";
+    } else if (location.latitude == 0 && location.longitude == 0) {
+        reason = "Bad location";
+    } else if (system.operator_latitude == 0 && system.operator_longitude == 0) {
+        reason = "Bad operator location";
+    } else {
+        status = MAV_ODID_GOOD_TO_ARM;
+    }
+
+    mavlink_msg_open_drone_id_arm_status_send(
+        chan,
+        status,
+        reason);
 }
 
 /*

@@ -88,6 +88,7 @@ private:
     void update_send(void);
     void process_packet(mavlink_status_t &status, mavlink_message_t &msg);
     void mav_printf(uint8_t severity, const char *fmt, ...);
+    void arm_status_send(void);
 
     mavlink_open_drone_id_location_t location;
     mavlink_open_drone_id_basic_id_t basic_id;
