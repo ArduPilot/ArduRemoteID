@@ -53,9 +53,10 @@ the following options:
 
 ## ArduPilot Support
 
-A pull-request with support for both MAVLink and DroneCAN is here:
-
-https://github.com/ArduPilot/ardupilot/pull/21075
+Support for OpenDroneID is in ArduPilot master and is pending for
+addition to the 4.2.x stable releases. You need to enable it on a
+board by setting "define AP_OPENDRONEID_ENABLED 1" in the hwdef.dat
+for your board.
 
 ## Credit
 
