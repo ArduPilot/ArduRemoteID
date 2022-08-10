@@ -22,6 +22,9 @@
 #define CAN_APP_NODE_NAME "ArduPilot RemoteIDModule"
 #define CAN_DEFAULT_NODE_ID 0 // use DNA
 
+#define UNUSED(x) (void)(x)
+
+
 // constructor
 DroneCAN::DroneCAN()
 {}
@@ -265,6 +268,8 @@ void DroneCAN::processRx(void)
                       rxmsg.data[4], rxmsg.data[5], rxmsg.data[6], rxmsg.data[7],
                       rx_frame.data_len,
                       err);
+#else
+        UNUSED(err);                      
 #endif
     }
 }
@@ -423,7 +428,7 @@ bool DroneCAN::do_DNA(void)
     last_DNA_start_ms = now;
 
     uint8_t node_id_allocation_transfer_id = 0;
-
+    UNUSED(node_id_allocation_transfer_id);
     send_next_node_id_allocation_request_at_ms =
         now + UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_MIN_REQUEST_PERIOD_MS +
         random(1, UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_MAX_FOLLOWUP_DELAY_MS);
