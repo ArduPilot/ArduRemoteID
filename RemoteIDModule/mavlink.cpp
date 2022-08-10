@@ -69,8 +69,6 @@ void MAVLinkSerial::update_receive(void)
     // receive new packets
     mavlink_message_t msg;
     mavlink_status_t status;
-    uint32_t now_ms = millis();
-
     status.packet_rx_drop_count = 0;
 
     const uint16_t nbytes = serial.available();

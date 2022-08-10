@@ -150,7 +150,7 @@ void loop()
 
     if (mavlink.location_valid()) {
         const auto &location = mavlink.get_location();
-        const auto &operator_id = mavlink.get_operator_id();
+        //const auto &operator_id = mavlink.get_operator_id();
         const auto &system = mavlink.get_system();
 
         utm_data.heading     = location.direction * 0.01;
@@ -179,7 +179,7 @@ void loop()
 
     if (dronecan.location_valid()) {
         const auto &location = dronecan.get_location();
-        const auto &operator_id = dronecan.get_operator_id();
+        //const auto &operator_id = dronecan.get_operator_id();
         const auto &system = dronecan.get_system();
 
         utm_data.heading     = location.direction * 0.01;
