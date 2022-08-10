@@ -46,10 +46,16 @@ Pre-built releases are in the releases folder on github
 To flash to an ESP32-S3 board use the espressif FlashTool from
 https://www.espressif.com/en/support/download/other-tools
 
-and use the pre-built binary in the releases folder then flash using
-the following options:
+if this is the first time flashing the board, you may need to hold the "boot" button down while attaching the USB cable to the USB connector marked "USB"
+
+and then use the pre-built binary in the releases folder to flash using
+the following options, after selecting the COMM port that the board is attached:
+
+![Board setup dialog](images/flash-tool-setup.jpg "Board Setup")
 
 ![Flashing with FlashTool](images/FlashTool.jpg "Flashing")
+
+subsequent re-flashing of newer releases should not require holding the "boot" button during power-up of the board as the USB cable is attached.
 
 
 ## Building from Sources under linux:
