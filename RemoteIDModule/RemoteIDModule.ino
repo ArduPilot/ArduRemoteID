@@ -8,6 +8,7 @@
  */
 
 #include <Arduino.h>
+#include "version.h"
 #include <math.h>
 #include <time.h>
 #include <sys/time.h>
@@ -40,6 +41,9 @@ void setup()
 {
     // Serial for debug printf
     Serial.begin(DEBUG_BAUDRATE);
+
+    Serial.printf("ArduRemoteID version %u.%u %08x\n",
+                  FW_VERSION_MAJOR, FW_VERSION_MINOR, GIT_VERSION);
 
     // Serial1 for MAVLink
     Serial1.begin(MAVLINK_BAUDRATE, SERIAL_8N1, RX_PIN, TX_PIN);

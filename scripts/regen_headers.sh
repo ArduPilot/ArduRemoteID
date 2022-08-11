@@ -18,3 +18,5 @@ for p in $PACKETS; do
         ln -s src/*"$p"*.c .
     )
 done
+
+scripts/git-version.sh

@@ -2,6 +2,7 @@
   DroneCAN class for handling OpenDroneID messages
  */
 #include <Arduino.h>
+#include "version.h"
 #include <time.h>
 #include "DroneCAN.h"
 #include <canard.h>
@@ -16,8 +17,6 @@
 #include <dronecan.remoteid.OperatorID.h>
 #include <dronecan.remoteid.ArmStatus.h>
 
-#define FW_VERSION_MAJOR 1
-#define FW_VERSION_MINOR 0
 #define BOARD_ID 10001
 #define CAN_APP_NODE_NAME "ArduPilot RemoteIDModule"
 #define CAN_DEFAULT_NODE_ID 0 // use DNA
@@ -357,7 +356,7 @@ void DroneCAN::handle_get_node_info(CanardInstance* ins, CanardRxTransfer* trans
     pkt.software_version.major = FW_VERSION_MAJOR;
     pkt.software_version.minor = FW_VERSION_MINOR;
     pkt.software_version.optional_field_flags = UAVCAN_PROTOCOL_SOFTWAREVERSION_OPTIONAL_FIELD_FLAG_VCS_COMMIT | UAVCAN_PROTOCOL_SOFTWAREVERSION_OPTIONAL_FIELD_FLAG_IMAGE_CRC;
-    pkt.software_version.vcs_commit = 0;
+    pkt.software_version.vcs_commit = GIT_VERSION;
 
     readUniqueID(pkt.hardware_version.unique_id);
 
