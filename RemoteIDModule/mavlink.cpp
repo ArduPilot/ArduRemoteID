@@ -10,7 +10,7 @@ static HardwareSerial *serial_ports[MAVLINK_COMM_NUM_BUFFERS];
 
 #include <generated/mavlink_helpers.h>
 
-mavlink_system_t mavlink_system = {2,1};
+mavlink_system_t mavlink_system = {0,MAV_COMP_ID_ODID_TXRX_1};
 
 #define dev_printf(fmt, args ...)  do {Serial.printf(fmt, ## args); } while(0)
 
@@ -42,7 +42,9 @@ void MAVLinkSerial::init(void)
 
 void MAVLinkSerial::update(void)
 {
-    update_send();
+    if (mavlink_system.sysid != 0) {
+        update_send();
+    }
     update_receive();
 }
 
@@ -101,6 +103,17 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
 {
     const uint32_t now_ms = millis();
     switch (msg.msgid) {
+    case MAVLINK_MSG_ID_HEARTBEAT: {
+        mavlink_heartbeat_t hb;
+        if (mavlink_system.sysid == 0) {
+            mavlink_msg_heartbeat_decode(&msg, &hb);
+            if (msg.sysid > 0 && hb.type != MAV_TYPE_GCS) {
+                dev_printf("Got HEARTBEAT from %u/%u\n", msg.sysid, msg.compid);
+                mavlink_system.sysid = msg.sysid;
+            }
+        }
+        break;
+    }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_LOCATION: {
         dev_printf("Got OPEN_DRONE_ID_LOCATION\n");
         mavlink_msg_open_drone_id_location_decode(&msg, &location);
