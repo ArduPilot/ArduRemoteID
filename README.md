@@ -125,3 +125,7 @@ Many thanks to the great work by:
  - Steve Jack: https://github.com/sxjack/uav_electronic_ids
 
 This firmware builds on their work.
+
+## License
+
+This firmware is licensed under the GNU GPLv3 or later
