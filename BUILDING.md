@@ -13,7 +13,7 @@
  - git submodule init
  - git submodule update --recursive
  - ./scripts/regen_headers.sh
- - ./add_libraries.sh
+ - ./scripts/add_libraries.sh
 
 ### Step3: Open the 'arduino' software in your linux desktop
 
