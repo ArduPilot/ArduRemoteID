@@ -1,7 +1,5 @@
 /*
-  implement OpenDroneID MAVLink support, populating squitter for sending bluetooth RemoteID messages
-
-  based on example code from https://github.com/sxjack/uav_electronic_ids
+  implement OpenDroneID MAVLink and DroneCAN support
  */
 /*
   released under GNU GPL v3 or later
@@ -12,17 +10,17 @@
 #include <math.h>
 #include <time.h>
 #include <sys/time.h>
+#include <opendroneid.h>
 
-#include <id_open.h>
 #include "mavlink.h"
 #include "DroneCAN.h"
+#include "WiFi_TX.h"
+#include "BLE_TX.h"
 
-static ID_OpenDrone          squitter;
-static DroneCAN              dronecan;
-
+static DroneCAN dronecan;
 static MAVLinkSerial mavlink{Serial1, MAVLINK_COMM_0};
-
-static bool squitter_initialised;
+static WiFi_NAN wifi;
+static BLE_TX ble;
 
 #define OUTPUT_RATE_HZ 5
 
@@ -33,6 +31,9 @@ static bool squitter_initialised;
 #define TX_PIN 18
 #define DEBUG_BAUDRATE 57600
 #define MAVLINK_BAUDRATE 57600
+
+// OpenDroneID output data structure
+static ODID_UAS_Data UAS_data;
 
 /*
   setup serial ports
@@ -50,69 +51,135 @@ void setup()
 
     mavlink.init();
     dronecan.init();
+    wifi.init();
+    ble.init();
 }
 
 #define MIN(x,y) ((x)<(y)?(x):(y))
-#define ODID_COPY_MAVSTR(to, from) strncpy(to, (const char*)from, MIN(sizeof(to), sizeof(from)))
+#define ODID_COPY_STR(to, from) strncpy(to, (const char*)from, MIN(sizeof(to), sizeof(from)))
 
-static void init_squitter_mavlink(void)
+static void set_data_mavlink(void)
 {
-    struct UTM_parameters utm_parameters {};
-
     const auto &operator_id = mavlink.get_operator_id();
     const auto &basic_id = mavlink.get_basic_id();
     const auto &system = mavlink.get_system();
     const auto &self_id = mavlink.get_self_id();
+    const auto &location = mavlink.get_location();
 
-    ODID_COPY_MAVSTR(utm_parameters.UAS_operator, operator_id.operator_id);
-    ODID_COPY_MAVSTR(utm_parameters.UAV_id, basic_id.uas_id);
-    ODID_COPY_MAVSTR(utm_parameters.flight_desc, self_id.description);
-    utm_parameters.UA_type = basic_id.ua_type;
-    utm_parameters.ID_type = basic_id.id_type;
-    utm_parameters.region = 1; // ??
-    utm_parameters.EU_category = system.category_eu;
-    utm_parameters.EU_class = system.class_eu;
-    // char    UTM_id[ID_SIZE * 2] ??
+    // BasicID
+    UAS_data.BasicID[0].UAType = (ODID_uatype_t)basic_id.ua_type;
+    UAS_data.BasicID[0].IDType = (ODID_idtype_t)basic_id.id_type;
+    ODID_COPY_STR(UAS_data.BasicID[0].UASID, basic_id.uas_id);
+    UAS_data.BasicIDValid[0] = 1;
 
-    squitter.init(&utm_parameters);
+    // OperatorID
+    UAS_data.OperatorID.OperatorIdType = (ODID_operatorIdType_t)operator_id.operator_id_type;
+    ODID_COPY_STR(UAS_data.OperatorID.OperatorId, operator_id.operator_id);
+    UAS_data.OperatorIDValid = 1;
+
+    // SelfID
+    UAS_data.SelfID.DescType = (ODID_desctype_t)self_id.description_type;
+    ODID_COPY_STR(UAS_data.SelfID.Desc, self_id.description);
+    UAS_data.SelfIDValid = 1;
+
+    // System
+    UAS_data.System.OperatorLocationType = (ODID_operator_location_type_t)system.operator_location_type;
+    UAS_data.System.ClassificationType = (ODID_classification_type_t)system.classification_type;
+    UAS_data.System.OperatorLatitude = system.operator_latitude * 1.0e-7;
+    UAS_data.System.OperatorLongitude = system.operator_longitude * 1.0e-7;
+    UAS_data.System.AreaCount = system.area_count;
+    UAS_data.System.AreaRadius = system.area_radius;
+    UAS_data.System.AreaCeiling = system.area_ceiling;
+    UAS_data.System.AreaFloor = system.area_floor;
+    UAS_data.System.CategoryEU = (ODID_category_EU_t)system.category_eu;
+    UAS_data.System.ClassEU = (ODID_class_EU_t)system.class_eu;
+    UAS_data.System.OperatorAltitudeGeo = system.operator_altitude_geo;
+    UAS_data.System.Timestamp = system.timestamp;
+    UAS_data.SystemValid = 1;
+
+    // Location
+    UAS_data.Location.Status = (ODID_status_t)location.status;
+    UAS_data.Location.Direction = location.direction*0.01;
+    UAS_data.Location.SpeedHorizontal = location.speed_horizontal*0.01;
+    UAS_data.Location.SpeedVertical = location.speed_vertical*0.01;
+    UAS_data.Location.Latitude = location.latitude*1.0e-7;
+    UAS_data.Location.Longitude = location.longitude*1.0e-7;
+    UAS_data.Location.AltitudeBaro = location.altitude_barometric;
+    UAS_data.Location.AltitudeGeo = location.altitude_geodetic;
+    UAS_data.Location.HeightType = (ODID_Height_reference_t)location.height_reference;
+    UAS_data.Location.Height = location.height;
+    UAS_data.Location.HorizAccuracy = (ODID_Horizontal_accuracy_t)location.horizontal_accuracy;
+    UAS_data.Location.VertAccuracy = (ODID_Vertical_accuracy_t)location.vertical_accuracy;
+    UAS_data.Location.BaroAccuracy = (ODID_Vertical_accuracy_t)location.barometer_accuracy;
+    UAS_data.Location.SpeedAccuracy = (ODID_Speed_accuracy_t)location.speed_accuracy;
+    UAS_data.Location.TSAccuracy = (ODID_Timestamp_accuracy_t)location.timestamp_accuracy;
+    UAS_data.Location.TimeStamp = location.timestamp;
+    UAS_data.LocationValid = 1;
 }
 
-#define MIN(x,y) ((x)<(y)?(x):(y))
+#undef ODID_COPY_STR
 #define ODID_COPY_STR(to, from) memcpy(to, from.data, MIN(from.len, sizeof(to)))
 
-static void init_squitter_dronecan(void)
+static void set_data_dronecan(void)
 {
-    struct UTM_parameters utm_parameters {};
-
     const auto &operator_id = dronecan.get_operator_id();
     const auto &basic_id = dronecan.get_basic_id();
     const auto &system = dronecan.get_system();
     const auto &self_id = dronecan.get_self_id();
+    const auto &location = dronecan.get_location();
 
-    ODID_COPY_STR(utm_parameters.UAS_operator, operator_id.operator_id);
-    ODID_COPY_STR(utm_parameters.UAV_id, basic_id.uas_id);
-    ODID_COPY_STR(utm_parameters.flight_desc, self_id.description);
-    utm_parameters.UA_type = basic_id.ua_type;
-    utm_parameters.ID_type = basic_id.id_type;
-    utm_parameters.region = 1; // ??
-    utm_parameters.EU_category = system.category_eu;
-    utm_parameters.EU_class = system.class_eu;
-    squitter.init(&utm_parameters);
+    // BasicID
+    UAS_data.BasicID[0].UAType = (ODID_uatype_t)basic_id.ua_type;
+    UAS_data.BasicID[0].IDType = (ODID_idtype_t)basic_id.id_type;
+    ODID_COPY_STR(UAS_data.BasicID[0].UASID, basic_id.uas_id);
+    UAS_data.BasicIDValid[0] = 1;
+
+    // OperatorID
+    UAS_data.OperatorID.OperatorIdType = (ODID_operatorIdType_t)operator_id.operator_id_type;
+    ODID_COPY_STR(UAS_data.OperatorID.OperatorId, operator_id.operator_id);
+    UAS_data.OperatorIDValid = 1;
+
+    // SelfID
+    UAS_data.SelfID.DescType = (ODID_desctype_t)self_id.description_type;
+    ODID_COPY_STR(UAS_data.SelfID.Desc, self_id.description);
+    UAS_data.SelfIDValid = 1;
+
+    // System
+    UAS_data.System.OperatorLocationType = (ODID_operator_location_type_t)system.operator_location_type;
+    UAS_data.System.ClassificationType = (ODID_classification_type_t)system.classification_type;
+    UAS_data.System.OperatorLatitude = system.operator_latitude * 1.0e-7;
+    UAS_data.System.OperatorLongitude = system.operator_longitude * 1.0e-7;
+    UAS_data.System.AreaCount = system.area_count;
+    UAS_data.System.AreaRadius = system.area_radius;
+    UAS_data.System.AreaCeiling = system.area_ceiling;
+    UAS_data.System.AreaFloor = system.area_floor;
+    UAS_data.System.CategoryEU = (ODID_category_EU_t)system.category_eu;
+    UAS_data.System.ClassEU = (ODID_class_EU_t)system.class_eu;
+    UAS_data.System.OperatorAltitudeGeo = system.operator_altitude_geo;
+    UAS_data.System.Timestamp = system.timestamp;
+    UAS_data.SystemValid = 1;
+
+    // Location
+    UAS_data.Location.Status = (ODID_status_t)location.status;
+    UAS_data.Location.Direction = location.direction*0.01;
+    UAS_data.Location.SpeedHorizontal = location.speed_horizontal*0.01;
+    UAS_data.Location.SpeedVertical = location.speed_vertical*0.01;
+    UAS_data.Location.Latitude = location.latitude*1.0e-7;
+    UAS_data.Location.Longitude = location.longitude*1.0e-7;
+    UAS_data.Location.AltitudeBaro = location.altitude_barometric;
+    UAS_data.Location.AltitudeGeo = location.altitude_geodetic;
+    UAS_data.Location.HeightType = (ODID_Height_reference_t)location.height_reference;
+    UAS_data.Location.Height = location.height;
+    UAS_data.Location.HorizAccuracy = (ODID_Horizontal_accuracy_t)location.horizontal_accuracy;
+    UAS_data.Location.VertAccuracy = (ODID_Vertical_accuracy_t)location.vertical_accuracy;
+    UAS_data.Location.BaroAccuracy = (ODID_Vertical_accuracy_t)location.barometer_accuracy;
+    UAS_data.Location.SpeedAccuracy = (ODID_Speed_accuracy_t)location.speed_accuracy;
+    UAS_data.Location.TSAccuracy = (ODID_Timestamp_accuracy_t)location.timestamp_accuracy;
+    UAS_data.Location.TimeStamp = location.timestamp;
+    UAS_data.LocationValid = 1;
 }
 
-static void timestamp_to_utm_time(struct UTM_data &utm_data, uint32_t timestamp)
-{
-    const uint32_t jan_1_2019_s = 1546261200UL;
-    const time_t unix_s = time_t(timestamp) + jan_1_2019_s;
-    const auto *tm = gmtime(&unix_s);
-
-    utm_data.years = tm->tm_year;
-    utm_data.months = tm->tm_mon;
-    utm_data.days = tm->tm_mday;
-    utm_data.hours = tm->tm_hour;
-    utm_data.minutes = tm->tm_min;
-    utm_data.seconds = tm->tm_sec;
-}
+static uint8_t beacon_payload[256];
 
 void loop()
 {
@@ -121,20 +188,6 @@ void loop()
     mavlink.update();
     dronecan.update();
 
-    if (!squitter_initialised && mavlink.system_valid()) {
-        squitter_initialised = true;
-        init_squitter_mavlink();
-    }
-
-    if (!squitter_initialised && dronecan.system_valid()) {
-        squitter_initialised = true;
-        init_squitter_dronecan();
-    }
-
-    if (!squitter_initialised) {
-        return;
-    }
-    
     const uint32_t now_ms = millis();
 
     if (now_ms - last_update < 1000/OUTPUT_RATE_HZ) {
@@ -142,73 +195,23 @@ void loop()
         return;
     }
 
-    if (!mavlink.location_valid() &&
-        !dronecan.location_valid()) {
+    const bool mavlink_ok = mavlink.location_valid() && mavlink.system_valid();
+    const bool dronecan_ok = dronecan.location_valid() && dronecan.system_valid();
+    if (!mavlink_ok && !dronecan_ok) {
         return;
+    }
+
+    if (mavlink_ok) {
+        set_data_mavlink();
+    }
+    if (dronecan_ok) {
+        set_data_dronecan();
     }
 
     last_update = now_ms;
 
-    struct UTM_data utm_data {};
-    const float M_PER_SEC_TO_KNOTS = 1.94384449;
+    const auto length = odid_message_build_pack(&UAS_data,beacon_payload,255);
 
-    if (mavlink.location_valid()) {
-        const auto &location = mavlink.get_location();
-        //const auto &operator_id = mavlink.get_operator_id();
-        const auto &system = mavlink.get_system();
-
-        utm_data.heading     = location.direction * 0.01;
-        utm_data.latitude_d  = location.latitude * 1.0e-7;
-        utm_data.longitude_d = location.longitude * 1.0e-7;
-        utm_data.base_latitude = system.operator_latitude * 1.0e-7;
-        utm_data.base_longitude = system.operator_longitude * 1.0e-7;
-        utm_data.base_alt_m     = system.operator_altitude_geo;
-        utm_data.alt_msl_m = location.altitude_geodetic;
-        utm_data.alt_agl_m = location.height;
-        utm_data.speed_kn  = location.speed_horizontal * 0.01 * M_PER_SEC_TO_KNOTS;
-        utm_data.base_valid = (system.operator_latitude != 0 && system.operator_longitude != 0);
-
-        const float groundspeed = location.speed_horizontal * 0.01;
-        const float vel_N = cos(radians(utm_data.heading)) * groundspeed;
-        const float vel_E = sin(radians(utm_data.heading)) * groundspeed;
-
-        utm_data.vel_N_cm = vel_N * 100;
-        utm_data.vel_E_cm = vel_E * 100;
-        utm_data.vel_D_cm = location.speed_vertical * -0.01;
-
-        timestamp_to_utm_time(utm_data, system.timestamp);
-
-        utm_data.satellites = 8;
-    }
-
-    if (dronecan.location_valid()) {
-        const auto &location = dronecan.get_location();
-        //const auto &operator_id = dronecan.get_operator_id();
-        const auto &system = dronecan.get_system();
-
-        utm_data.heading     = location.direction * 0.01;
-        utm_data.latitude_d  = location.latitude * 1.0e-7;
-        utm_data.longitude_d = location.longitude * 1.0e-7;
-        utm_data.base_latitude = system.operator_latitude * 1.0e-7;
-        utm_data.base_longitude = system.operator_longitude * 1.0e-7;
-        utm_data.base_alt_m     = system.operator_altitude_geo;
-        utm_data.alt_msl_m = location.altitude_geodetic;
-        utm_data.alt_agl_m = location.height;
-        utm_data.speed_kn  = location.speed_horizontal * 0.01 * M_PER_SEC_TO_KNOTS;
-        utm_data.base_valid = (system.operator_latitude != 0 && system.operator_longitude != 0);
-
-        const float groundspeed = location.speed_horizontal * 0.01;
-        const float vel_N = cos(radians(utm_data.heading)) * groundspeed;
-        const float vel_E = sin(radians(utm_data.heading)) * groundspeed;
-
-        utm_data.vel_N_cm = vel_N * 100;
-        utm_data.vel_E_cm = vel_E * 100;
-        utm_data.vel_D_cm = location.speed_vertical * -0.01;
-
-        timestamp_to_utm_time(utm_data, system.timestamp);
-
-        utm_data.satellites = 8;
-    }
-    
-    squitter.transmit(&utm_data);
+    wifi.transmit(UAS_data);
+    ble.transmit(UAS_data);
 }
