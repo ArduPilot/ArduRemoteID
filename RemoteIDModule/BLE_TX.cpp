@@ -10,6 +10,9 @@
 #include <BLEDevice.h>
 #include <BLEAdvertising.h>
 
+// set max power
+static const int8_t tx_power = ESP_PWR_LVL_P18;
+
 static esp_ble_gap_ext_adv_params_t ext_adv_params_1M = {
     .type = ESP_BLE_GAP_SET_EXT_ADV_PROP_CONNECTABLE,
     .interval_min = 0x30,
@@ -17,6 +20,7 @@ static esp_ble_gap_ext_adv_params_t ext_adv_params_1M = {
     .channel_map = ADV_CHNL_ALL,
     .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
+    .tx_power = tx_power,
     .primary_phy = ESP_BLE_GAP_PHY_CODED,
     .max_skip = 0,
     .secondary_phy = ESP_BLE_GAP_PHY_1M,
@@ -31,6 +35,7 @@ static esp_ble_gap_ext_adv_params_t ext_adv_params_2M = {
     .channel_map = ADV_CHNL_ALL,
     .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
+    .tx_power = tx_power,
     .primary_phy = ESP_BLE_GAP_PHY_1M,
     .max_skip = 0,
     .secondary_phy = ESP_BLE_GAP_PHY_2M,
@@ -45,6 +50,7 @@ static esp_ble_gap_ext_adv_params_t legacy_adv_params = {
     .channel_map = ADV_CHNL_ALL,
     .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
+    .tx_power = tx_power,
     .primary_phy = ESP_BLE_GAP_PHY_1M,
     .max_skip = 0,
     .secondary_phy = ESP_BLE_GAP_PHY_1M,
@@ -59,6 +65,7 @@ static esp_ble_gap_ext_adv_params_t ext_adv_params_coded = {
     .channel_map = ADV_CHNL_ALL,
     .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
+    .tx_power = tx_power,
     .primary_phy = ESP_BLE_GAP_PHY_1M,
     .max_skip = 0,
     .secondary_phy = ESP_BLE_GAP_PHY_CODED,
@@ -104,6 +111,11 @@ bool BLE_TX::init(void)
 
     advert.setPeriodicAdvertisingParams(0, &periodic_adv_params);
     advert.startPeriodicAdvertising(0);
+
+    // prefer S8 coding
+    if (esp_ble_gap_set_prefered_default_phy(ESP_BLE_GAP_PHY_OPTIONS_PREF_S8_CODING, ESP_BLE_GAP_PHY_OPTIONS_PREF_S8_CODING) != ESP_OK) {
+        Serial.printf("Failed to setup S8 coding\n");
+    }
 
     return true;
 }
