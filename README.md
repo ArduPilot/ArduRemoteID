@@ -2,7 +2,8 @@
 
 This is an implementation of a MAVLink and DroneCAN OpenDroneID
 transmitter. It aims to provide a transmitter solution for the FAA
-standard RemoteID requrement.
+standard RemoteID requrement, meeting the transmitter component of the
+ASTM F3586-22 Means of Compliance.
 
 ## Hardware Supported
 
@@ -22,6 +23,14 @@ The pins assumed in this firmware are:
 
 For CAN a suitable 1MBit bxCAN transceiver needs to be connected to
 the CAN TX/RX pins.
+
+## Transmission Modes
+
+This firmware supports the following transmission modes:
+
+ - WiFi NAN (Neighbour Awareness Networking)
+ - Bluetooth 4 Legacy Advertising
+ - Bluetooth 5 Long Range + Extended Advertising
 
 ## Protocols
 
