@@ -8,7 +8,7 @@
 
 class WiFi_NAN {
 public:
-    bool init(const char *ssid);
+    bool init(void);
     bool transmit(ODID_UAS_Data &UAS_data);
 
 private:
