@@ -4,7 +4,6 @@
 DEST=~/Arduino/libraries/
 
 mkdir -p "$DEST"
-ln -sf $PWD/modules/uav_electronic_ids/id_open "$DEST"
 ln -sf $PWD/modules/uav_electronic_ids/utm "$DEST"
 ln -sf $PWD/modules/opendroneid-core-c/libopendroneid "$DEST"
 ln -sf $PWD/modules/libcanard "$DEST"
