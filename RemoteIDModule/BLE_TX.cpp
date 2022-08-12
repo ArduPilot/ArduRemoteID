@@ -1,5 +1,7 @@
 /*
   BLE TX driver
+
+  Many thanks to Roel Schiphorst from BlueMark for his assistance with the Bluetooth code
  */
 
 #include "BLE_TX.h"

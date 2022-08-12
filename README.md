@@ -70,6 +70,7 @@ Many thanks to the great work by:
 
  - OpenDroneID: https://github.com/opendroneid/
  - Steve Jack: https://github.com/sxjack/uav_electronic_ids
+ - Roel Schematics: https://bluemark.io/
 
 This firmware builds on their work.
 
