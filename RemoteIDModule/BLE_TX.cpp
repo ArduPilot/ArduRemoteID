@@ -2,6 +2,9 @@
   BLE TX driver
 
   Many thanks to Roel Schiphorst from BlueMark for his assistance with the Bluetooth code
+
+  Also many thanks to chegewara for his sample code:
+  https://github.com/Tinyu-Zhao/Arduino-Borads/blob/b584d00a81e4ac6d7b72697c674ca1bbcb8aae69/libraries/BLE/examples/BLE5_multi_advertising/BLE5_multi_advertising.ino
  */
 
 #include "BLE_TX.h"
