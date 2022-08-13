@@ -80,6 +80,7 @@ Many thanks to the great work by:
  - OpenDroneID: https://github.com/opendroneid/
  - Steve Jack: https://github.com/sxjack/uav_electronic_ids
  - Roel Schematics: https://bluemark.io/
+ - David Buzz: ESP32 CAN and bluetooth drivers
 
 This firmware builds on their work.
 

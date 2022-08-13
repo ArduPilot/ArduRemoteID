@@ -1,5 +1,6 @@
 /*
   DroneCAN class for handling OpenDroneID messages
+  with thanks to David Buzz for ArduPilot ESP32 HAL
  */
 #include <Arduino.h>
 #include "version.h"
