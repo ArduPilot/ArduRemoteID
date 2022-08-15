@@ -15,7 +15,32 @@
  - ./scripts/regen_headers.sh
  - ./scripts/add_libraries.sh
 
-### Step3: Open the 'arduino' software in your linux desktop
+Now you have a choice, you can build with the command line and "make"
+or build with the Arduino GUI. I prefer make, but both will work.
+
+## Building with make
+
+### Step1: Use make to install ESP32 support
+
+ - cd RemoteIDModule
+ - make setup
+
+### Step2: Use make to build
+
+ - cd RemoteIDModule
+ - make
+
+### Step3: Use make to upload
+
+ - cd RemoteIDModule
+ - make upload
+
+If board does not flash, hold-down BOOT pushbutton on pcb while pressing RESET pushbutton briefly [to force it into bootloader mode] and retry.
+done, ESP32-S3 is now running and emitting test/demo remote-id bluetooth
+
+## Building with the Arduino GUI
+
+### Step1: Open the 'arduino' software in your linux desktop
 
  - arduino
 
@@ -28,6 +53,8 @@ tip:[if you have url/s already isted, you can add it to the end of them with a c
 
  - Open 'sketch - ie 'RemoteIDModule.ino 'from this repo
  - Arduino IDE -> File Menu -> Open ...
+
+### Step2: flash
 
 Plugin your ep32-s3 with usb cable using the port labeled "USB" on the pcb - this is for FLASHING it.
 
