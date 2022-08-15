@@ -18,7 +18,8 @@
 #include "BLE_TX.h"
 
 static DroneCAN dronecan;
-static MAVLinkSerial mavlink{Serial1, MAVLINK_COMM_0};
+static MAVLinkSerial mavlink1{Serial1, MAVLINK_COMM_0};
+static MAVLinkSerial mavlink2{Serial, MAVLINK_COMM_1};
 static WiFi_NAN wifi;
 static BLE_TX ble;
 
@@ -49,7 +50,8 @@ void setup()
     // Serial1 for MAVLink
     Serial1.begin(MAVLINK_BAUDRATE, SERIAL_8N1, RX_PIN, TX_PIN);
 
-    mavlink.init();
+    mavlink1.init();
+    mavlink2.init();
     dronecan.init();
     wifi.init();
     ble.init();
@@ -58,13 +60,13 @@ void setup()
 #define MIN(x,y) ((x)<(y)?(x):(y))
 #define ODID_COPY_STR(to, from) strncpy(to, (const char*)from, MIN(sizeof(to), sizeof(from)))
 
-static void set_data_mavlink(void)
+static void set_data_mavlink(MAVLinkSerial &m)
 {
-    const auto &operator_id = mavlink.get_operator_id();
-    const auto &basic_id = mavlink.get_basic_id();
-    const auto &system = mavlink.get_system();
-    const auto &self_id = mavlink.get_self_id();
-    const auto &location = mavlink.get_location();
+    const auto &operator_id = m.get_operator_id();
+    const auto &basic_id = m.get_basic_id();
+    const auto &system = m.get_system();
+    const auto &self_id = m.get_self_id();
+    const auto &location = m.get_location();
 
     // BasicID
     UAS_data.BasicID[0].UAType = (ODID_uatype_t)basic_id.ua_type;
@@ -185,7 +187,8 @@ void loop()
 {
     static uint32_t last_update;
 
-    mavlink.update();
+    mavlink1.update();
+    mavlink2.update();
     dronecan.update();
 
     const uint32_t now_ms = millis();
@@ -195,14 +198,18 @@ void loop()
         return;
     }
 
-    const bool mavlink_ok = mavlink.location_valid() && mavlink.system_valid();
+    const bool mavlink1_ok = mavlink1.location_valid() && mavlink1.system_valid();
+    const bool mavlink2_ok = mavlink2.location_valid() && mavlink2.system_valid();
     const bool dronecan_ok = dronecan.location_valid() && dronecan.system_valid();
-    if (!mavlink_ok && !dronecan_ok) {
+    if (!mavlink1_ok && !mavlink2_ok && !dronecan_ok) {
         return;
     }
 
-    if (mavlink_ok) {
-        set_data_mavlink();
+    if (mavlink1_ok) {
+        set_data_mavlink(mavlink1);
+    }
+    if (mavlink2_ok) {
+        set_data_mavlink(mavlink2);
     }
     if (dronecan_ok) {
         set_data_dronecan();
