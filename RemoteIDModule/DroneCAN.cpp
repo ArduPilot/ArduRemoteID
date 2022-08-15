@@ -471,23 +471,6 @@ void DroneCAN::readUniqueID(uint8_t id[6])
     esp_efuse_mac_get_default(id);
 }
 
-bool DroneCAN::system_valid(void)
-{
-    uint32_t now_ms = millis();
-    uint32_t max_ms = 15000;
-    if (last_system_ms == 0 ||
-        last_self_id_ms == 0 ||
-        last_basic_id_ms == 0 ||
-        last_system_ms == 0 ||
-        last_operator_id_ms == 0) {
-        return false;
-    }
-    return (now_ms - last_system_ms < max_ms &&
-            now_ms - last_self_id_ms < max_ms &&
-            now_ms - last_basic_id_ms < max_ms &&
-            now_ms - last_operator_id_ms < max_ms);
-}
-
 bool DroneCAN::location_valid(void)
 {
     uint32_t now_ms = millis();
