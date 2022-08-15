@@ -105,6 +105,8 @@ void DroneCAN::arm_status_send(void)
         reason = "Bad location";
     } else if (msg_System.operator_latitude == 0 && msg_System.operator_longitude == 0) {
         reason = "Bad operator location";
+    } else if (parse_fail != nullptr) {
+        reason = parse_fail;
     } else {
         arm_status.status = DRONECAN_REMOTEID_ARMSTATUS_ODID_ARM_STATUS_GOOD_TO_ARM;
     }

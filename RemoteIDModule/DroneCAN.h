@@ -18,6 +18,10 @@ public:
     void init(void);
     void update(void);
 
+    void set_parse_fail(const char *msg) {
+        parse_fail = msg;
+    }
+    
 private:
     uint32_t last_node_status_ms;
     CANDriver can_driver;
@@ -59,6 +63,8 @@ private:
     uint32_t last_self_id_ms;
     uint32_t last_operator_id_ms;
     uint32_t last_system_ms;
+
+    const char *parse_fail;
     
 public:
     void onTransferReceived(CanardInstance* ins, CanardRxTransfer* transfer);
