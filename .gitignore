@@ -1,2 +1,5 @@
 *generated/
 git-version.h
+*.bin
+*.elf
+*.log
