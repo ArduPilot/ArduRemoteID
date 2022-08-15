@@ -60,6 +60,45 @@ void setup()
 #define MIN(x,y) ((x)<(y)?(x):(y))
 #define ODID_COPY_STR(to, from) strncpy(to, (const char*)from, MIN(sizeof(to), sizeof(from)))
 
+/*
+  check parsing of UAS_data, this checks ranges of values to ensure we
+  will produce a valid pack
+ */
+static const char *check_parse(void)
+{
+    {
+        ODID_Location_encoded encoded {};
+        if (encodeLocationMessage(&encoded, &UAS_data.Location) != ODID_SUCCESS) {
+            return "bad LOCATION data";
+        }
+    }
+    {
+        ODID_System_encoded encoded {};
+        if (encodeSystemMessage(&encoded, &UAS_data.System) != ODID_SUCCESS) {
+            return "bad SYSTEM data";
+        }
+    }
+    {
+        ODID_BasicID_encoded encoded {};
+        if (encodeBasicIDMessage(&encoded, &UAS_data.BasicID[0]) != ODID_SUCCESS) {
+            return "bad BASIC_ID data";
+        }
+    }
+    {
+        ODID_SelfID_encoded encoded {};
+        if (encodeSelfIDMessage(&encoded, &UAS_data.SelfID) != ODID_SUCCESS) {
+            return "bad SELF_ID data";
+        }
+    }
+    {
+        ODID_OperatorID_encoded encoded {};
+        if (encodeOperatorIDMessage(&encoded, &UAS_data.OperatorID) != ODID_SUCCESS) {
+            return "bad OPERATOR_ID data";
+        }
+    }
+    return nullptr;
+}
+
 static void set_data_mavlink(MAVLinkSerial &m)
 {
     const auto &operator_id = m.get_operator_id();
@@ -117,6 +156,8 @@ static void set_data_mavlink(MAVLinkSerial &m)
     UAS_data.Location.TSAccuracy = (ODID_Timestamp_accuracy_t)location.timestamp_accuracy;
     UAS_data.Location.TimeStamp = location.timestamp;
     UAS_data.LocationValid = 1;
+
+    m.set_parse_fail(check_parse());
 }
 
 #undef ODID_COPY_STR
@@ -179,6 +220,8 @@ static void set_data_dronecan(void)
     UAS_data.Location.TSAccuracy = (ODID_Timestamp_accuracy_t)location.timestamp_accuracy;
     UAS_data.Location.TimeStamp = location.timestamp;
     UAS_data.LocationValid = 1;
+
+    dronecan.set_parse_fail(check_parse());
 }
 
 static uint8_t beacon_payload[256];

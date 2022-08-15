@@ -198,6 +198,8 @@ void MAVLinkSerial::arm_status_send(void)
         reason = "Bad location";
     } else if (system.operator_latitude == 0 && system.operator_longitude == 0) {
         reason = "Bad operator location";
+    } else if (parse_fail != nullptr) {
+        reason = parse_fail;
     } else {
         status = MAV_ODID_GOOD_TO_ARM;
     }

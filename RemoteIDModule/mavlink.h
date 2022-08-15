@@ -70,6 +70,10 @@ public:
     bool system_valid(void);
     bool location_valid(void);
 
+    void set_parse_fail(const char *msg) {
+        parse_fail = msg;
+    }
+
 private:
     HardwareSerial &serial;
     mavlink_channel_t chan;
@@ -98,4 +102,5 @@ private:
     mavlink_open_drone_id_operator_id_t operator_id;
 
     uint32_t packets_received_mask;
+    const char *parse_fail;
 };
