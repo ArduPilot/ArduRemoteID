@@ -17,6 +17,7 @@ jobs:
         env:
           HOME: ${{ runner.workspace }}/ArduRemoteID
         run: |
+          PATH="$HOME/.local/bin:$PATH"
           ./scripts/install_build_env.sh
           ./scripts/regen_headers.sh
           ./scripts/add_libraries.sh
@@ -33,12 +34,12 @@ jobs:
         id: check_files
         uses: andstor/file-existence-action@v1
         with:
-          files: "RemoteIDModule/ArduRemoteID.bin"
+          files: "RemoteIDModule/build/esp32.esp32.esp32s3/ArduRemoteID.bin"
           allow_failure: true
 
       - name: Archive build
         uses: actions/upload-artifact@v2
         with:
            name: binaries
-           path: RemoteIDModule/ArduRemoteID.bin
+           path: RemoteIDModule/build
            retention-days: 7
