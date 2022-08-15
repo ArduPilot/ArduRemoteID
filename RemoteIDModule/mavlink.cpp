@@ -148,6 +148,21 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
         last_system_ms = now_ms;
         break;
     }
+    case MAVLINK_MSG_ID_OPEN_DRONE_ID_SYSTEM_UPDATE: {
+        dev_printf("Got OPEN_DRONE_ID_SYSTEM_UPDATE\n");
+        mavlink_open_drone_id_system_update_t pkt_system_update;
+        mavlink_msg_open_drone_id_system_update_decode(&msg, &pkt_system_update);
+        system.operator_latitude = pkt_system_update.operator_latitude;
+        system.operator_longitude = pkt_system_update.operator_longitude;
+        system.operator_altitude_geo = pkt_system_update.operator_altitude_geo;
+        system.timestamp = pkt_system_update.timestamp;
+        if (last_system_ms != 0) {
+            // we can only mark system as updated if we have the other
+            // information already
+            last_system_ms = now_ms;
+        }
+        break;
+    }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_OPERATOR_ID: {
         dev_printf("Got OPEN_DRONE_ID_OPERATOR_ID\n");
         mavlink_msg_open_drone_id_operator_id_decode(&msg, &operator_id);
