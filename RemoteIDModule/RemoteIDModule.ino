@@ -47,6 +47,7 @@ static BLE_TX ble;
 
 // OpenDroneID output data structure
 static ODID_UAS_Data UAS_data;
+static uint32_t last_location_ms;
 
 /*
   setup serial ports
@@ -185,6 +186,13 @@ static void set_data_mavlink(MAVLinkSerial &m)
     }
 
     m.set_parse_fail(check_parse());
+
+    uint32_t now_ms = millis();
+    uint32_t location_age_ms = now_ms - m.get_last_location_ms();
+    uint32_t last_location_age_ms = now_ms - last_location_ms;
+    if (location_age_ms < last_location_age_ms) {
+        last_location_ms = m.get_last_location_ms();
+    }
 }
 
 #undef ODID_COPY_STR
@@ -254,6 +262,13 @@ static void set_data_dronecan(void)
     }
 
     dronecan.set_parse_fail(check_parse());
+
+    uint32_t now_ms = millis();
+    uint32_t location_age_ms = now_ms - dronecan.get_last_location_ms();
+    uint32_t last_location_age_ms = now_ms - last_location_ms;
+    if (location_age_ms < last_location_age_ms) {
+        last_location_ms = dronecan.get_last_location_ms();
+    }
 }
 #endif // AP_DRONECAN_ENABLED
 
@@ -274,24 +289,36 @@ void loop()
         return;
     }
 
-    bool data_ok = false;
+    bool have_location = false;
 
 #if AP_MAVLINK_ENABLED
-    const bool mavlink1_ok = mavlink1.location_valid();
-    const bool mavlink2_ok = mavlink2.location_valid();
-    data_ok |= mavlink1_ok || mavlink2_ok;
+    const bool mavlink1_ok = mavlink1.get_last_location_ms() != 0;
+    const bool mavlink2_ok = mavlink2.get_last_location_ms() != 0;
+    have_location |= mavlink1_ok || mavlink2_ok;
 #endif
 
 #if AP_DRONECAN_ENABLED
-    const bool dronecan_ok = dronecan.location_valid();
-    data_ok |= dronecan_ok;
+    const bool dronecan_ok = dronecan.get_last_location_ms() != 0;
+    have_location |= dronecan_ok;
 #endif
 
-#if !AP_BROADCAST_ON_POWER_UP
-    if (!data_ok) {
+#if AP_BROADCAST_ON_POWER_UP
+    // if we are broadcasting on powerup we always mark location valid
+    // so the location with default data is sent
+    if (!UAS_data.LocationValid) {
+        UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
+        UAS_data.LocationValid = 1;
+    }
+#else
+    // only broadcast if we have received a location at least once
+    if (!have_location) {
         return;
     }
 #endif
+
+    if (now_ms - last_location_ms > 5000) {
+        UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
+    }
 
 #if AP_MAVLINK_ENABLED
     if (mavlink1_ok) {
