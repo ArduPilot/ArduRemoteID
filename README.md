@@ -24,6 +24,10 @@ The pins assumed in this firmware are:
 For CAN a suitable 1MBit bxCAN transceiver needs to be connected to
 the CAN TX/RX pins.
 
+You can also do MAVLink on the USB UART port (the one marked "UART" on
+the silkscreen). That allows for easy simulation testing by plugging
+in a micro USB cable.
+
 ## Transmission Modes
 
 This firmware supports the following transmission modes:
