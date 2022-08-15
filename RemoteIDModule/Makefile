@@ -7,6 +7,7 @@ ESPTOOL=$(ESP32_TOOLS)/esptool.py
 CHIP=esp32s3
 ESP32_FQBN=esp32:esp32:$(CHIP)
 SERDEV := $(wildcard /dev/serial/by-id/usb-Espressif_*)
+ARDUINO_CLI=../bin/arduino-cli
 
 
 all: ArduRemoteID.bin
@@ -17,23 +18,23 @@ ArduRemoteID.bin: ..esp32.esp32.esp32s3.bin
 
 setup:
 	@echo "Installing ESP32 support"
-	@arduino-cli core update-index --config-file arduino-cli.yaml
-	@arduino-cli core install esp32:esp32
+	@$(ARDUINO_CLI) core update-index --config-file arduino-cli.yaml
+	@$(ARDUINO_CLI) core install esp32:esp32
 
 ..esp32.esp32.$(CHIP).bin: *.cpp *.ino *.h
 	@echo "Building main binary"
-	@arduino-cli compile --fqbn $(ESP32_FQBN) .
+	@$(ARDUINO_CLI) compile --fqbn $(ESP32_FQBN) .
 
 boards:
 	@echo "Listing boards"
-	@arduino-cli board list
+	@$(ARDUINO_CLI) board list
 
 checkdev:
 	@[ "${SERDEV}" ] && echo "Using device $(SERDEV)" || ( echo "Failed to find serial device"; exit 1 )
 
 upload: checkdev ArduRemoteID.bin
 	@echo "Flashing"
-	@arduino-cli upload -p $(SERDEV) --fqbn $(ESP32_FQBN) .
+	@$(ARDUINO_CLI) upload -p $(SERDEV) --fqbn $(ESP32_FQBN) .
 
 clean:
 	rm -f ..esp32* *.bin

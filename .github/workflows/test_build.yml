@@ -1,0 +1,44 @@
+name: Test Build
+
+on: [push, pull_request, workflow_dispatch]
+concurrency:
+  group: ci-${{github.workflow}}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Setup ESP32
+        env:
+          HOME: ${{ runner.workspace }}/ArduRemoteID
+        run: |
+          ./scripts/install_build_env.sh
+          ./scripts/regen_headers.sh
+          ./scripts/add_libraries.sh
+
+      - name: Build
+        env:
+          HOME: ${{ runner.workspace }}/ArduRemoteID
+        run: |
+          cd RemoteIDModule
+          make setup
+          make all
+
+      - name: Check build files
+        id: check_files
+        uses: andstor/file-existence-action@v1
+        with:
+          files: "RemoteIDModule/ArduRemoteID.bin"
+          allow_failure: true
+
+      - name: Archive build
+        uses: actions/upload-artifact@v2
+        with:
+           name: binaries
+           path: RemoteIDModule/ArduRemoteID.bin
+           retention-days: 7
