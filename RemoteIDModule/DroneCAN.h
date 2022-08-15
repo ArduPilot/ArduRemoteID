@@ -80,6 +80,5 @@ public:
     const dronecan_remoteid_System &get_system(void) { return msg_System; }
     const dronecan_remoteid_OperatorID &get_operator_id(void) { return msg_OperatorID; }
 
-    bool system_valid(void);
     bool location_valid(void);
 };

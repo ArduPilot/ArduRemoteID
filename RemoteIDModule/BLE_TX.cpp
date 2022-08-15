@@ -129,6 +129,9 @@ bool BLE_TX::transmit(ODID_UAS_Data &UAS_data)
 {
     // create a packed UAS data message
     int length = odid_message_build_pack(&UAS_data, payload, 255);
+    if (length <= 0) {
+        return false;
+    }
 
     // setup ASTM header
     const uint8_t header[] { uint8_t(length+5), 0x16, 0xfa, 0xff, 0x0d, uint8_t(msg_counter++) };

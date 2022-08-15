@@ -117,34 +117,29 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_LOCATION: {
         dev_printf("Got OPEN_DRONE_ID_LOCATION\n");
         mavlink_msg_open_drone_id_location_decode(&msg, &location);
-        packets_received_mask |= PKT_LOCATION;
         last_location_ms = now_ms;
         break;
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_BASIC_ID: {
         dev_printf("Got OPEN_DRONE_ID_BASIC_ID\n");
         mavlink_msg_open_drone_id_basic_id_decode(&msg, &basic_id);
-        packets_received_mask |= PKT_BASIC_ID;
         last_basic_id_ms = now_ms;
         break;
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_AUTHENTICATION: {
         dev_printf("Got OPEN_DRONE_ID_AUTHENTICATION\n");
         mavlink_msg_open_drone_id_authentication_decode(&msg, &authentication);
-        packets_received_mask |= PKT_AUTHENTICATION;
         break;
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_SELF_ID: {
         dev_printf("Got OPEN_DRONE_ID_SELF_ID\n");
         mavlink_msg_open_drone_id_self_id_decode(&msg, &self_id);
-        packets_received_mask |= PKT_SELF_ID;
         last_self_id_ms = now_ms;
         break;
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_SYSTEM: {
         dev_printf("Got OPEN_DRONE_ID_SYSTEM\n");
         mavlink_msg_open_drone_id_system_decode(&msg, &system);
-        packets_received_mask |= PKT_SYSTEM;
         last_system_ms = now_ms;
         break;
     }
@@ -166,7 +161,6 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_OPERATOR_ID: {
         dev_printf("Got OPEN_DRONE_ID_OPERATOR_ID\n");
         mavlink_msg_open_drone_id_operator_id_decode(&msg, &operator_id);
-        packets_received_mask |= PKT_OPERATOR_ID;
         last_operator_id_ms = now_ms;
         break;
     }
@@ -208,31 +202,6 @@ void MAVLinkSerial::arm_status_send(void)
         chan,
         status,
         reason);
-}
-
-/*
-  return true when we have the base set of packets
- */
-bool MAVLinkSerial::initialised(void)
-{
-    const uint32_t required = PKT_LOCATION | PKT_BASIC_ID | PKT_SELF_ID | PKT_SYSTEM | PKT_OPERATOR_ID;
-    return (packets_received_mask & required) == required;
-}
-
-bool MAVLinkSerial::system_valid(void)
-{
-    uint32_t now_ms = millis();
-    uint32_t max_ms = 15000;
-    if (last_system_ms == 0 ||
-        last_self_id_ms == 0 ||
-        last_basic_id_ms == 0 ||
-        last_operator_id_ms == 0) {
-        return false;
-    }
-    return (now_ms - last_system_ms < max_ms &&
-            now_ms - last_self_id_ms < max_ms &&
-            now_ms - last_basic_id_ms < max_ms &&
-            now_ms - last_operator_id_ms < max_ms);
 }
 
 bool MAVLinkSerial::location_valid(void)
