@@ -20,6 +20,8 @@ setup:
 	@echo "Installing ESP32 support"
 	@$(ARDUINO_CLI) core update-index --config-file arduino-cli.yaml
 	@$(ARDUINO_CLI) core install esp32:esp32
+	@$(ARDUINO_CLI) core update-index --config-file arduino-cli.yaml
+	@$(ARDUINO_CLI) core install esp32:esp32
 
 ..esp32.esp32.$(CHIP).bin: *.cpp *.ino *.h
 	@echo "Building main binary"
