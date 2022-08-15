@@ -64,7 +64,9 @@ public:
     uint32_t last_operator_id_ms;
     uint32_t last_system_ms;
 
-    bool location_valid(void);
+    uint32_t get_last_location_ms(void) {
+        return last_location_ms;
+    }
 
     void set_parse_fail(const char *msg) {
         parse_fail = msg;

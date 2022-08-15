@@ -203,10 +203,3 @@ void MAVLinkSerial::arm_status_send(void)
         status,
         reason);
 }
-
-bool MAVLinkSerial::location_valid(void)
-{
-    uint32_t now_ms = millis();
-    uint32_t max_ms = 2000;
-    return last_location_ms != 0 && now_ms - last_location_ms < max_ms;
-}

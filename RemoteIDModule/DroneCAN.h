@@ -21,6 +21,10 @@ public:
     void set_parse_fail(const char *msg) {
         parse_fail = msg;
     }
+
+    uint32_t get_last_location_ms(void) {
+        return last_location_ms;
+    }
     
 private:
     uint32_t last_node_status_ms;
@@ -79,6 +83,4 @@ public:
     const dronecan_remoteid_SelfID &get_self_id(void) { return msg_SelfID; }
     const dronecan_remoteid_System &get_system(void) { return msg_System; }
     const dronecan_remoteid_OperatorID &get_operator_id(void) { return msg_OperatorID; }
-
-    bool location_valid(void);
 };

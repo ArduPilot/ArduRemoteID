@@ -1,5 +1,5 @@
 /*
-  control optional behaviour in the firmware
+  control optional behaviour in the firmware at build time
  */
 
 // enable WiFi NAN support
@@ -17,4 +17,3 @@
 
 // do we support MAVLink connnection to flight controller?
 #define AP_MAVLINK_ENABLED 1
-
