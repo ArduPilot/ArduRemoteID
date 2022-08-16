@@ -34,7 +34,7 @@ jobs:
         id: check_files
         uses: andstor/file-existence-action@v1
         with:
-          files: "RemoteIDModule/build/esp32.esp32.esp32s3/ArduRemoteID.bin"
+          files: "RemoteIDModule/ArduRemoteID-ESP32S3_DEV.bin, RemoteIDModule/ArduRemoteID-BLUEMARK_DB200.bin, RemoteIDModule/ArduRemoteID-BLUEMARK_DB110.bin"
           allow_failure: true
 
       - name: Archive build
