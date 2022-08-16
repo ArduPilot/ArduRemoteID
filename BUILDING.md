@@ -12,6 +12,7 @@
  - cd arduremoteid/
  - git submodule init
  - git submodule update --recursive
+ - ./scripts/install_build_env.sh
  - ./scripts/regen_headers.sh
  - ./scripts/add_libraries.sh
 
@@ -47,7 +48,7 @@ done, ESP32-S3 is now running and emitting test/demo remote-id bluetooth
  - Arduino IDE -> File Menu -> Preferences -> "Additional Board Manager URLs:" cut-n-paste: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
 tip:[if you have url/s already isted, you can add it to the end of them with a comma, and then the url.]
  - Arduino IDE -> File Menu -> Preferences -> Ensure 'Sketchbook location:' is set to : /home/xxxx/Arduino for your current user, it defaults to this, but check it.
- - Arduino IDE -> Tools Menu -> Board -> Boards Manager -> [search for 'esp32'] ->Select Version [drop-down]-> 2.0.4 -> Install   [2.0.3 or newer should work]
+ - Arduino IDE -> Tools Menu -> Board -> Boards Manager -> [search for 'esp32'] ->Select Version [drop-down]-> 2.0.3 -> Install   [2.0.3 or newer should work]
  - Arduino IDE -> Tools Menu -> Board -> "ESP32 Arduino" ->"ESP32S3 Dev Module" [choose it]-
  - Note that you must select the option with 'S3' in in here.
 
