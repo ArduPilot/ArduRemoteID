@@ -36,8 +36,10 @@ or build with the Arduino GUI. I prefer make, but both will work.
  - cd RemoteIDModule
  - make upload
 
-If board does not flash, hold-down BOOT pushbutton on pcb while pressing RESET pushbutton briefly [to force it into bootloader mode] and retry.
-done, ESP32-S3 is now running and emitting test/demo remote-id bluetooth
+If the board does not flash, hold-down the BOOT pushbutton on the PCB while pressing the RESET pushbutton briefly [to force it into bootloader mode] and retry.
+The ESP32-S3 is now running and emitting test/demo remote-id bluetooth
+
+If you get an error about missing serial support from python, install it with `python -m pip install pyserial`.
 
 ## Building with the Arduino GUI
 
