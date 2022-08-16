@@ -7,14 +7,16 @@ ASTM F3586-22 Means of Compliance.
 
 ## Hardware Supported
 
-So far the only hardware that has been tested is the ESP32-S3. This
-devboard is being used:
-https://au.mouser.com/ProductDetail/356-ESP32S3DEVKTM1N8
+The firmware cuttently supports the ESP32-S3 and ESP32-C3 chips. There
+are 3 boards supported so far with more to come:
 
-Hardware from https://wurzbachelectronics.com/ and
-https://bluemark.io/ is expected to work and will be tested soon.
+ - the ESP32-S3 dev board: https://au.mouser.com/ProductDetail/356-ESP32S3DEVKTM1N8
+ - a Bluemark BD110 from https://bluemark.io/
+ - a Bluemark BD200 from https://bluemark.io/
 
-The pins assumed in this firmware are:
+Hardware from https://wurzbachelectronics.com/ is expeced to be added soon.
+
+For the ESP32-S3 dev board the pins assumed in this firmware are:
 
  - UART TX on pin 17
  - UART RX on pin 18
@@ -27,6 +29,8 @@ the CAN TX/RX pins.
 You can also do MAVLink on the USB UART port (the one marked "UART" on
 the silkscreen). That allows for easy simulation testing by plugging
 in a micro USB cable.
+
+See board_config.h and Makefile for information on porting to new boards.
 
 ## Transmission Modes
 
