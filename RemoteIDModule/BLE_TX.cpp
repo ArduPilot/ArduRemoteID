@@ -31,21 +31,6 @@ static esp_ble_gap_ext_adv_params_t ext_adv_params_1M = {
     .scan_req_notif = false,
 };
 
-static esp_ble_gap_ext_adv_params_t ext_adv_params_2M = {
-    .type = ESP_BLE_GAP_SET_EXT_ADV_PROP_SCANNABLE,
-    .interval_min = 0x40,
-    .interval_max = 0x40,
-    .channel_map = ADV_CHNL_ALL,
-    .own_addr_type = BLE_ADDR_TYPE_RANDOM,
-    .filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
-    .tx_power = tx_power,
-    .primary_phy = ESP_BLE_GAP_PHY_1M,
-    .max_skip = 0,
-    .secondary_phy = ESP_BLE_GAP_PHY_2M,
-    .sid = 1,
-    .scan_req_notif = false,
-};
-
 static esp_ble_gap_ext_adv_params_t legacy_adv_params = {
     .type = ESP_BLE_GAP_SET_EXT_ADV_PROP_LEGACY_IND,
     .interval_min = 0x45,
@@ -76,13 +61,7 @@ static esp_ble_gap_ext_adv_params_t ext_adv_params_coded = {
     .scan_req_notif = false,
 };
 
-static esp_ble_gap_periodic_adv_params_t periodic_adv_params = {
-    .interval_min = 0x320, // 1000 ms interval
-    .interval_max = 0x640,
-    .properties = 0, // Do not include TX power
-};
-
-static BLEMultiAdvertising advert(4);
+static BLEMultiAdvertising advert(3);
 
 bool BLE_TX::init(void)
 {
@@ -100,20 +79,13 @@ bool BLE_TX::init(void)
     advert.setInstanceAddress(0, mac_addr);
     advert.setDuration(0);
 
-    advert.setAdvertisingParams(1, &ext_adv_params_2M);
+    advert.setAdvertisingParams(1, &legacy_adv_params);
     advert.setInstanceAddress(1, mac_addr);
     advert.setDuration(1);
 
-    advert.setAdvertisingParams(2, &legacy_adv_params);
-    advert.setInstanceAddress(2, mac_addr);
+    advert.setAdvertisingParams(2, &ext_adv_params_coded);
     advert.setDuration(2);
-
-    advert.setAdvertisingParams(3, &ext_adv_params_coded);
-    advert.setDuration(3);
-    advert.setInstanceAddress(3, mac_addr);
-
-    advert.setPeriodicAdvertisingParams(0, &periodic_adv_params);
-    advert.startPeriodicAdvertising(0);
+    advert.setInstanceAddress(2, mac_addr);
 
     // prefer S8 coding
     if (esp_ble_gap_set_prefered_default_phy(ESP_BLE_GAP_PHY_OPTIONS_PREF_S8_CODING, ESP_BLE_GAP_PHY_OPTIONS_PREF_S8_CODING) != ESP_OK) {
@@ -156,11 +128,9 @@ bool BLE_TX::transmit(ODID_UAS_Data &UAS_data)
     
     // setup advertising data
     advert.setAdvertisingData(0, length2, payload2);
-    advert.setScanRspData(1, length2, payload2);
-    advert.setScanRspData(2, legacy_length, legacy_payload);
-    advert.setAdvertisingData(2, legacy_length, legacy_payload);
-    advert.setScanRspData(3, length2, payload2);
-    advert.setPeriodicAdvertisingData(0, length2, payload2);
+    advert.setScanRspData(1, legacy_length, legacy_payload);
+    advert.setAdvertisingData(1, legacy_length, legacy_payload);
+    advert.setScanRspData(2, length2, payload2);
 
     // we start advertising when we have the first lot of data to send
     if (!started) {
