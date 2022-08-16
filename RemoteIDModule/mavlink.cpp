@@ -12,8 +12,6 @@ static HardwareSerial *serial_ports[MAVLINK_COMM_NUM_BUFFERS];
 
 mavlink_system_t mavlink_system = {0,MAV_COMP_ID_ODID_TXRX_1};
 
-#define dev_printf(fmt, args ...)  do {Serial.printf(fmt, ## args); } while(0)
-
 /*
   send a buffer out a MAVLink channel
  */
@@ -108,43 +106,36 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
         if (mavlink_system.sysid == 0) {
             mavlink_msg_heartbeat_decode(&msg, &hb);
             if (msg.sysid > 0 && hb.type != MAV_TYPE_GCS) {
-                dev_printf("Got HEARTBEAT from %u/%u\n", msg.sysid, msg.compid);
                 mavlink_system.sysid = msg.sysid;
             }
         }
         break;
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_LOCATION: {
-        dev_printf("Got OPEN_DRONE_ID_LOCATION\n");
         mavlink_msg_open_drone_id_location_decode(&msg, &location);
         last_location_ms = now_ms;
         break;
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_BASIC_ID: {
-        dev_printf("Got OPEN_DRONE_ID_BASIC_ID\n");
         mavlink_msg_open_drone_id_basic_id_decode(&msg, &basic_id);
         last_basic_id_ms = now_ms;
         break;
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_AUTHENTICATION: {
-        dev_printf("Got OPEN_DRONE_ID_AUTHENTICATION\n");
         mavlink_msg_open_drone_id_authentication_decode(&msg, &authentication);
         break;
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_SELF_ID: {
-        dev_printf("Got OPEN_DRONE_ID_SELF_ID\n");
         mavlink_msg_open_drone_id_self_id_decode(&msg, &self_id);
         last_self_id_ms = now_ms;
         break;
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_SYSTEM: {
-        dev_printf("Got OPEN_DRONE_ID_SYSTEM\n");
         mavlink_msg_open_drone_id_system_decode(&msg, &system);
         last_system_ms = now_ms;
         break;
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_SYSTEM_UPDATE: {
-        dev_printf("Got OPEN_DRONE_ID_SYSTEM_UPDATE\n");
         mavlink_open_drone_id_system_update_t pkt_system_update;
         mavlink_msg_open_drone_id_system_update_decode(&msg, &pkt_system_update);
         system.operator_latitude = pkt_system_update.operator_latitude;
@@ -159,7 +150,6 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
         break;
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_OPERATOR_ID: {
-        dev_printf("Got OPEN_DRONE_ID_OPERATOR_ID\n");
         mavlink_msg_open_drone_id_operator_id_decode(&msg, &operator_id);
         last_operator_id_ms = now_ms;
         break;
