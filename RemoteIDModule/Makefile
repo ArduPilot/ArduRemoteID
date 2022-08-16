@@ -24,6 +24,7 @@ setup:
 
 build/$(BUILD_DIR)/RemoteIDModule.ino.bin: *.cpp *.ino *.h
 	@echo "Building $@"
+	@../scripts/git-version.sh
 	@$(ARDUINO_CLI) compile --export-binaries --fqbn $(ESP32_FQBN) .
 
 boards:
