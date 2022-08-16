@@ -11,7 +11,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <opendroneid.h>
-
+#include "board_config.h"
 #include "options.h"
 #include "mavlink.h"
 #include "DroneCAN.h"
@@ -37,11 +37,6 @@ static BLE_TX ble;
 
 #define OUTPUT_RATE_HZ 5
 
-/*
-  assume ESP32-s3 for now, using pins 17 and 18 for uart
- */
-#define RX_PIN 17
-#define TX_PIN 18
 #define DEBUG_BAUDRATE 57600
 #define MAVLINK_BAUDRATE 57600
 
@@ -61,7 +56,7 @@ void setup()
                   FW_VERSION_MAJOR, FW_VERSION_MINOR, GIT_VERSION);
 
     // Serial1 for MAVLink
-    Serial1.begin(MAVLINK_BAUDRATE, SERIAL_8N1, RX_PIN, TX_PIN);
+    Serial1.begin(MAVLINK_BAUDRATE, SERIAL_8N1, PIN_UART_RX, PIN_UART_TX);
 
     // set all fields to invalid/initial values
     odid_initUasData(&UAS_data);
@@ -81,8 +76,8 @@ void setup()
 #endif
 }
 
-#define MIN(x,y) ((x)<(y)?(x):(y))
-#define ODID_COPY_STR(to, from) strncpy(to, (const char*)from, MIN(sizeof(to), sizeof(from)))
+#define IMIN(x,y) ((x)<(y)?(x):(y))
+#define ODID_COPY_STR(to, from) strncpy(to, (const char*)from, IMIN(sizeof(to), sizeof(from)))
 
 /*
   check parsing of UAS_data, this checks ranges of values to ensure we
@@ -196,7 +191,7 @@ static void set_data_mavlink(MAVLinkSerial &m)
 }
 
 #undef ODID_COPY_STR
-#define ODID_COPY_STR(to, from) memcpy(to, from.data, MIN(from.len, sizeof(to)))
+#define ODID_COPY_STR(to, from) memcpy(to, from.data, IMIN(from.len, sizeof(to)))
 
 #if AP_DRONECAN_ENABLED
 static void set_data_dronecan(void)

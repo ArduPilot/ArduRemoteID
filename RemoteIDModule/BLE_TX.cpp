@@ -95,7 +95,7 @@ bool BLE_TX::init(void)
     return true;
 }
 
-#define MIN(a,b) ((a)<(b)?(a):(b))
+#define IMIN(a,b) ((a)<(b)?(a):(b))
 
 bool BLE_TX::transmit(ODID_UAS_Data &UAS_data)
 {
@@ -116,7 +116,7 @@ bool BLE_TX::transmit(ODID_UAS_Data &UAS_data)
     char legacy_name[28] {};
     const char *UAS_ID = (const char *)UAS_data.BasicID[0].UASID;
     const uint8_t ID_len = strlen(UAS_ID);
-    const uint8_t ID_tail = MIN(4, ID_len);
+    const uint8_t ID_tail = IMIN(4, ID_len);
     snprintf(legacy_name, sizeof(legacy_name), "DroneBeacon_%s", &UAS_ID[ID_len-ID_tail]);
 
     memset(legacy_payload, 0, sizeof(legacy_payload));

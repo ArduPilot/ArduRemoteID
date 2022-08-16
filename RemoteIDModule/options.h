@@ -1,6 +1,9 @@
 /*
   control optional behaviour in the firmware at build time
  */
+#pragma once
+
+#include "board_config.h"
 
 // enable WiFi NAN support
 #define AP_WIFI_NAN_ENABLED 1
@@ -13,7 +16,7 @@
 #define AP_BROADCAST_ON_POWER_UP 1
 
 // do we support DroneCAN connnection to flight controller?
-#define AP_DRONECAN_ENABLED 1
+#define AP_DRONECAN_ENABLED defined(PIN_CAN_TX) && defined(PIN_CAN_RX)
 
 // do we support MAVLink connnection to flight controller?
 #define AP_MAVLINK_ENABLED 1
