@@ -19,5 +19,5 @@ for p in $PACKETS; do
     )
 done
 
-(cd RemoteIDModule && scripts/git-version.sh)
+(cd RemoteIDModule && ../scripts/git-version.sh)
 
