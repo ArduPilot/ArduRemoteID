@@ -19,7 +19,6 @@ jobs:
         run: |
           PATH="$HOME/.local/bin:$PATH"
           ./scripts/install_build_env.sh
-          ./scripts/regen_headers.sh
           ./scripts/add_libraries.sh
 
       - name: Build
