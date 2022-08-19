@@ -74,6 +74,24 @@ void setup()
 #if AP_BLE_ENABLED
     ble.init();
 #endif
+
+#if defined(PIN_CAN_EN)
+    // optional CAN enable pin
+    pinMode(PIN_CAN_EN, OUTPUT);
+    digitalWrite(PIN_CAN_EN, HIGH);
+#endif
+
+#if defined(PIN_CAN_nSILENT)
+    // disable silent pin
+    pinMode(PIN_CAN_nSILENT, OUTPUT);
+    digitalWrite(PIN_CAN_nSILENT, HIGH);
+#endif
+
+#if defined(PIN_CAN_TERM)
+    // optional CAN termination control
+    pinMode(PIN_CAN_TERM, OUTPUT);
+    digitalWrite(PIN_CAN_TERM, HIGH);
+#endif
 }
 
 #define IMIN(x,y) ((x)<(y)?(x):(y))

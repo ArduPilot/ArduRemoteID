@@ -3,6 +3,7 @@
  */
 #include <Arduino.h>
 #include "mavlink.h"
+#include "board_config.h"
 
 #define SERIAL_BAUD 115200
 
@@ -188,6 +189,13 @@ void MAVLinkSerial::arm_status_send(void)
         status = MAV_ODID_GOOD_TO_ARM;
     }
 
+#ifdef PIN_STATUS_LED
+        // LED off if good to arm
+        pinMode(PIN_STATUS_LED, OUTPUT);
+        digitalWrite(PIN_STATUS_LED, status==MAV_ODID_GOOD_TO_ARM?!STATUS_LED_ON:STATUS_LED_ON);
+#endif
+
+    
     mavlink_msg_open_drone_id_arm_status_send(
         chan,
         status,
