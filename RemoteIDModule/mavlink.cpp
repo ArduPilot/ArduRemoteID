@@ -62,7 +62,7 @@ void MAVLinkSerial::update_send(void)
         mavlink_msg_heartbeat_send(
             chan,
             MAV_TYPE_ODID,
-            MAV_AUTOPILOT_ARDUPILOTMEGA,
+            MAV_AUTOPILOT_INVALID,
             0,
             0,
             0);
