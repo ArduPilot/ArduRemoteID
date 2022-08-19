@@ -14,10 +14,13 @@ export PATH := $(HOME)/.local/bin:$(PATH)
 
 .PHONY: headers
 
-all: headers esp32s3dev bluemark-db200 bluemark-db110
+all: headers esp32s3dev esp32c3dev bluemark-db200 bluemark-db110
 
 esp32s3dev: CHIP=esp32s3
 esp32s3dev: ArduRemoteID-ESP32S3_DEV.bin
+
+esp32c3dev: CHIP=esp32c3
+esp32c3dev: ArduRemoteID-ESP32C3_DEV.bin
 
 bluemark-db200: CHIP=esp32c3
 bluemark-db200: ArduRemoteID-BLUEMARK_DB200.bin

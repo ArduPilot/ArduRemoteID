@@ -8,9 +8,10 @@ ASTM F3586-22 Means of Compliance.
 ## Hardware Supported
 
 The firmware cuttently supports the ESP32-S3 and ESP32-C3 chips. There
-are 3 boards supported so far with more to come:
+are 4 boards supported so far with more to come:
 
  - the ESP32-S3 dev board: https://au.mouser.com/ProductDetail/356-ESP32S3DEVKTM1N8
+ - the ESP32-C3 dev board: https://au.mouser.com/ProductDetail/Espressif-Systems/ESP32-C3-DevKitM-1
  - a Bluemark BD110 from https://bluemark.io/
  - a Bluemark BD200 from https://bluemark.io/
 
@@ -22,6 +23,13 @@ For the ESP32-S3 dev board the pins assumed in this firmware are:
  - UART RX on pin 18
  - CAN TX on pin 47
  - CAN RX on pin 38
+
+For the ESP32-C3 dev board the pins assumed in this firmware are:
+
+ - UART TX on pin 3
+ - UART RX on pin 2
+ - CAN TX on pin 5
+ - CAN RX on pin 4
 
 For CAN a suitable 1MBit bxCAN transceiver needs to be connected to
 the CAN TX/RX pins.

@@ -11,12 +11,19 @@
 #define PIN_UART_TX 18
 #define PIN_UART_RX 17
 
-#elif defined(BOARD_BLUEMARK_DB200)
-#define PIN_CAN_TX GPIO_NUM_4
-#define PIN_CAN_RX GPIO_NUM_18
+#elif defined(BOARD_ESP32C3_DEV)
+#define PIN_CAN_TX GPIO_NUM_5
+#define PIN_CAN_RX GPIO_NUM_4
 
-#define PIN_UART_TX 15
-#define PIN_UART_RX 16
+#define PIN_UART_TX 3
+#define PIN_UART_RX 2
+
+#elif defined(BOARD_BLUEMARK_DB200)
+#define PIN_CAN_TX GPIO_NUM_5
+#define PIN_CAN_RX GPIO_NUM_4
+
+#define PIN_UART_TX 3
+#define PIN_UART_RX 2
 
 #elif defined(BOARD_BLUEMARK_DB110)
 #define PIN_UART_TX 5
