@@ -25,10 +25,6 @@
 #define UNUSED(x) (void)(x)
 
 
-// constructor
-DroneCAN::DroneCAN()
-{}
-
 static void onTransferReceived_trampoline(CanardInstance* ins, CanardRxTransfer* transfer);
 static bool shouldAcceptTransfer_trampoline(const CanardInstance* ins, uint64_t* out_data_type_signature, uint16_t data_type_id,
                                             CanardTransferType transfer_type,
@@ -70,8 +66,6 @@ void DroneCAN::node_status_send(void)
     const uint16_t len = uavcan_protocol_NodeStatus_encode(&node_status, buffer);
     static uint8_t tx_id;
 
-    Serial.printf("sending NodeStatus len=%u\n", unsigned(len));
-
     canardBroadcast(&canard,
                     UAVCAN_PROTOCOL_NODESTATUS_SIGNATURE,
                     UAVCAN_PROTOCOL_NODESTATUS_ID,
@@ -86,31 +80,10 @@ void DroneCAN::arm_status_send(void)
     uint8_t buffer[DRONECAN_REMOTEID_ARMSTATUS_MAX_SIZE];
     dronecan_remoteid_ArmStatus arm_status {};
 
-    const uint32_t max_age_location_ms = 3000;
-    const uint32_t max_age_other_ms = 22000;
-    const uint32_t now_ms = millis();
-    const char *reason = "";
-    arm_status.status = DRONECAN_REMOTEID_ARMSTATUS_ODID_ARM_STATUS_FAIL_GENERIC;
-    if (last_location_ms == 0 || now_ms - last_location_ms > max_age_location_ms) {
-        reason = "missing location message";
-    } else if (last_basic_id_ms == 0 || now_ms - last_basic_id_ms > max_age_other_ms) {
-        reason = "missing basic_id message";
-    } else if (last_self_id_ms == 0  || now_ms - last_self_id_ms > max_age_other_ms) {
-        reason = "missing self_id message";
-    } else if (last_operator_id_ms == 0 || now_ms - last_operator_id_ms > max_age_other_ms) {
-        reason = "missing operator_id message";
-    } else if (last_system_ms == 0 || now_ms - last_system_ms > max_age_other_ms) {
-        reason = "missing system message";
-    } else if (msg_Location.latitude == 0 && msg_Location.longitude == 0) {
-        reason = "Bad location";
-    } else if (msg_System.operator_latitude == 0 && msg_System.operator_longitude == 0) {
-        reason = "Bad operator location";
-    } else if (parse_fail != nullptr) {
-        reason = parse_fail;
-    } else {
-        arm_status.status = DRONECAN_REMOTEID_ARMSTATUS_ODID_ARM_STATUS_GOOD_TO_ARM;
-    }
+    const uint8_t status = parse_fail==nullptr?MAV_ODID_GOOD_TO_ARM:MAV_ODID_PRE_ARM_FAIL_GENERIC;
+    const char *reason = parse_fail==nullptr?"":parse_fail;
 
+    arm_status.status = status;
     arm_status.error.len = strlen(reason);
     strncpy((char*)arm_status.error.data, reason, sizeof(arm_status.error.data));
 
@@ -150,28 +123,23 @@ void DroneCAN::onTransferReceived(CanardInstance* ins,
         break;
     case DRONECAN_REMOTEID_BASICID_ID:
         Serial.printf("Got BasicID\n");
-        dronecan_remoteid_BasicID_decode(transfer, &msg_BasicID);
-        last_basic_id_ms = now_ms;
+        handle_BasicID(transfer);
         break;
     case DRONECAN_REMOTEID_LOCATION_ID:
         Serial.printf("Got Location\n");
-        dronecan_remoteid_Location_decode(transfer, &msg_Location);
-        last_location_ms = now_ms;
+        handle_Location(transfer);
         break;
     case DRONECAN_REMOTEID_SELFID_ID:
         Serial.printf("Got SelfID\n");
-        dronecan_remoteid_SelfID_decode(transfer, &msg_SelfID);
-        last_self_id_ms = now_ms;
+        handle_SelfID(transfer);
         break;
     case DRONECAN_REMOTEID_SYSTEM_ID:
         Serial.printf("Got System\n");
-        dronecan_remoteid_System_decode(transfer, &msg_System);
-        last_system_ms = now_ms;
+        handle_System(transfer);
         break;
     case DRONECAN_REMOTEID_OPERATORID_ID:
         Serial.printf("Got OperatorID\n");
-        dronecan_remoteid_OperatorID_decode(transfer, &msg_OperatorID);
-        last_operator_id_ms = now_ms;
+        handle_OperatorID(transfer);
         break;
     default:
         //Serial.printf("reject %u\n", transfer->data_type_id);
@@ -469,6 +437,98 @@ bool DroneCAN::do_DNA(void)
 void DroneCAN::readUniqueID(uint8_t id[6])
 {
     esp_efuse_mac_get_default(id);
+}
+
+#define IMIN(a,b) ((a)<(b)?(a):(b))
+#define COPY_FIELD(fname) mpkt.fname = pkt.fname
+#define COPY_STR(fname) memcpy(mpkt.fname, pkt.fname.data, IMIN(pkt.fname.len, sizeof(mpkt.fname)))
+
+void DroneCAN::handle_BasicID(CanardRxTransfer* transfer)
+{
+    dronecan_remoteid_BasicID pkt {};
+    auto &mpkt = basic_id;
+    dronecan_remoteid_BasicID_decode(transfer, &pkt);
+    last_basic_id_ms = millis();
+    memset(&mpkt, 0, sizeof(mpkt));
+    COPY_STR(id_or_mac);
+    COPY_FIELD(id_type);
+    COPY_FIELD(ua_type);
+    COPY_STR(uas_id);
+}
+
+void DroneCAN::handle_SelfID(CanardRxTransfer* transfer)
+{
+    dronecan_remoteid_SelfID pkt {};
+    auto &mpkt = self_id;
+    dronecan_remoteid_SelfID_decode(transfer, &pkt);
+    last_self_id_ms = millis();
+    memset(&mpkt, 0, sizeof(mpkt));
+    COPY_STR(id_or_mac);
+    COPY_FIELD(description_type);
+    COPY_STR(description);
+}
+
+void DroneCAN::handle_System(CanardRxTransfer* transfer)
+{
+    dronecan_remoteid_System pkt {};
+    auto &mpkt = system;
+    dronecan_remoteid_System_decode(transfer, &pkt);
+    last_system_ms = millis();
+    memset(&mpkt, 0, sizeof(mpkt));
+
+    COPY_STR(id_or_mac);
+    COPY_FIELD(operator_location_type);
+    COPY_FIELD(classification_type);
+    COPY_FIELD(operator_latitude);
+    COPY_FIELD(operator_longitude);
+    COPY_FIELD(area_count);
+    COPY_FIELD(area_radius);
+    COPY_FIELD(area_ceiling);
+    COPY_FIELD(area_floor);
+    COPY_FIELD(category_eu);
+    COPY_FIELD(class_eu);
+    COPY_FIELD(operator_altitude_geo);
+    COPY_FIELD(timestamp);
+}
+
+void DroneCAN::handle_OperatorID(CanardRxTransfer* transfer)
+{
+    dronecan_remoteid_OperatorID pkt {};
+    auto &mpkt = operator_id;
+    dronecan_remoteid_OperatorID_decode(transfer, &pkt);
+    last_operator_id_ms = millis();
+    memset(&mpkt, 0, sizeof(mpkt));
+
+    COPY_STR(id_or_mac);
+    COPY_FIELD(operator_id_type);
+    COPY_STR(operator_id);
+}
+
+void DroneCAN::handle_Location(CanardRxTransfer* transfer)
+{
+    dronecan_remoteid_Location pkt {};
+    auto &mpkt = location;
+    dronecan_remoteid_Location_decode(transfer, &pkt);
+    last_location_ms = millis();
+    memset(&mpkt, 0, sizeof(mpkt));
+
+    COPY_STR(id_or_mac);
+    COPY_FIELD(status);
+    COPY_FIELD(direction);
+    COPY_FIELD(speed_horizontal);
+    COPY_FIELD(speed_vertical);
+    COPY_FIELD(latitude);
+    COPY_FIELD(longitude);
+    COPY_FIELD(altitude_barometric);
+    COPY_FIELD(altitude_geodetic);
+    COPY_FIELD(height_reference);
+    COPY_FIELD(height);
+    COPY_FIELD(horizontal_accuracy);
+    COPY_FIELD(vertical_accuracy);
+    COPY_FIELD(barometer_accuracy);
+    COPY_FIELD(speed_accuracy);
+    COPY_FIELD(timestamp);
+    COPY_FIELD(timestamp_accuracy);
 }
 
 #if 0

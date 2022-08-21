@@ -163,39 +163,8 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
 
 void MAVLinkSerial::arm_status_send(void)
 {
-    const uint32_t max_age_location_ms = 3000;
-    const uint32_t max_age_other_ms = 22000;
-    const uint32_t now_ms = millis();
-    const char *reason = "";
-    uint8_t status = MAV_ODID_PRE_ARM_FAIL_GENERIC;
-
-    if (last_location_ms == 0 || now_ms - last_location_ms > max_age_location_ms) {
-        reason = "missing location message";
-    } else if (last_basic_id_ms == 0 || now_ms - last_basic_id_ms > max_age_other_ms) {
-        reason = "missing basic_id message";
-    } else if (last_self_id_ms == 0  || now_ms - last_self_id_ms > max_age_other_ms) {
-        reason = "missing self_id message";
-    } else if (last_operator_id_ms == 0 || now_ms - last_operator_id_ms > max_age_other_ms) {
-        reason = "missing operator_id message";
-    } else if (last_system_ms == 0 || now_ms - last_system_ms > max_age_other_ms) {
-        reason = "missing system message";
-    } else if (location.latitude == 0 && location.longitude == 0) {
-        reason = "Bad location";
-    } else if (system.operator_latitude == 0 && system.operator_longitude == 0) {
-        reason = "Bad operator location";
-    } else if (parse_fail != nullptr) {
-        reason = parse_fail;
-    } else {
-        status = MAV_ODID_GOOD_TO_ARM;
-    }
-
-#ifdef PIN_STATUS_LED
-        // LED off if good to arm
-        pinMode(PIN_STATUS_LED, OUTPUT);
-        digitalWrite(PIN_STATUS_LED, status==MAV_ODID_GOOD_TO_ARM?!STATUS_LED_ON:STATUS_LED_ON);
-#endif
-
-    
+    const uint8_t status = parse_fail==nullptr?MAV_ODID_GOOD_TO_ARM:MAV_ODID_PRE_ARM_FAIL_GENERIC;
+    const char *reason = parse_fail==nullptr?"":parse_fail;
     mavlink_msg_open_drone_id_arm_status_send(
         chan,
         status,
