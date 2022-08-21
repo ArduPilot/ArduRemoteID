@@ -1,5 +1,6 @@
 
 #include "CANDriver.h"
+#include "transport.h"
 #include <canard.h>
 
 #include <canard.h>
@@ -12,20 +13,12 @@
 
 #define CAN_POOL_SIZE 4096
 
-class DroneCAN {
+class DroneCAN : public Transport {
 public:
-    DroneCAN();
-    void init(void);
-    void update(void);
+    using Transport::Transport;
+    void init(void) override;
+    void update(void) override;
 
-    void set_parse_fail(const char *msg) {
-        parse_fail = msg;
-    }
-
-    uint32_t get_last_location_ms(void) {
-        return last_location_ms;
-    }
-    
 private:
     uint32_t last_node_status_ms;
     CANDriver can_driver;
@@ -56,20 +49,13 @@ private:
     uint32_t last_DNA_start_ms;
 
     uavcan_protocol_NodeStatus node_status;
-    dronecan_remoteid_BasicID msg_BasicID;
-    dronecan_remoteid_Location msg_Location;
-    dronecan_remoteid_SelfID msg_SelfID;
-    dronecan_remoteid_System msg_System;
-    dronecan_remoteid_OperatorID msg_OperatorID;
 
-    uint32_t last_location_ms;
-    uint32_t last_basic_id_ms;
-    uint32_t last_self_id_ms;
-    uint32_t last_operator_id_ms;
-    uint32_t last_system_ms;
+    void handle_BasicID(CanardRxTransfer* transfer);
+    void handle_SelfID(CanardRxTransfer* transfer);
+    void handle_OperatorID(CanardRxTransfer* transfer);
+    void handle_System(CanardRxTransfer* transfer);
+    void handle_Location(CanardRxTransfer* transfer);
 
-    const char *parse_fail;
-    
 public:
     void onTransferReceived(CanardInstance* ins, CanardRxTransfer* transfer);
     bool shouldAcceptTransfer(const CanardInstance* ins,
@@ -77,10 +63,4 @@ public:
                               uint16_t data_type_id,
                               CanardTransferType transfer_type,
                               uint8_t source_node_id);
-
-    const dronecan_remoteid_BasicID &get_basic_id(void) { return msg_BasicID; }
-    const dronecan_remoteid_Location &get_location(void) { return msg_Location; }
-    const dronecan_remoteid_SelfID &get_self_id(void) { return msg_SelfID; }
-    const dronecan_remoteid_System &get_system(void) { return msg_System; }
-    const dronecan_remoteid_OperatorID &get_operator_id(void) { return msg_OperatorID; }
 };

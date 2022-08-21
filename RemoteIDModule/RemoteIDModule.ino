@@ -136,13 +136,16 @@ static const char *check_parse(void)
     return nullptr;
 }
 
-static void set_data_mavlink(MAVLinkSerial &m)
+/*
+  fill in UAS_data from MAVLink packets
+ */
+static void set_data(Transport &t)
 {
-    const auto &operator_id = m.get_operator_id();
-    const auto &basic_id = m.get_basic_id();
-    const auto &system = m.get_system();
-    const auto &self_id = m.get_self_id();
-    const auto &location = m.get_location();
+    const auto &operator_id = t.get_operator_id();
+    const auto &basic_id = t.get_basic_id();
+    const auto &system = t.get_system();
+    const auto &self_id = t.get_self_id();
+    const auto &location = t.get_location();
 
     // BasicID
     UAS_data.BasicID[0].UAType = (ODID_uatype_t)basic_id.ua_type;
@@ -198,92 +201,25 @@ static void set_data_mavlink(MAVLinkSerial &m)
         UAS_data.LocationValid = 1;
     }
 
-    m.set_parse_fail(check_parse());
+    const char *reason = check_parse();
+    if (reason == nullptr) {
+        t.arm_status_check(reason);
+    }
+    t.set_parse_fail(reason);
+
+#ifdef PIN_STATUS_LED
+    // LED off if good to arm
+    pinMode(PIN_STATUS_LED, OUTPUT);
+    digitalWrite(PIN_STATUS_LED, reason==nullptr?!STATUS_LED_ON:STATUS_LED_ON);
+#endif
 
     uint32_t now_ms = millis();
-    uint32_t location_age_ms = now_ms - m.get_last_location_ms();
+    uint32_t location_age_ms = now_ms - t.get_last_location_ms();
     uint32_t last_location_age_ms = now_ms - last_location_ms;
     if (location_age_ms < last_location_age_ms) {
-        last_location_ms = m.get_last_location_ms();
+        last_location_ms = t.get_last_location_ms();
     }
 }
-
-#undef ODID_COPY_STR
-#define ODID_COPY_STR(to, from) memcpy(to, from.data, IMIN(from.len, sizeof(to)))
-
-#if AP_DRONECAN_ENABLED
-static void set_data_dronecan(void)
-{
-    const auto &operator_id = dronecan.get_operator_id();
-    const auto &basic_id = dronecan.get_basic_id();
-    const auto &system = dronecan.get_system();
-    const auto &self_id = dronecan.get_self_id();
-    const auto &location = dronecan.get_location();
-
-    // BasicID
-    UAS_data.BasicID[0].UAType = (ODID_uatype_t)basic_id.ua_type;
-    UAS_data.BasicID[0].IDType = (ODID_idtype_t)basic_id.id_type;
-    ODID_COPY_STR(UAS_data.BasicID[0].UASID, basic_id.uas_id);
-    UAS_data.BasicIDValid[0] = 1;
-
-    // OperatorID
-    UAS_data.OperatorID.OperatorIdType = (ODID_operatorIdType_t)operator_id.operator_id_type;
-    ODID_COPY_STR(UAS_data.OperatorID.OperatorId, operator_id.operator_id);
-    UAS_data.OperatorIDValid = 1;
-
-    // SelfID
-    UAS_data.SelfID.DescType = (ODID_desctype_t)self_id.description_type;
-    ODID_COPY_STR(UAS_data.SelfID.Desc, self_id.description);
-    UAS_data.SelfIDValid = 1;
-
-    // System
-    if (system.timestamp != 0) {
-        UAS_data.System.OperatorLocationType = (ODID_operator_location_type_t)system.operator_location_type;
-        UAS_data.System.ClassificationType = (ODID_classification_type_t)system.classification_type;
-        UAS_data.System.OperatorLatitude = system.operator_latitude * 1.0e-7;
-        UAS_data.System.OperatorLongitude = system.operator_longitude * 1.0e-7;
-        UAS_data.System.AreaCount = system.area_count;
-        UAS_data.System.AreaRadius = system.area_radius;
-        UAS_data.System.AreaCeiling = system.area_ceiling;
-        UAS_data.System.AreaFloor = system.area_floor;
-        UAS_data.System.CategoryEU = (ODID_category_EU_t)system.category_eu;
-        UAS_data.System.ClassEU = (ODID_class_EU_t)system.class_eu;
-        UAS_data.System.OperatorAltitudeGeo = system.operator_altitude_geo;
-        UAS_data.System.Timestamp = system.timestamp;
-        UAS_data.SystemValid = 1;
-    }
-
-    // Location
-    if (location.timestamp != 0) {
-        UAS_data.Location.Status = (ODID_status_t)location.status;
-        UAS_data.Location.Direction = location.direction*0.01;
-        UAS_data.Location.SpeedHorizontal = location.speed_horizontal*0.01;
-        UAS_data.Location.SpeedVertical = location.speed_vertical*0.01;
-        UAS_data.Location.Latitude = location.latitude*1.0e-7;
-        UAS_data.Location.Longitude = location.longitude*1.0e-7;
-        UAS_data.Location.AltitudeBaro = location.altitude_barometric;
-        UAS_data.Location.AltitudeGeo = location.altitude_geodetic;
-        UAS_data.Location.HeightType = (ODID_Height_reference_t)location.height_reference;
-        UAS_data.Location.Height = location.height;
-        UAS_data.Location.HorizAccuracy = (ODID_Horizontal_accuracy_t)location.horizontal_accuracy;
-        UAS_data.Location.VertAccuracy = (ODID_Vertical_accuracy_t)location.vertical_accuracy;
-        UAS_data.Location.BaroAccuracy = (ODID_Vertical_accuracy_t)location.barometer_accuracy;
-        UAS_data.Location.SpeedAccuracy = (ODID_Speed_accuracy_t)location.speed_accuracy;
-        UAS_data.Location.TSAccuracy = (ODID_Timestamp_accuracy_t)location.timestamp_accuracy;
-        UAS_data.Location.TimeStamp = location.timestamp;
-        UAS_data.LocationValid = 1;
-    }
-
-    dronecan.set_parse_fail(check_parse());
-
-    uint32_t now_ms = millis();
-    uint32_t location_age_ms = now_ms - dronecan.get_last_location_ms();
-    uint32_t last_location_age_ms = now_ms - last_location_ms;
-    if (location_age_ms < last_location_age_ms) {
-        last_location_ms = dronecan.get_last_location_ms();
-    }
-}
-#endif // AP_DRONECAN_ENABLED
 
 void loop()
 {
@@ -302,18 +238,12 @@ void loop()
         return;
     }
 
+    // the transports have common static data, so we can just use the
+    // first for status
+    auto &transport = mavlink1;
+
     bool have_location = false;
-
-#if AP_MAVLINK_ENABLED
-    const bool mavlink1_ok = mavlink1.get_last_location_ms() != 0;
-    const bool mavlink2_ok = mavlink2.get_last_location_ms() != 0;
-    have_location |= mavlink1_ok || mavlink2_ok;
-#endif
-
-#if AP_DRONECAN_ENABLED
-    const bool dronecan_ok = dronecan.get_last_location_ms() != 0;
-    have_location |= dronecan_ok;
-#endif
+    const uint32_t last_location_ms = transport.get_last_location_ms();
 
 #if AP_BROADCAST_ON_POWER_UP
     // if we are broadcasting on powerup we always mark location valid
@@ -324,30 +254,17 @@ void loop()
     }
 #else
     // only broadcast if we have received a location at least once
-    if (!have_location) {
+    if (last_location_ms == 0) {
         return;
     }
 #endif
 
-    if (now_ms - last_location_ms > 5000) {
+    if (last_location_ms == 0 ||
+        now_ms - last_location_ms > 5000) {
         UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
     }
 
-#if AP_MAVLINK_ENABLED
-    if (mavlink1_ok) {
-        set_data_mavlink(mavlink1);
-    }
-    if (mavlink2_ok) {
-        set_data_mavlink(mavlink2);
-    }
-#endif
-
-#if AP_DRONECAN_ENABLED
-    if (dronecan_ok) {
-        set_data_dronecan();
-    }
-#endif
-
+    set_data(transport);
     last_update = now_ms;
 
 #if AP_WIFI_NAN_ENABLED
