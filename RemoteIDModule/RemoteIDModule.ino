@@ -272,10 +272,18 @@ void loop()
         wifi.transmit(UAS_data);
     }
 #endif
-#if AP_BLE_LEGACY_ENABLED || AP_BLE_LONGRANGE_ENABLED
+
+#if AP_BLE_LONGRANGE_ENABLED
     if (loop_counter == 0) { //only run on the original update rate
         ble.transmit_longrange(UAS_data);
     }
+#endif
+
+#if AP_BLE_LEGACY_ENABLED
     ble.transmit_legacy(UAS_data);
+#endif
+
+#if AP_BLE_LEGACY_ENABLED || AP_BLE_LONGRANGE_ENABLED
+    ble.transmit_legacy_name(UAS_data);
 #endif
 }
