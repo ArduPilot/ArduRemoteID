@@ -21,8 +21,8 @@ static const int8_t tx_power = ESP_PWR_LVL_P18;
 //shorter intervals lead to more BLE transmissions. This would result in increased power consumption and can lead to more interference to other radio systems.
 static esp_ble_gap_ext_adv_params_t legacy_adv_params = {
     .type = ESP_BLE_GAP_SET_EXT_ADV_PROP_LEGACY_NONCONN,
-    .interval_min = 125, //(unsigned int) 0.75*1000/(OUTPUT_RATE_HZ*6); //allow ble controller to have some room for transmission.
-    .interval_max = 167, //(unsigned int) 1000/(OUTPUT_RATE_HZ*6);
+    .interval_min = 192, //(unsigned int) 0.75*1000/(OUTPUT_RATE_HZ*6)/0.625; //allow ble controller to have some room for transmission.
+    .interval_max = 267, //(unsigned int) 1000/(OUTPUT_RATE_HZ*6)/0.625;
     .channel_map = ADV_CHNL_ALL,
     .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_WLST, // we want unicast non-connectable transmission
@@ -36,8 +36,8 @@ static esp_ble_gap_ext_adv_params_t legacy_adv_params = {
 
 static esp_ble_gap_ext_adv_params_t ext_adv_params_coded = {
     .type = ESP_BLE_GAP_SET_EXT_ADV_PROP_NONCONN_NONSCANNABLE_UNDIRECTED, //set to unicast advertising
-     .interval_min = 750, //(unsigned int) 0.75*1000/(OUTPUT_RATE_HZ); //allow ble controller to have some room for transmission.
-    .interval_max = 1000, // (unsigned int) 1000/(OUTPUT_RATE_HZ);
+     .interval_min = 1200, //(unsigned int) 0.75*1000/(OUTPUT_RATE_HZ)/0.625; //allow ble controller to have some room for transmission.
+    .interval_max = 1600, // (unsigned int) 1000/(OUTPUT_RATE_HZ)/0.625;
     .channel_map = ADV_CHNL_ALL,
     .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_WLST, // we want unicast non-connectable transmission
