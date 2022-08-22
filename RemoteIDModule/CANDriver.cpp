@@ -42,7 +42,8 @@ static const twai_general_config_t g_config =                      {.mode = TWAI
                                                                     .clkout_io = TWAI_IO_UNUSED, .bus_off_io = TWAI_IO_UNUSED,      \
                                                                     .tx_queue_len = 5, .rx_queue_len = 5,                           \
                                                                     .alerts_enabled = TWAI_ALERT_NONE,  .clkout_divider = 0,        \
-                                                                    .intr_flags = ESP_INTR_FLAG_LEVEL2};
+                                                                    .intr_flags = ESP_INTR_FLAG_LEVEL2
+                                                                   };
 
 static const twai_timing_config_t t_config = TWAI_TIMING_CONFIG_1MBITS();
 static const twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
@@ -66,8 +67,8 @@ void CANDriver::init_once(bool enable_irq)
     } else {
         Serial.printf("Failed to reconfigure CAN/TWAI alerts");
     }
-    
-     //Start TWAI driver
+
+    //Start TWAI driver
     if (twai_start() == ESP_OK)
     {
         Serial.printf("CAN/TWAI Driver started\n");

@@ -23,7 +23,7 @@ static DroneCAN dronecan;
 #endif
 
 #if AP_MAVLINK_ENABLED
-static MAVLinkSerial mavlink1{Serial1, MAVLINK_COMM_0};
+static MAVLinkSerial mavlink1 {Serial1, MAVLINK_COMM_0};
 static MAVLinkSerial mavlink2{Serial, MAVLINK_COMM_1};
 #endif
 
@@ -261,7 +261,7 @@ void loop()
 #endif
 
     if (last_location_ms == 0 ||
-        now_ms - last_location_ms > 5000) {
+            now_ms - last_location_ms > 5000) {
         UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
     }
 

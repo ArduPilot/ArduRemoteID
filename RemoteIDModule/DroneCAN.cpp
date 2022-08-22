@@ -27,8 +27,8 @@
 
 static void onTransferReceived_trampoline(CanardInstance* ins, CanardRxTransfer* transfer);
 static bool shouldAcceptTransfer_trampoline(const CanardInstance* ins, uint64_t* out_data_type_signature, uint16_t data_type_id,
-                                            CanardTransferType transfer_type,
-                                            uint8_t source_node_id);
+        CanardTransferType transfer_type,
+        uint8_t source_node_id);
 
 // decoded messages
 
@@ -104,7 +104,7 @@ void DroneCAN::onTransferReceived(CanardInstance* ins,
 {
     if (canardGetLocalNodeID(ins) == CANARD_BROADCAST_NODE_ID) {
         if (transfer->transfer_type == CanardTransferTypeBroadcast &&
-            transfer->data_type_id == UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_ID) {
+                transfer->data_type_id == UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_ID) {
             handle_allocation_response(ins, transfer);
         }
         return;
@@ -154,7 +154,7 @@ bool DroneCAN::shouldAcceptTransfer(const CanardInstance* ins,
                                     uint8_t source_node_id)
 {
     if (canardGetLocalNodeID(ins) == CANARD_BROADCAST_NODE_ID &&
-        data_type_id == UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_ID) {
+            data_type_id == UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_ID) {
         *out_data_type_signature = UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_SIGNATURE;
         return true;
     }
@@ -175,7 +175,7 @@ bool DroneCAN::shouldAcceptTransfer(const CanardInstance* ins,
 }
 
 static void onTransferReceived_trampoline(CanardInstance* ins,
-                                          CanardRxTransfer* transfer)
+        CanardRxTransfer* transfer)
 {
     DroneCAN *dc = (DroneCAN *)ins->user_reference;
     dc->onTransferReceived(ins, transfer);
@@ -185,10 +185,10 @@ static void onTransferReceived_trampoline(CanardInstance* ins,
   see if we want to process this packet
  */
 static bool shouldAcceptTransfer_trampoline(const CanardInstance* ins,
-                                            uint64_t* out_data_type_signature,
-                                            uint16_t data_type_id,
-                                            CanardTransferType transfer_type,
-                                            uint8_t source_node_id)
+        uint64_t* out_data_type_signature,
+        uint16_t data_type_id,
+        CanardTransferType transfer_type,
+        uint8_t source_node_id)
 {
     DroneCAN *dc = (DroneCAN *)ins->user_reference;
     return dc->shouldAcceptTransfer(ins, out_data_type_signature,
@@ -239,13 +239,13 @@ void DroneCAN::processRx(void)
                       rx_frame.data_len,
                       err);
 #else
-        UNUSED(err);                      
+        UNUSED(err);
 #endif
     }
 }
 
 CANFrame::CANFrame(uint32_t can_id, const uint8_t* can_data, uint8_t data_len, bool canfd_frame) :
-        id(can_id)
+    id(can_id)
 {
     if ((can_data == nullptr) || (data_len == 0) || (data_len > MaxDataLen)) {
         return;
@@ -414,7 +414,7 @@ bool DroneCAN::do_DNA(void)
 
     static const uint8_t MaxLenOfUniqueIDInRequest = 6;
     uint8_t uid_size = (uint8_t)(sizeof(uavcan_protocol_dynamic_node_id_Allocation::unique_id.data) - node_id_allocation_unique_id_offset);
-    
+
     if (uid_size > MaxLenOfUniqueIDInRequest) {
         uid_size = MaxLenOfUniqueIDInRequest;
     }
@@ -534,7 +534,7 @@ void DroneCAN::handle_Location(CanardRxTransfer* transfer)
 #if 0
 // xprintf is useful when debugging in C code such as libcanard
 extern "C" {
-void xprintf(const char *fmt, ...);
+    void xprintf(const char *fmt, ...);
 }
 
 void xprintf(const char *fmt, ...)
