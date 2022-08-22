@@ -31,11 +31,9 @@ static MAVLinkSerial mavlink2{Serial, MAVLINK_COMM_1};
 static WiFi_NAN wifi;
 #endif
 
-#if AP_BLE_ENABLED
+#if AP_BLE_LEGACY_ENABLED || AP_BLE_LONGRANGE_ENABLED
 static BLE_TX ble;
 #endif
-
-#define OUTPUT_RATE_HZ 5
 
 #define DEBUG_BAUDRATE 57600
 #define MAVLINK_BAUDRATE 57600
@@ -71,7 +69,7 @@ void setup()
 #if AP_WIFI_NAN_ENABLED
     wifi.init();
 #endif
-#if AP_BLE_ENABLED
+#if AP_BLE_LEGACY_ENABLED || AP_BLE_LONGRANGE_ENABLED
     ble.init();
 #endif
 
@@ -221,6 +219,7 @@ static void set_data(Transport &t)
     }
 }
 
+uint8_t loop_counter = 0;
 void loop()
 {
     static uint32_t last_update;
@@ -233,10 +232,12 @@ void loop()
 
     const uint32_t now_ms = millis();
 
-    if (now_ms - last_update < 1000/OUTPUT_RATE_HZ) {
+    if (now_ms - last_update < 1000/(OUTPUT_RATE_HZ*6)) {  //Bluetooth 4 needs to run at a 6 times higher update rate as other protocols. F3586 requires a minimum broadcast refresh rate of 1 Hz for static information. (This value overwrites the default value of 3Hz of F3411)
         // not ready for a new frame yet
         return;
     }
+    loop_counter++;
+    loop_counter %= 6;
 
     // the transports have common static data, so we can just use the
     // first for status
@@ -266,11 +267,15 @@ void loop()
 
     set_data(transport);
     last_update = now_ms;
-
 #if AP_WIFI_NAN_ENABLED
-    wifi.transmit(UAS_data);
+    if (loop_counter == 0) { //only run on the original update rate
+        wifi.transmit(UAS_data);
+    }
 #endif
-#if AP_BLE_ENABLED
-    ble.transmit(UAS_data);
+#if AP_BLE_LEGACY_ENABLED || AP_BLE_LONGRANGE_ENABLED
+    if (loop_counter == 0) { //only run on the original update rate
+        ble.transmit_longrange(UAS_data);
+    }
+    ble.transmit_legacy(UAS_data);
 #endif
 }
