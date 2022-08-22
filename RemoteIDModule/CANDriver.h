@@ -8,7 +8,7 @@ public:
 
     bool send(const CANFrame &frame);
     bool receive(CANFrame &out_frame);
-    
+
 private:
     struct Timings {
         uint16_t prescaler;
@@ -50,12 +50,12 @@ struct CANFrame {
     };
     uint8_t dlc;                ///< Data Length Code
 
-CANFrame() :
-    id(0),
+    CANFrame() :
+        id(0),
         dlc(0)
-        {
-            memset(data,0, MaxDataLen);
-        }
+    {
+        memset(data,0, MaxDataLen);
+    }
 
     CANFrame(uint32_t can_id, const uint8_t* can_data, uint8_t data_len, bool canfd_frame = false);
 

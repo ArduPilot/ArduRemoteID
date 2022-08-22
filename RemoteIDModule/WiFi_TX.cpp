@@ -16,7 +16,7 @@ bool WiFi_NAN::init(void)
     WiFi.softAP("", NULL, wifi_channel);
 
     esp_wifi_get_config(WIFI_IF_AP, &wifi_config);
-  
+
     wifi_config.ap.ssid_hidden = 1;
 
     if (esp_wifi_set_config(WIFI_IF_AP, &wifi_config) != ESP_OK) {
@@ -38,15 +38,15 @@ bool WiFi_NAN::transmit(ODID_UAS_Data &UAS_data)
 
     int length;
     if ((length = odid_wifi_build_nan_sync_beacon_frame((char *)WiFi_mac_addr,
-                                                        buffer,sizeof(buffer))) > 0) {
+                  buffer,sizeof(buffer))) > 0) {
         if (esp_wifi_80211_tx(WIFI_IF_AP,buffer,length,true) != ESP_OK) {
             return false;
         }
     }
 
     if ((length = odid_wifi_build_message_pack_nan_action_frame(&UAS_data,(char *)WiFi_mac_addr,
-                                                                ++send_counter,
-                                                                buffer,sizeof(buffer))) > 0) {
+                  ++send_counter,
+                  buffer,sizeof(buffer))) > 0) {
         if (esp_wifi_80211_tx(WIFI_IF_AP,buffer,length,true) != ESP_OK) {
             return false;
         }
