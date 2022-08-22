@@ -9,12 +9,13 @@
 class BLE_TX {
 public:
     bool init(void);
-    bool transmit(ODID_UAS_Data &UAS_data);
+    bool transmit_longrange(ODID_UAS_Data &UAS_data);
+    bool transmit_legacy(ODID_UAS_Data &UAS_data);
 
 private:
-    int msg_counter;
-    uint8_t payload[250];
-    uint8_t payload2[255];
+    uint8_t legacy_msg_counter;
+    uint8_t longrange_msg_counter;
     uint8_t legacy_payload[36];
+    uint8_t longrange_payload[250];
     bool started;
 };
