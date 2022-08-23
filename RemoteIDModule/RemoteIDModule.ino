@@ -219,7 +219,8 @@ static void set_data(Transport &t)
     }
 }
 
-uint8_t loop_counter = 0;
+static uint8_t loop_counter = 0;
+
 void loop()
 {
     static uint32_t last_update;
@@ -232,12 +233,15 @@ void loop()
 
     const uint32_t now_ms = millis();
 
-    if (now_ms - last_update < 1000/(OUTPUT_RATE_HZ*6)) {  //Bluetooth 4 needs to run at a 6 times higher update rate as other protocols. F3586 requires a minimum broadcast refresh rate of 1 Hz for static information. (This value overwrites the default value of 3Hz of F3411)
+    // we call BT4 send at 5x the desired rate as it has to split the pkts 5 ways
+    const uint32_t rate_divider = 5;
+
+    if (now_ms - last_update < 1000UL/(OUTPUT_RATE_HZ*rate_divider)) {
         // not ready for a new frame yet
         return;
     }
     loop_counter++;
-    loop_counter %= 6;
+    loop_counter %= rate_divider;
 
     // the transports have common static data, so we can just use the
     // first for status
