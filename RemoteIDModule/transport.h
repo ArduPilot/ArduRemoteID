@@ -43,10 +43,18 @@ public:
         return last_location_ms;
     }
 
+    uint32_t get_last_system_ms(void) const {
+        return last_system_ms;
+    }
+    
     void set_parse_fail(const char *msg) {
         parse_fail = msg;
     }
 
+    const char *get_parse_fail(void) {
+        return parse_fail;
+    }
+    
 protected:
     // common variables between transports. The last message of each
     // type, no matter what transport it was on, wins

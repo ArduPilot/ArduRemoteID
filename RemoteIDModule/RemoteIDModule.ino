@@ -245,6 +245,7 @@ void loop()
 
     bool have_location = false;
     const uint32_t last_location_ms = transport.get_last_location_ms();
+    const uint32_t last_system_ms = transport.get_last_system_ms();
 
 #if AP_BROADCAST_ON_POWER_UP
     // if we are broadcasting on powerup we always mark location valid
@@ -261,10 +262,19 @@ void loop()
 #endif
 
     if (last_location_ms == 0 ||
-            now_ms - last_location_ms > 5000) {
+        now_ms - last_location_ms > 5000) {
         UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
     }
 
+    if (last_system_ms == 0 ||
+        now_ms - last_system_ms > 5000) {
+        UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
+    }
+
+    if (transport.get_parse_fail() != nullptr) {
+        UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
+    }
+    
     set_data(transport);
     last_update = now_ms;
 #if AP_WIFI_NAN_ENABLED
