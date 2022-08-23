@@ -10,7 +10,6 @@ class BLE_TX {
 public:
     bool init(void);
     bool transmit_longrange(ODID_UAS_Data &UAS_data);
-    bool transmit_legacy_name(ODID_UAS_Data &UAS_data);
     bool transmit_legacy(ODID_UAS_Data &UAS_data);
 
 private:

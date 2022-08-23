@@ -36,8 +36,8 @@ static esp_ble_gap_ext_adv_params_t legacy_adv_params = {
 
 static esp_ble_gap_ext_adv_params_t ext_adv_params_coded = {
     .type = ESP_BLE_GAP_SET_EXT_ADV_PROP_NONCONN_NONSCANNABLE_UNDIRECTED, //set to unicast advertising
-    .interval_min = 1200, //(unsigned int) 0.75*1000/(OUTPUT_RATE_HZ)/0.625; //allow ble controller to have some room for transmission.
-    .interval_max = 1600, //(unsigned int) 1000/(OUTPUT_RATE_HZ)/0.625;
+    .interval_min = 192, //(unsigned int) 0.75*1000/(OUTPUT_RATE_HZ)/0.625; //allow ble controller to have some room for transmission.
+    .interval_max = 267, //(unsigned int) 1000/(OUTPUT_RATE_HZ)/0.625;
     .channel_map = ADV_CHNL_ALL,
     .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_WLST, // we want unicast non-connectable transmission
@@ -49,22 +49,7 @@ static esp_ble_gap_ext_adv_params_t ext_adv_params_coded = {
     .scan_req_notif = false,
 };
 
-static esp_ble_gap_ext_adv_params_t blename_adv_params = {
-    .type = ESP_BLE_GAP_SET_EXT_ADV_PROP_LEGACY_NONCONN,
-    .interval_min = 1200, //(unsigned int) 0.75*1000/(OUTPUT_RATE_HZ)/0.625; //allow ble controller to have some room for transmission.
-    .interval_max = 1600,//(unsigned int) 1000/(OUTPUT_RATE_HZ)/0.625;;
-    .channel_map = ADV_CHNL_ALL,
-    .own_addr_type = BLE_ADDR_TYPE_RANDOM,
-    .filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_WLST, // we want unicast non-connectable transmission
-    .tx_power = tx_power,
-    .primary_phy = ESP_BLE_GAP_PHY_1M,
-    .max_skip = 0,
-    .secondary_phy = ESP_BLE_GAP_PHY_1M,
-    .sid = 2,
-    .scan_req_notif = false,
-};
-
-static BLEMultiAdvertising advert(3);
+static BLEMultiAdvertising advert(2);
 
 bool BLE_TX::init(void)
 {
@@ -86,10 +71,6 @@ bool BLE_TX::init(void)
     advert.setDuration(1);
     advert.setInstanceAddress(1, mac_addr);
 
-    advert.setAdvertisingParams(2, &blename_adv_params);
-    advert.setDuration(2);
-    advert.setInstanceAddress(2, mac_addr);
-
     // prefer S8 coding
     if (esp_ble_gap_set_prefered_default_phy(ESP_BLE_GAP_PHY_OPTIONS_PREF_S8_CODING, ESP_BLE_GAP_PHY_OPTIONS_PREF_S8_CODING) != ESP_OK) {
         Serial.printf("Failed to setup S8 coding\n");
@@ -100,29 +81,6 @@ bool BLE_TX::init(void)
 }
 
 #define IMIN(a,b) ((a)<(b)?(a):(b))
-
-bool BLE_TX::transmit_legacy_name(ODID_UAS_Data &UAS_data)
-{
-    //set BLE name
-    uint8_t legacy_name_payload[36];
-    char legacy_name[28] {};
-    const char *UAS_ID = (const char *)UAS_data.BasicID[0].UASID;
-    const uint8_t ID_len = strlen(UAS_ID);
-    const uint8_t ID_tail = IMIN(4, ID_len);
-    snprintf(legacy_name, sizeof(legacy_name), "ArduRemoteID_%s", &UAS_ID[ID_len-ID_tail]);
-
-    memset(legacy_name_payload, 0, sizeof(legacy_name_payload));
-    const uint8_t legacy_name_header[] { 0x02, 0x01, 0x06, uint8_t(strlen(legacy_name)+1), ESP_BLE_AD_TYPE_NAME_SHORT};
-
-    memcpy(legacy_name_payload, legacy_name_header, sizeof(legacy_name_header));
-    memcpy(&legacy_name_payload[sizeof(legacy_name_header)], legacy_name, strlen(legacy_name) + 1);
-
-    int legacy_length = sizeof(legacy_name_header) + strlen(legacy_name) + 1; //add extra char for \0
-
-    advert.setAdvertisingData(2, legacy_length, legacy_payload);
-
-    return true;
-}
 
 bool BLE_TX::transmit_longrange(ODID_UAS_Data &UAS_data)
 {
@@ -243,10 +201,26 @@ bool BLE_TX::transmit_legacy(ODID_UAS_Data &UAS_data)
         legacy_length = sizeof(header) + 1 + sizeof(operatorid_encoded);
 
         break;
+
+     case  5: //broadcast BLE name
+        char legacy_name[28] {};
+        const char *UAS_ID = (const char *)UAS_data.BasicID[0].UASID;
+        const uint8_t ID_len = strlen(UAS_ID);
+        const uint8_t ID_tail = IMIN(4, ID_len);
+        snprintf(legacy_name, sizeof(legacy_name), "ArduRemoteID_%s", &UAS_ID[ID_len-ID_tail]);
+
+        memset(legacy_payload, 0, sizeof(legacy_payload));
+        const uint8_t legacy_header_ble_name[] { 0x02, 0x01, 0x06, uint8_t(strlen(legacy_name)+1), ESP_BLE_AD_TYPE_NAME_SHORT};
+
+        memcpy(legacy_payload, legacy_header_ble_name, sizeof(legacy_header_ble_name));
+		memcpy(&legacy_payload[sizeof(legacy_header_ble_name)], legacy_name, strlen(legacy_name) + 1);
+		legacy_length = sizeof(legacy_header_ble_name) + strlen(legacy_name);
+
+        break;
     }
 
     legacy_phase++;
-    legacy_phase %= 5;
+    legacy_phase %= 6;
 
     advert.setAdvertisingData(0, legacy_length, legacy_payload);
 

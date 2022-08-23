@@ -266,15 +266,10 @@ void loop()
         UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
     }
 
-    if (last_system_ms == 0 ||
-        now_ms - last_system_ms > 5000) {
-        UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
-    }
-
     if (transport.get_parse_fail() != nullptr) {
         UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
     }
-    
+
     set_data(transport);
     last_update = now_ms;
 #if AP_WIFI_NAN_ENABLED
@@ -293,7 +288,4 @@ void loop()
     ble.transmit_legacy(UAS_data);
 #endif
 
-#if AP_BLE_LEGACY_ENABLED || AP_BLE_LONGRANGE_ENABLED
-    ble.transmit_legacy_name(UAS_data);
-#endif
 }
