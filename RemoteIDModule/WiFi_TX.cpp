@@ -11,13 +11,28 @@
 
 bool WiFi_NAN::init(void)
 {
+    //use a local MAC address to avoid tracking transponders based on their MAC address
+    int i;
+    uint8_t mac_addr[6];
+    for(i = 0 ; i < 6; i++ )
+	{
+		mac_addr[i] = rand() % 256;
+	}
+
+	mac_addr[0] |= 0x02;  //set MAC local bit
+    mac_addr[0] &= 0xFE;  //unset MAC multicast bit
+
+    //set MAC address
+    esp_base_mac_addr_set(mac_addr);
+
     wifi_config_t wifi_config {};
 
-    WiFi.softAP("", NULL, wifi_channel);
+    WiFi.softAP("");
 
     esp_wifi_get_config(WIFI_IF_AP, &wifi_config);
 
     wifi_config.ap.ssid_hidden = 1;
+    wifi_config.ap.channel = wifi_channel;
 
     if (esp_wifi_set_config(WIFI_IF_AP, &wifi_config) != ESP_OK) {
         return false;
