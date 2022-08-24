@@ -72,9 +72,8 @@ bool BLE_TX::init(void)
 
     // generate random mac address
     uint8_t mac_addr[6];
-    for (uint8_t i=0; i<6; i++) {
-        mac_addr[i] = uint8_t(random(256));
-    }
+    generate_random_mac(mac_addr);
+
     // set as a bluetooth random static address
     mac_addr[0] |= 0xc0;
 

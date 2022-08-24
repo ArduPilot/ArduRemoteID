@@ -3,12 +3,11 @@
  */
 #pragma once
 
-#include <Arduino.h>
-#include <opendroneid.h>
+#include "transmitter.h"
 
-class WiFi_NAN {
+class WiFi_NAN : public Transmitter {
 public:
-    bool init(void);
+    bool init(void) override;
     bool transmit(ODID_UAS_Data &UAS_data);
 
 private:
