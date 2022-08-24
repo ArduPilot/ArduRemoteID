@@ -19,8 +19,8 @@ Hardware from https://wurzbachelectronics.com/ is expeced to be added soon.
 
 For the ESP32-S3 dev board the pins assumed in this firmware are:
 
- - UART TX on pin 17
- - UART RX on pin 18
+ - UART TX on pin 18
+ - UART RX on pin 17
  - CAN TX on pin 47
  - CAN RX on pin 38
 
