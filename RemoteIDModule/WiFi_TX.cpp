@@ -12,15 +12,11 @@
 bool WiFi_NAN::init(void)
 {
     //use a local MAC address to avoid tracking transponders based on their MAC address
-    int i;
     uint8_t mac_addr[6];
-    for(i = 0 ; i < 6; i++ )
-	{
-		mac_addr[i] = rand() % 256;
-	}
+    generate_random_mac(mac_addr);
 
-	mac_addr[0] |= 0x02;  //set MAC local bit
-    mac_addr[0] &= 0xFE;  //unset MAC multicast bit
+    mac_addr[0] |= 0x02;  // set MAC local bit
+    mac_addr[0] &= 0xFE;  // unset MAC multicast bit
 
     //set MAC address
     esp_base_mac_addr_set(mac_addr);
