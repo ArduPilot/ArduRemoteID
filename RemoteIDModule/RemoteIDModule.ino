@@ -50,9 +50,6 @@ void setup()
     // Serial for debug printf
     Serial.begin(DEBUG_BAUDRATE);
 
-    Serial.printf("ArduRemoteID version %u.%u %08x\n",
-                  FW_VERSION_MAJOR, FW_VERSION_MINOR, GIT_VERSION);
-
     // Serial1 for MAVLink
     Serial1.begin(MAVLINK_BAUDRATE, SERIAL_8N1, PIN_UART_RX, PIN_UART_TX);
 

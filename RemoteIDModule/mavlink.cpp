@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include "mavlink.h"
 #include "board_config.h"
+#include "version.h"
 
 #define SERIAL_BAUD 115200
 
@@ -37,12 +38,18 @@ MAVLinkSerial::MAVLinkSerial(HardwareSerial &_serial, mavlink_channel_t _chan) :
 
 void MAVLinkSerial::init(void)
 {
+    // print banner at startup
+    serial.printf("ArduRemoteID version %u.%u %08x\n",
+                  FW_VERSION_MAJOR, FW_VERSION_MINOR, GIT_VERSION);
 }
 
 void MAVLinkSerial::update(void)
 {
     if (mavlink_system.sysid != 0) {
         update_send();
+    } else if (millis() - last_hb_warn_ms >= 2000) {
+        last_hb_warn_ms = millis();
+        serial.printf("Waiting for heartbeat\n");
     }
     update_receive();
 }
