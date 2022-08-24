@@ -18,6 +18,7 @@ private:
     HardwareSerial &serial;
     mavlink_channel_t chan;
     uint32_t last_hb_ms;
+    uint32_t last_hb_warn_ms;
 
     void update_receive(void);
     void update_send(void);
