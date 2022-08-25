@@ -25,6 +25,8 @@
 #define PIN_CAN_EN GPIO_NUM_4 // EN pin of the NXP CAN transceiver
 #define PIN_CAN_nSILENT GPIO_NUM_1 // CAN silent pin, active low
 
+#define CAN_APP_NODE_NAME "BlueMark DB200"
+
 // to enable termination resistors uncomment this line
 //#define PIN_CAN_TERM EN_NUM_10 // if set to ON, the termination resistors of the CAN bus are enabled
 
