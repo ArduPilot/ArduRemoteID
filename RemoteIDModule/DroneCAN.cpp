@@ -3,6 +3,7 @@
   with thanks to David Buzz for ArduPilot ESP32 HAL
  */
 #include <Arduino.h>
+#include "board_config.h"
 #include "version.h"
 #include <time.h>
 #include "DroneCAN.h"
@@ -19,7 +20,9 @@
 #include <dronecan.remoteid.ArmStatus.h>
 
 #define BOARD_ID 10001
+#ifndef CAN_APP_NODE_NAME
 #define CAN_APP_NODE_NAME "ArduPilot RemoteIDModule"
+#endif
 #define CAN_DEFAULT_NODE_ID 0 // use DNA
 
 #define UNUSED(x) (void)(x)
