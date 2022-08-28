@@ -5,14 +5,13 @@
   released under GNU GPL v2 or later
  */
 
+#include "options.h"
 #include <Arduino.h>
 #include "version.h"
 #include <math.h>
 #include <time.h>
 #include <sys/time.h>
 #include <opendroneid.h>
-#include "board_config.h"
-#include "options.h"
 #include "mavlink.h"
 #include "DroneCAN.h"
 #include "WiFi_TX.h"
@@ -23,8 +22,8 @@ static DroneCAN dronecan;
 #endif
 
 #if AP_MAVLINK_ENABLED
-static MAVLinkSerial mavlink1 {Serial1, MAVLINK_COMM_0};
-static MAVLinkSerial mavlink2{Serial, MAVLINK_COMM_1};
+static MAVLinkSerial mavlink1{Serial1, MAVLINK_COMM_0};
+static MAVLinkSerial mavlink2{Serial,  MAVLINK_COMM_1};
 #endif
 
 #if AP_WIFI_NAN_ENABLED
@@ -222,8 +221,10 @@ void loop()
 {
     static uint32_t last_update;
 
+#if AP_MAVLINK_ENABLED
     mavlink1.update();
     mavlink2.update();
+#endif
 #if AP_DRONECAN_ENABLED
     dronecan.update();
 #endif
@@ -242,7 +243,13 @@ void loop()
 
     // the transports have common static data, so we can just use the
     // first for status
+#if AP_MAVLINK_ENABLED
     auto &transport = mavlink1;
+#elif AP_DRONECAN_ENABLED
+    auto &transport = dronecan;
+#else
+    #error "Must enable DroneCAN or MAVLink"
+#endif
 
     bool have_location = false;
     const uint32_t last_location_ms = transport.get_last_location_ms();
