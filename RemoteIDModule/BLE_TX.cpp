@@ -15,7 +15,7 @@
 #include <BLEAdvertising.h>
 
 // set max power
-static const int8_t tx_power = ESP_PWR_LVL_P18;
+static int8_t tx_power = ESP_PWR_LVL_P18;
 
 //interval min/max are configured for 1 Hz update rate. Somehow dynamic setting of these fields fails
 //shorter intervals lead to more BLE transmissions. This would result in increased power consumption and can lead to more interference to other radio systems.
@@ -68,6 +68,8 @@ static BLEMultiAdvertising advert(3);
 
 bool BLE_TX::init(void)
 {
+    set_tx_power_level();
+
     BLEDevice::init("");
 
     // generate random mac address
@@ -95,6 +97,37 @@ bool BLE_TX::init(void)
     }
 
     memset(&msg_counters,0, sizeof(msg_counters));
+    return true;
+}
+
+bool BLE_TX::set_tx_power_level()
+{
+    int esp_power_level = ESP_PWR_LVL_P18;
+
+    //use switch to determine the ESP power level ENUM
+    switch (AP_BLE_TX_POWER)
+    {
+        case BLE_PWR_P9_DBM:
+            esp_power_level = ESP_PWR_LVL_P9;
+            break;
+        case BLE_PWR_P12_DBM:
+            esp_power_level = ESP_PWR_LVL_P12;
+            break;
+        case BLE_PWR_P15_DBM:
+            esp_power_level = ESP_PWR_LVL_P15;
+            break;
+        case BLE_PWR_P18_DBM:
+            esp_power_level = ESP_PWR_LVL_P18;
+            break;
+        default:
+          esp_power_level = ESP_PWR_LVL_P18;
+    }
+
+    tx_power = esp_power_level;
+    legacy_adv_params.tx_power = esp_power_level;
+    ext_adv_params_coded.tx_power = esp_power_level;
+    blename_adv_params.tx_power = esp_power_level;
+
     return true;
 }
 
