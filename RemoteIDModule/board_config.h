@@ -28,7 +28,7 @@
 #define CAN_APP_NODE_NAME "BlueMark DB200"
 
 // to enable termination resistors uncomment this line
-//#define PIN_CAN_TERM EN_NUM_10 // if set to ON, the termination resistors of the CAN bus are enabled
+//#define PIN_CAN_TERM GPIO_NUM_10 // if set to ON, the termination resistors of the CAN bus are enabled
 
 #define PIN_UART_TX 3
 #define PIN_UART_RX 2
