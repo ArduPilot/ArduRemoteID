@@ -12,8 +12,8 @@ are 4 boards supported so far with more to come:
 
  - the ESP32-S3 dev board: https://au.mouser.com/ProductDetail/356-ESP32S3DEVKTM1N8
  - the ESP32-C3 dev board: https://au.mouser.com/ProductDetail/Espressif-Systems/ESP32-C3-DevKitM-1
- - a Bluemark BD110 from https://bluemark.io/
- - a Bluemark BD200 from https://bluemark.io/
+ - a Bluemark DB110 (legacy) from https://bluemark.io/ ([product page](https://dronescout.co/dronebeacon-mavlink-remote-id-transponder/) | [buy](https://dronescout.co/product/dronebeacon-mavlink-pcb-only-transponder/) )
+ - a Bluemark DB200 from https://bluemark.io/ ([product page](https://dronescout.co/dronebeacon-mavlink-remote-id-transponder/) | [buy](https://dronescout.co/product/dronebeacon-mavlink-db200-transponder/) )
 
 Hardware from https://wurzbachelectronics.com/ is expeced to be added soon.
 
