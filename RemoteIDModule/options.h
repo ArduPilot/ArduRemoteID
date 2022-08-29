@@ -6,7 +6,7 @@
 #include "board_config.h"
 
 // enable WiFi NAN support
-#define AP_WIFI_NAN_ENABLED 1
+#define AP_WIFI_NAN_ENABLED 0
 
 // allow enabling legacy or long range only, or both
 #define AP_BLE_LEGACY_ENABLED 1 // bluetooth 4 legacy
