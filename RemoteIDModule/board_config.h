@@ -40,6 +40,9 @@
 #define PIN_UART_TX 5
 #define PIN_UART_RX 4
 
+#define PIN_STATUS_LED GPIO_NUM_8 // LED to signal the status
+#define STATUS_LED_ON 1
+
 #else
 #error "unsupported board"
 #endif
