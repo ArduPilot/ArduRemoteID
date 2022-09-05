@@ -102,4 +102,4 @@ This firmware builds on their work.
 
 ## License
 
-This firmware is licensed under the GNU GPLv3 or later
+This firmware is licensed under the GNU GPLv2 or later

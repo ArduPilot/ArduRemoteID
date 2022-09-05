@@ -2,7 +2,7 @@
   implement OpenDroneID MAVLink and DroneCAN support
  */
 /*
-  released under GNU GPL v3 or later
+  released under GNU GPL v2 or later
  */
 
 #include <Arduino.h>
