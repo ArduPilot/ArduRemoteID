@@ -16,6 +16,7 @@
 #include "DroneCAN.h"
 #include "WiFi_TX.h"
 #include "BLE_TX.h"
+#include "parameters.h"
 
 #if AP_DRONECAN_ENABLED
 static DroneCAN dronecan;
@@ -46,6 +47,8 @@ static uint32_t last_location_ms;
  */
 void setup()
 {
+    g.load_defaults();
+
     // Serial for debug printf
     Serial.begin(DEBUG_BAUDRATE);
 
