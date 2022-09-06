@@ -7,11 +7,14 @@
 #include "version.h"
 #include <time.h>
 #include "DroneCAN.h"
+#include "parameters.h"
+
 #include <canard.h>
 #include <uavcan.protocol.NodeStatus.h>
 #include <uavcan.protocol.GetNodeInfo.h>
 #include <uavcan.protocol.RestartNode.h>
 #include <uavcan.protocol.dynamic_node_id.Allocation.h>
+#include <uavcan.protocol.param.GetSet.h>
 #include <dronecan.remoteid.BasicID.h>
 #include <dronecan.remoteid.Location.h>
 #include <dronecan.remoteid.SelfID.h>
@@ -144,6 +147,9 @@ void DroneCAN::onTransferReceived(CanardInstance* ins,
         Serial.printf("Got OperatorID\n");
         handle_OperatorID(transfer);
         break;
+    case UAVCAN_PROTOCOL_PARAM_GETSET_ID:
+        handle_param_getset(ins, transfer);
+        break;
     default:
         //Serial.printf("reject %u\n", transfer->data_type_id);
         break;
@@ -171,6 +177,7 @@ bool DroneCAN::shouldAcceptTransfer(const CanardInstance* ins,
         ACCEPT_ID(DRONECAN_REMOTEID_SELFID);
         ACCEPT_ID(DRONECAN_REMOTEID_OPERATORID);
         ACCEPT_ID(DRONECAN_REMOTEID_SYSTEM);
+        ACCEPT_ID(UAVCAN_PROTOCOL_PARAM_GETSET);
         return true;
     }
     //Serial.printf("%u: reject ID 0x%x\n", millis(), data_type_id);
@@ -533,6 +540,104 @@ void DroneCAN::handle_Location(CanardRxTransfer* transfer)
     COPY_FIELD(timestamp);
     COPY_FIELD(timestamp_accuracy);
 }
+
+/*
+  handle parameter GetSet request
+ */
+void DroneCAN::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transfer)
+{
+    uavcan_protocol_param_GetSetRequest req;
+    if (uavcan_protocol_param_GetSetRequest_decode(transfer, &req)) {
+        return;
+    }
+
+    uavcan_protocol_param_GetSetResponse pkt {};
+
+    const Parameters::Param *vp = nullptr;
+
+    if (req.name.len != 0 && req.name.len > PARAM_NAME_MAX_LEN) {
+        vp = nullptr;
+    } else if (req.name.len != 0 && req.name.len <= PARAM_NAME_MAX_LEN) {
+        memcpy((char *)pkt.name.data, (char *)req.name.data, req.name.len);
+        vp = Parameters::find((char *)pkt.name.data);
+    } else {
+        vp = Parameters::find_by_index(req.index);
+    }
+    if (vp != nullptr && req.name.len != 0 && req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_EMPTY) {
+        // param set
+        switch (vp->ptype) {
+        case Parameters::ParamType::UINT8:
+            if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE) {
+                return;
+            }
+            vp->set(uint8_t(req.value.integer_value));
+            break;
+        case Parameters::ParamType::FLOAT:
+            if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_REAL_VALUE) {
+                return;
+            }
+            vp->set(req.value.real_value);
+            break;
+        case Parameters::ParamType::CHAR20:
+            if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_STRING_VALUE) {
+                return;
+            }
+            vp->set((const char *)&req.value.string_value.data[0]);
+            break;
+        default:
+            return;
+        }
+    }
+    if (vp != nullptr) {
+        switch (vp->ptype) {
+        case Parameters::ParamType::UINT8:
+            pkt.value.union_tag = UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE;
+            pkt.value.integer_value = vp->get_uint8();
+            pkt.default_value.union_tag = UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE;
+            pkt.default_value.integer_value = uint8_t(vp->default_value);
+            pkt.min_value.union_tag = UAVCAN_PROTOCOL_PARAM_NUMERICVALUE_INTEGER_VALUE;
+            pkt.min_value.integer_value = uint8_t(vp->min_value);
+            pkt.max_value.union_tag = UAVCAN_PROTOCOL_PARAM_NUMERICVALUE_INTEGER_VALUE;
+            pkt.max_value.integer_value = uint8_t(vp->max_value);
+            break;
+        case Parameters::ParamType::FLOAT:
+            pkt.value.union_tag = UAVCAN_PROTOCOL_PARAM_VALUE_REAL_VALUE;
+            pkt.value.real_value = vp->get_float();
+            pkt.default_value.union_tag = UAVCAN_PROTOCOL_PARAM_VALUE_REAL_VALUE;
+            pkt.default_value.real_value = vp->default_value;
+            pkt.min_value.union_tag = UAVCAN_PROTOCOL_PARAM_NUMERICVALUE_REAL_VALUE;
+            pkt.min_value.real_value = vp->min_value;
+            pkt.max_value.union_tag = UAVCAN_PROTOCOL_PARAM_NUMERICVALUE_REAL_VALUE;
+            pkt.max_value.real_value = vp->max_value;
+            break;
+        case Parameters::ParamType::CHAR20: {
+            pkt.value.union_tag = UAVCAN_PROTOCOL_PARAM_VALUE_STRING_VALUE;
+            const char *s = vp->get_char20();
+            strncpy((char*)pkt.value.string_value.data, s, sizeof(pkt.value.string_value.data));
+            pkt.value.string_value.len = strlen(s);
+            break;
+        }
+        default:
+            return;
+        }
+        pkt.name.len = strlen(vp->name);
+        strncpy((char *)pkt.name.data, vp->name, sizeof(pkt.name.data));
+    }
+
+    uint8_t buffer[UAVCAN_PROTOCOL_PARAM_GETSET_RESPONSE_MAX_SIZE] {};
+    uint16_t total_size = uavcan_protocol_param_GetSetResponse_encode(&pkt, buffer);
+
+    canardRequestOrRespond(ins,
+                           transfer->source_node_id,
+                           UAVCAN_PROTOCOL_PARAM_GETSET_SIGNATURE,
+                           UAVCAN_PROTOCOL_PARAM_GETSET_ID,
+                           &transfer->transfer_id,
+                           transfer->priority,
+                           CanardResponse,
+                           &buffer[0],
+                           total_size);
+}
+
 
 #if 0
 // xprintf is useful when debugging in C code such as libcanard

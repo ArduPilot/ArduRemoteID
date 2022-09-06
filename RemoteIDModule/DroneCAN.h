@@ -55,6 +55,7 @@ private:
     void handle_OperatorID(CanardRxTransfer* transfer);
     void handle_System(CanardRxTransfer* transfer);
     void handle_Location(CanardRxTransfer* transfer);
+    void handle_param_getset(CanardInstance* ins, CanardRxTransfer* transfer);
 
 public:
     void onTransferReceived(CanardInstance* ins, CanardRxTransfer* transfer);
