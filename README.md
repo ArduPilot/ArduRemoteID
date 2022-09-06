@@ -7,7 +7,7 @@ ASTM F3586-22 Means of Compliance.
 
 ## Hardware Supported
 
-The firmware cuttently supports the ESP32-S3 and ESP32-C3 chips. There
+The firmware currently supports the ESP32-S3 and ESP32-C3 chips. There
 are 4 boards supported so far with more to come:
 
  - the ESP32-S3 dev board: https://au.mouser.com/ProductDetail/356-ESP32S3DEVKTM1N8
@@ -15,7 +15,7 @@ are 4 boards supported so far with more to come:
  - a Bluemark DB110 (legacy) from https://bluemark.io/ ([product page](https://dronescout.co/dronebeacon-mavlink-remote-id-transponder/) | [buy](https://dronescout.co/product/dronebeacon-mavlink-pcb-only-transponder/))
  - a Bluemark DB200 from https://bluemark.io/ ([product page](https://dronescout.co/dronebeacon-mavlink-remote-id-transponder/) | [buy](https://dronescout.co/product/dronebeacon-mavlink-db200-transponder/))
 
-Hardware from https://wurzbachelectronics.com/ is expeced to be added soon.
+Hardware from https://wurzbachelectronics.com/ is expected to be added soon.
 
 For the ESP32-S3 dev board the pins assumed in this firmware are:
 
@@ -64,14 +64,14 @@ make a dual-transport implementation easy.
 
 ## Releases
 
-Pre-built releases are in the releases folder on github
+Pre-built releases are in the releases folder on github.
 
 ## Flashing
 
 To flash to an ESP32-S3 board use the espressif FlashTool from
 https://www.espressif.com/en/support/download/other-tools
 
-if this is the first time flashing the board, you may need to hold the "boot" button down while attaching the USB cable to the USB connector marked "USB"
+If this is the first time flashing the board, you may need to hold the "boot" button down while attaching the USB cable to the USB connector marked "USB"
 
 and then use the pre-built binary in the releases folder to flash using
 the following options, after selecting the COMM port that the board is attached:
