@@ -68,6 +68,10 @@ static BLEMultiAdvertising advert(3);
 
 bool BLE_TX::init(void)
 {
+    if (initialised) {
+        return true;
+    }
+    initialised = true;
     BLEDevice::init("");
 
     // generate random mac address
@@ -102,6 +106,8 @@ bool BLE_TX::init(void)
 
 bool BLE_TX::transmit_legacy_name(ODID_UAS_Data &UAS_data)
 {
+    init();
+
     //set BLE name
     uint8_t legacy_name_payload[36];
     char legacy_name[28] {};
@@ -125,6 +131,7 @@ bool BLE_TX::transmit_legacy_name(ODID_UAS_Data &UAS_data)
 
 bool BLE_TX::transmit_longrange(ODID_UAS_Data &UAS_data)
 {
+    init();
     // create a packed UAS data message
     uint8_t payload[250];
     int length = odid_message_build_pack(&UAS_data, payload, 255);
@@ -153,6 +160,7 @@ bool BLE_TX::transmit_longrange(ODID_UAS_Data &UAS_data)
 
 bool BLE_TX::transmit_legacy(ODID_UAS_Data &UAS_data)
 {
+    init();
     static uint8_t legacy_phase = 0;
     int legacy_length = 0;
     // setup ASTM header

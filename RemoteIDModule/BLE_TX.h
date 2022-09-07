@@ -13,6 +13,7 @@ public:
     bool transmit_legacy(ODID_UAS_Data &UAS_data);
 
 private:
+    bool initialised;
     uint8_t msg_counters[ODID_MSG_COUNTER_AMOUNT];
     uint8_t legacy_payload[36];
     uint8_t longrange_payload[250];

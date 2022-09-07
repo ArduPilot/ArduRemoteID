@@ -21,6 +21,3 @@
 
 // do we support MAVLink connnection to flight controller?
 #define AP_MAVLINK_ENABLED 1
-
-// define the output update rate
-#define OUTPUT_RATE_HZ 1 //this is the minimum update rate according to the docs. More transmissions will increase interferency to other radio modules.

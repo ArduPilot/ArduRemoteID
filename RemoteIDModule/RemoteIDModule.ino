@@ -17,6 +17,8 @@
 #include "WiFi_TX.h"
 #include "BLE_TX.h"
 #include "parameters.h"
+#include "webinterface.h"
+#include <esp_ota_ops.h>
 
 #if AP_DRONECAN_ENABLED
 static DroneCAN dronecan;
@@ -27,13 +29,8 @@ static MAVLinkSerial mavlink1{Serial1, MAVLINK_COMM_0};
 static MAVLinkSerial mavlink2{Serial,  MAVLINK_COMM_1};
 #endif
 
-#if AP_WIFI_NAN_ENABLED
 static WiFi_NAN wifi;
-#endif
-
-#if AP_BLE_LEGACY_ENABLED || AP_BLE_LONGRANGE_ENABLED
 static BLE_TX ble;
-#endif
 
 #define DEBUG_BAUDRATE 57600
 #define MAVLINK_BAUDRATE 57600
@@ -41,13 +38,20 @@ static BLE_TX ble;
 // OpenDroneID output data structure
 static ODID_UAS_Data UAS_data;
 static uint32_t last_location_ms;
+static WebInterface webif;
+
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
 
 /*
   setup serial ports
  */
 void setup()
 {
-    g.load_defaults();
+    // disable brownout checking
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+
+    g.init();
 
     // Serial for debug printf
     Serial.begin(DEBUG_BAUDRATE);
@@ -64,12 +68,6 @@ void setup()
 #endif
 #if AP_DRONECAN_ENABLED
     dronecan.init();
-#endif
-#if AP_WIFI_NAN_ENABLED
-    wifi.init();
-#endif
-#if AP_BLE_LEGACY_ENABLED || AP_BLE_LONGRANGE_ENABLED
-    ble.init();
 #endif
 
 #if defined(PIN_CAN_EN)
@@ -89,6 +87,10 @@ void setup()
     pinMode(PIN_CAN_TERM, OUTPUT);
     digitalWrite(PIN_CAN_TERM, HIGH);
 #endif
+
+    esp_log_level_set("*", ESP_LOG_DEBUG);
+
+    esp_ota_mark_app_valid_cancel_rollback();
 }
 
 #define IMIN(x,y) ((x)<(y)?(x):(y))
@@ -222,8 +224,6 @@ static uint8_t loop_counter = 0;
 
 void loop()
 {
-    static uint32_t last_update;
-
 #if AP_MAVLINK_ENABLED
     mavlink1.update();
     mavlink2.update();
@@ -233,16 +233,6 @@ void loop()
 #endif
 
     const uint32_t now_ms = millis();
-
-    // we call BT4 send at 5x the desired rate as it has to split the pkts 5 ways
-    const uint32_t rate_divider = 5;
-
-    if (now_ms - last_update < 1000UL/(OUTPUT_RATE_HZ*rate_divider)) {
-        // not ready for a new frame yet
-        return;
-    }
-    loop_counter++;
-    loop_counter %= rate_divider;
 
     // the transports have common static data, so we can just use the
     // first for status
@@ -258,19 +248,19 @@ void loop()
     const uint32_t last_location_ms = transport.get_last_location_ms();
     const uint32_t last_system_ms = transport.get_last_system_ms();
 
-#if AP_BROADCAST_ON_POWER_UP
-    // if we are broadcasting on powerup we always mark location valid
-    // so the location with default data is sent
-    if (!UAS_data.LocationValid) {
-        UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
-        UAS_data.LocationValid = 1;
+    if (g.bcast_powerup) {
+        // if we are broadcasting on powerup we always mark location valid
+        // so the location with default data is sent
+        if (!UAS_data.LocationValid) {
+            UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
+            UAS_data.LocationValid = 1;
+        }
+    } else {
+        // only broadcast if we have received a location at least once
+        if (last_location_ms == 0) {
+            return;
+        }
     }
-#else
-    // only broadcast if we have received a location at least once
-    if (last_location_ms == 0) {
-        return;
-    }
-#endif
 
     if (last_location_ms == 0 ||
         now_ms - last_location_ms > 5000) {
@@ -287,24 +277,33 @@ void loop()
     }
     
     set_data(transport);
-    last_update = now_ms;
-#if AP_WIFI_NAN_ENABLED
-    if (loop_counter == 0) { //only run on the original update rate
+
+    static uint32_t last_update_wifi_ms;
+    if (g.wifi_nan_rate > 0 &&
+        now_ms - last_update_wifi_ms > 1000/g.wifi_nan_rate) {
+        last_update_wifi_ms = now_ms;
         wifi.transmit(UAS_data);
     }
-#endif
 
-#if AP_BLE_LONGRANGE_ENABLED
-    if (loop_counter == 0) { //only run on the original update rate
+    static uint32_t last_update_bt5_ms;
+    if (g.bt5_rate > 0 &&
+        now_ms - last_update_bt5_ms > 1000/g.bt5_rate) {
+        last_update_bt5_ms = now_ms;
         ble.transmit_longrange(UAS_data);
     }
-#endif
 
-#if AP_BLE_LEGACY_ENABLED
-    ble.transmit_legacy(UAS_data);
-#endif
+    static uint32_t last_update_bt4_ms;
+    if (g.bt4_rate > 0 &&
+        now_ms - last_update_bt4_ms > 200/g.bt4_rate) {
+        last_update_bt4_ms = now_ms;
+        ble.transmit_legacy(UAS_data);
+        ble.transmit_legacy_name(UAS_data);
+    }
 
-#if AP_BLE_LEGACY_ENABLED || AP_BLE_LONGRANGE_ENABLED
-    ble.transmit_legacy_name(UAS_data);
-#endif
+    if (g.webserver_enable) {
+        webif.update();
+    }
+
+    // sleep for a bit for power saving
+    delay(1);
 }

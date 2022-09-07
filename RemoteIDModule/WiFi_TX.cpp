@@ -45,6 +45,10 @@ bool WiFi_NAN::init(void)
 
 bool WiFi_NAN::transmit(ODID_UAS_Data &UAS_data)
 {
+    if (!initialised) {
+        initialised = true;
+        init();
+    }
     uint8_t buffer[1024] {};
 
     int length;

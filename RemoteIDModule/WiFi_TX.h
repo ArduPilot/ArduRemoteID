@@ -11,6 +11,7 @@ public:
     bool transmit(ODID_UAS_Data &UAS_data);
 
 private:
+    bool initialised;
     char ssid[32];
     uint8_t WiFi_mac_addr[6];
     uint8_t wifi_channel = 6;
