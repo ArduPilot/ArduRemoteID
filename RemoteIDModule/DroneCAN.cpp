@@ -22,11 +22,13 @@
 #include <dronecan.remoteid.OperatorID.h>
 #include <dronecan.remoteid.ArmStatus.h>
 
-#define BOARD_ID 10001
+#ifndef CAN_BOARD_ID
+#define CAN_BOARD_ID 10001
+#endif
+
 #ifndef CAN_APP_NODE_NAME
 #define CAN_APP_NODE_NAME "ArduPilot RemoteIDModule"
 #endif
-#define CAN_DEFAULT_NODE_ID 0 // use DNA
 
 #define UNUSED(x) (void)(x)
 
@@ -44,9 +46,9 @@ void DroneCAN::init(void)
 
     canardInit(&canard, (uint8_t *)canard_memory_pool, sizeof(canard_memory_pool),
                onTransferReceived_trampoline, shouldAcceptTransfer_trampoline, NULL);
-#if CAN_DEFAULT_NODE_ID
-    canardSetLocalNodeID(&canard, CAN_DEFAULT_NODE_ID);
-#endif
+    if (g.can_node > 0 && g.can_node < 128) {
+        canardSetLocalNodeID(&canard, g.can_node);
+    }
     canard.user_reference = (void*)this;
 }
 
@@ -341,8 +343,8 @@ void DroneCAN::handle_get_node_info(CanardInstance* ins, CanardRxTransfer* trans
 
     readUniqueID(pkt.hardware_version.unique_id);
 
-    pkt.hardware_version.major = BOARD_ID >> 8;
-    pkt.hardware_version.minor = BOARD_ID & 0xFF;
+    pkt.hardware_version.major = CAN_BOARD_ID >> 8;
+    pkt.hardware_version.minor = CAN_BOARD_ID & 0xFF;
     snprintf((char*)pkt.name.data, sizeof(pkt.name.data), "%s", CAN_APP_NODE_NAME);
     pkt.name.len = strnlen((char*)pkt.name.data, sizeof(pkt.name.data));
 

@@ -10,18 +10,19 @@ class Parameters {
 public:
     uint8_t lock_level;
     uint8_t can_node;
+    uint8_t bcast_powerup;
     char uas_id[21] = "ABCD123456789";
     float wifi_nan_rate;
     float bt4_rate;
     float bt5_rate;
+    uint8_t webserver_enable;
+    char wifi_ssid[21] = "RemoteID_XXXXXXXX";
+    char wifi_password[21] = "SecretPassword";
 
     /*
       header at the front of storage
      */
     struct header {
-        uint32_t format_version;
-        uint32_t flash_counter;
-        uint32_t crc;
         struct public_key {
             uint8_t key[PUBLIC_KEY_LEN];
         } public_keys[MAX_PUBLIC_KEYS];
@@ -54,8 +55,8 @@ public:
     static const Param *find(const char *name);
     static const Param *find_by_index(uint16_t idx);
 
-    bool dirty;
-
+    void init(void);
+private:
     void load_defaults(void);
 };
 
