@@ -1,3 +1,14 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>ArduRemoteID</title>
+    <meta name="description" content="ArduPilot RemoteID Module.">
+    <link rel="stylesheet" type="text/css" href="styles/main.css">
+</head>
+
+<body>
 <form name='loginForm'>
   <table width='20%' bgcolor='A09F9F' align='center'>
     <tr>
@@ -7,10 +18,6 @@
       </td>
       <br>
       <br>
-    </tr>
-    <tr>
-      <td>Username:</td>
-      <td><input type='text' size=25 name='userid'><br></td>
     </tr>
     <br>
     <br>
@@ -25,12 +32,16 @@
     </tr>
   </table>
 </form>
+
 <script>
   function check(form) {
-      if(form.userid.value=='admin' && form.pwd.value=='admin') {
+      if (form.pwd.value=='admin') {
           window.open('/uploader.html')
       } else {
-          alert('Error Password or Username')/*displays error message*/
+          alert('Incorrect Password')
       }
   }
 </script>
+
+</body>
+</html>

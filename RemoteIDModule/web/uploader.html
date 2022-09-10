@@ -1,36 +1,52 @@
-<script src='js/jquery.min.js'></script>
-<form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>
-  <input type='file' name='update'>
-  <input type='submit' value='Update'>
-</form>
-<div id='prg'>upload progress: 0%</div>
-<script>
-  $('form').submit(function(e) {
-      e.preventDefault();
-      var form = $('#upload_form')[0];
-      var data = new FormData(form);
-      $.ajax({
-          url: '/update',
-          type: 'POST',
-          data: data,
-          contentType: false,
-          processData:false,
-          xhr: function() {
-              var xhr = new window.XMLHttpRequest();
-              xhr.upload.addEventListener('progress', function(evt) {
-                  if (evt.lengthComputable) {
-                      var per = evt.loaded / evt.total;
-                      $('#prg').html('progress: ' + Math.round(per*100) + '%');
-                  }
-              }, false);
-              return xhr;
-          },
-          success:function(d, s) {
-              console.log('success!')
-          },
-          error: function (a, b, c) {
-          }
-      });
-  });
-</script>
+<!doctype html>
+<html lang="en">
 
+<head>
+    <meta charset="utf-8">
+    <title>ArduRemoteID Firmware Update</title>
+    <meta name="description" content="ArduPilot RemoteID Module.">
+    <link rel="stylesheet" type="text/css" href="styles/main.css">
+    <script src='js/jquery.min.js'></script>
+</head>
+
+<body>
+  <h1>ArduRemoteID Firmware Update</h1>
+
+  <form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>
+    <input type='file' name='update'>
+    <input type='submit' value='Update'>
+  </form>
+  <div id='progress'>upload progress: 0%</div>
+
+  <script>
+    $('form').submit(function(e) {
+        e.preventDefault();
+        var form = $('#upload_form')[0];
+        var data = new FormData(form);
+        $.ajax({
+            url: '/update',
+            type: 'POST',
+            data: data,
+            contentType: false,
+            processData:false,
+            xhr: function() {
+                var xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener('progress', function(evt) {
+                    if (evt.lengthComputable) {
+                        var per = evt.loaded / evt.total;
+                        $('#progress').html('progress: ' + Math.round(per*100) + '%');
+                    }
+                }, false);
+                return xhr;
+            },
+            success:function(d, s) {
+                console.log('success!')
+            },
+            error: function (a, b, c) {
+            }
+        });
+    });
+  </script>
+
+</body>
+</html>
