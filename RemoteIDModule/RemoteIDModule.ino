@@ -33,7 +33,6 @@ static WiFi_NAN wifi;
 static BLE_TX ble;
 
 #define DEBUG_BAUDRATE 57600
-#define MAVLINK_BAUDRATE 57600
 
 // OpenDroneID output data structure
 static ODID_UAS_Data UAS_data;
@@ -54,10 +53,10 @@ void setup()
     g.init();
 
     // Serial for debug printf
-    Serial.begin(DEBUG_BAUDRATE);
+    Serial.begin(g.baudrate);
 
     // Serial1 for MAVLink
-    Serial1.begin(MAVLINK_BAUDRATE, SERIAL_8N1, PIN_UART_RX, PIN_UART_TX);
+    Serial1.begin(g.baudrate, SERIAL_8N1, PIN_UART_RX, PIN_UART_TX);
 
     // set all fields to invalid/initial values
     odid_initUasData(&UAS_data);
@@ -234,6 +233,10 @@ void loop()
 
     const uint32_t now_ms = millis();
 
+    if (g.webserver_enable) {
+        webif.update();
+    }
+
     // the transports have common static data, so we can just use the
     // first for status
 #if AP_MAVLINK_ENABLED
@@ -258,6 +261,7 @@ void loop()
     } else {
         // only broadcast if we have received a location at least once
         if (last_location_ms == 0) {
+            delay(1);
             return;
         }
     }
@@ -298,10 +302,6 @@ void loop()
         last_update_bt4_ms = now_ms;
         ble.transmit_legacy(UAS_data);
         ble.transmit_legacy_name(UAS_data);
-    }
-
-    if (g.webserver_enable) {
-        webif.update();
     }
 
     // sleep for a bit for power saving

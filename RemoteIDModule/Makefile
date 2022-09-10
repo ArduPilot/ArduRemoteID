@@ -38,8 +38,8 @@ headers:
 	@../scripts/git-version.sh
 	@cd .. && scripts/regen_headers.sh
 
-romfs_files.h: web/*.html
-	@../scripts/make_romfs.py romfs_files.h web/*.html
+romfs_files.h: web/*.html web/js/*.js
+	@../scripts/make_romfs.py romfs_files.h web/*.html web/js/*.js
 
 ArduRemoteID-%.bin: *.cpp *.ino *.h romfs_files.h
 	@echo "Building $* on $(CHIP)"
@@ -61,6 +61,10 @@ checkdev:
 upload-%: checkdev
 	@echo "Flashing ArduRemoteID-$*.bin"
 	$(ESPTOOL) --port $(SERDEV) write_flash 0x0 ArduRemoteID-$*.bin
+
+uploadota-%: checkdev
+	@echo "Flashing ArduRemoteID-$*_OTA.bin"
+	$(ESPTOOL) --port $(SERDEV) write_flash 0x10000 ArduRemoteID_$*_OTA.bin
 
 upload: upload-ESP32S3_DEV
 

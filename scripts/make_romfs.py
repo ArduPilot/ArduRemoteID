@@ -19,28 +19,11 @@ def embed_file(out, f, idx, embedded_name):
     except Exception:
         raise Exception("Failed to embed %s" % f)
 
-    pad = 0
-    if embedded_name.endswith("bootloader.bin"):
-        # round size to a multiple of 32 bytes for bootloader, this ensures
-        # it can be flashed on a STM32H7 chip
-        blen = len(contents)
-        pad = (32 - (blen % 32)) % 32
-        if pad != 0:
-            if sys.version_info[0] >= 3:
-                contents += bytes([0xff]*pad)
-            else:
-                for i in range(pad):
-                    contents += bytes(chr(0xff))
-            print("Padded %u bytes for %s to %u" % (pad, embedded_name, len(contents)))
-
     write_encode(out, 'static const uint8_t romfs_%u[] = {' % idx)
 
     outf = tempfile.NamedTemporaryFile()
-    # ensure nul termination
-    nul = bytearray([0])
-    if contents[-1] != nul:
-        contents += nul
-    outf.write(contents)
+    with gzip.GzipFile(fileobj=outf, mode='wb', filename='', compresslevel=9, mtime=0) as g:
+        g.write(contents)
 
     outf.seek(0)
     b = bytearray(outf.read())

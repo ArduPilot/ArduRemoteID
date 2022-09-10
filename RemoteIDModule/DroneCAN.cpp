@@ -572,20 +572,29 @@ void DroneCAN::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transf
             if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE) {
                 return;
             }
-            vp->set(uint8_t(req.value.integer_value));
+            vp->set_uint8(uint8_t(req.value.integer_value));
+            break;
+        case Parameters::ParamType::UINT32:
+            if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE) {
+                return;
+            }
+            vp->set_uint32(uint32_t(req.value.integer_value));
             break;
         case Parameters::ParamType::FLOAT:
             if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_REAL_VALUE) {
                 return;
             }
-            vp->set(req.value.real_value);
+            vp->set_float(req.value.real_value);
             break;
-        case Parameters::ParamType::CHAR20:
+        case Parameters::ParamType::CHAR20: {
             if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_STRING_VALUE) {
                 return;
             }
-            vp->set((const char *)&req.value.string_value.data[0]);
+            char v[21] {};
+            strncpy(v, (const char *)&req.value.string_value.data[0], req.value.string_value.len);
+            vp->set_char20(v);
             break;
+        }
         default:
             return;
         }
@@ -601,6 +610,16 @@ void DroneCAN::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transf
             pkt.min_value.integer_value = uint8_t(vp->min_value);
             pkt.max_value.union_tag = UAVCAN_PROTOCOL_PARAM_NUMERICVALUE_INTEGER_VALUE;
             pkt.max_value.integer_value = uint8_t(vp->max_value);
+            break;
+        case Parameters::ParamType::UINT32:
+            pkt.value.union_tag = UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE;
+            pkt.value.integer_value = vp->get_uint32();
+            pkt.default_value.union_tag = UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE;
+            pkt.default_value.integer_value = uint32_t(vp->default_value);
+            pkt.min_value.union_tag = UAVCAN_PROTOCOL_PARAM_NUMERICVALUE_INTEGER_VALUE;
+            pkt.min_value.integer_value = uint32_t(vp->min_value);
+            pkt.max_value.union_tag = UAVCAN_PROTOCOL_PARAM_NUMERICVALUE_INTEGER_VALUE;
+            pkt.max_value.integer_value = uint32_t(vp->max_value);
             break;
         case Parameters::ParamType::FLOAT:
             pkt.value.union_tag = UAVCAN_PROTOCOL_PARAM_VALUE_REAL_VALUE;
