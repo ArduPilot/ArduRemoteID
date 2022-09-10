@@ -11,7 +11,8 @@ const Parameters::Param Parameters::params[] = {
     { "LOCK_LEVEL",        Parameters::ParamType::UINT8,  (const void*)&g.lock_level,       0, 0, 2 },
     { "CAN_NODE",          Parameters::ParamType::UINT8,  (const void*)&g.can_node,         0, 0, 127 },
     { "UAS_ID",            Parameters::ParamType::CHAR20, (const void*)&g.uas_id[0],        0, 0, 0 },
-    { "WIFI_NAN_RATE",     Parameters::ParamType::FLOAT,  (const void*)&g.wifi_nan_rate,    1, 0, 5 },
+    { "BAUDRATE",          Parameters::ParamType::UINT32, (const void*)&g.baudrate,         57600, 9600, 921600 },
+    { "WIFI_NAN_RATE",     Parameters::ParamType::FLOAT,  (const void*)&g.wifi_nan_rate,    0, 0, 5 },
     { "BT4_RATE",          Parameters::ParamType::FLOAT,  (const void*)&g.bt4_rate,         1, 0, 5 },
     { "BT5_RATE",          Parameters::ParamType::FLOAT,  (const void*)&g.bt5_rate,         1, 0, 5 },
     { "WEBSERVER_ENABLE",  Parameters::ParamType::UINT8,  (const void*)&g.webserver_enable, 1, 0, 1 },
@@ -45,14 +46,21 @@ const Parameters::Param *Parameters::find_by_index(uint16_t index)
     return &params[index];
 }
 
-void Parameters::Param::set(uint8_t v) const
+void Parameters::Param::set_uint8(uint8_t v) const
 {
     auto *p = (uint8_t *)ptr;
     *p = v;
     nvs_set_u8(handle, name, *p);
 }
 
-void Parameters::Param::set(float v) const
+void Parameters::Param::set_uint32(uint32_t v) const
+{
+    auto *p = (uint32_t *)ptr;
+    *p = v;
+    nvs_set_u32(handle, name, *p);
+}
+
+void Parameters::Param::set_float(float v) const
 {
     auto *p = (float *)ptr;
     *p = v;
@@ -64,15 +72,23 @@ void Parameters::Param::set(float v) const
     nvs_set_u32(handle, name, u.u32);
 }
 
-void Parameters::Param::set(const char *v) const
+void Parameters::Param::set_char20(const char *v) const
 {
-    strncpy((char *)ptr, v, PARAM_NAME_MAX_LEN);
+    memset((void*)ptr, 0, 21);
+    strncpy((char *)ptr, v, 20);
+    Serial.printf("Set %s -> '%s'\n", name, (const char *)ptr);
     nvs_set_str(handle, name, v);
 }
 
 uint8_t Parameters::Param::get_uint8() const
 {
     const auto *p = (const uint8_t *)ptr;
+    return *p;
+}
+
+uint32_t Parameters::Param::get_uint32() const
+{
+    const auto *p = (const uint32_t *)ptr;
     return *p;
 }
 
@@ -85,6 +101,7 @@ float Parameters::Param::get_float() const
 const char *Parameters::Param::get_char20() const
 {
     const char *p = (const char *)ptr;
+    Serial.printf("Get %s -> '%s'\n", name, p);
     return p;
 }
 
@@ -98,6 +115,9 @@ void Parameters::load_defaults(void)
         switch (p.ptype) {
         case ParamType::UINT8:
             *(uint8_t *)p.ptr = uint8_t(p.default_value);
+            break;
+        case ParamType::UINT32:
+            *(uint32_t *)p.ptr = uint32_t(p.default_value);
             break;
         case ParamType::FLOAT:
             *(float *)p.ptr = p.default_value;
@@ -120,6 +140,9 @@ void Parameters::init(void)
         case ParamType::UINT8:
             nvs_get_u8(handle, p.name, (uint8_t *)p.ptr);
             break;
+        case ParamType::UINT32:
+            nvs_get_u32(handle, p.name, (uint32_t *)p.ptr);
+            break;
         case ParamType::FLOAT:
             nvs_get_u32(handle, p.name, (uint32_t *)p.ptr);
             break;
@@ -129,5 +152,13 @@ void Parameters::init(void)
             break;
         }
         }
+    }
+
+    if (strlen(g.wifi_ssid) == 0) {
+        uint8_t mac[6] {};
+        esp_read_mac(mac, ESP_MAC_WIFI_STA);
+        snprintf(wifi_ssid, 20, "RID_%02x%02x%02x%02x%02x%02x",
+                 mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
     }
 }

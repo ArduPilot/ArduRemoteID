@@ -11,13 +11,14 @@ public:
     uint8_t lock_level;
     uint8_t can_node;
     uint8_t bcast_powerup;
+    uint32_t baudrate = 57600;
     char uas_id[21] = "ABCD123456789";
     float wifi_nan_rate;
     float bt4_rate;
     float bt5_rate;
     uint8_t webserver_enable;
-    char wifi_ssid[21] = "RemoteID_XXXXXXXX";
-    char wifi_password[21] = "SecretPassword";
+    char wifi_ssid[21] = "RID_123456";
+    char wifi_password[21] = "penguin1234";
 
     /*
       header at the front of storage
@@ -32,8 +33,9 @@ public:
     enum class ParamType {
         NONE=0,
         UINT8=1,
-        FLOAT=2,
-        CHAR20=3,
+        UINT32=2,
+        FLOAT=3,
+        CHAR20=4,
     };
 
     struct Param {
@@ -43,10 +45,12 @@ public:
         float default_value;
         float min_value;
         float max_value;
-        void set(float v) const;
-        void set(uint8_t v) const;
-        void set(const char *v) const;
+        void set_float(float v) const;
+        void set_uint8(uint8_t v) const;
+        void set_uint32(uint32_t v) const;
+        void set_char20(const char *v) const;
         uint8_t get_uint8() const;
+        uint32_t get_uint32() const;
         float get_float() const;
         const char *get_char20() const;
     };
