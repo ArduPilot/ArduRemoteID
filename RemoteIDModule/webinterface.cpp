@@ -34,10 +34,24 @@ class ROMFS_Handler : public RequestHandler
         }
         String uri = "web" + requestUri;
         Serial.printf("handle: '%s'\n", requestUri.c_str());
+
+        // work out content type
         const char *content_type = "text/html";
-        if (uri.endsWith(".js")) {
-            content_type = "text/javascript";
+        const struct {
+            const char *extension;
+            const char *content_type;
+        } extensions[] = {
+            { ".js", "text/javascript" },
+            { ".jpg", "image/jpeg" },
+            { ".css", "text/css" },
+        };
+        for (const auto &e : extensions) {
+            if (uri.endsWith(e.extension)) {
+                content_type = e.content_type;
+                break;
+            }
         }
+
         auto *f = ROMFS::find_stream(uri.c_str());
         if (f != nullptr) {
             server.sendHeader("Content-Encoding", "gzip");

@@ -38,8 +38,8 @@ headers:
 	@../scripts/git-version.sh
 	@cd .. && scripts/regen_headers.sh
 
-romfs_files.h: web/*.html web/js/*.js
-	@../scripts/make_romfs.py romfs_files.h web/*.html web/js/*.js
+romfs_files.h: web/*.html web/js/*.js web/styles/*css web/images/*.jpg
+	@../scripts/make_romfs.py romfs_files.h web/*.html web/js/*.js web/styles/*css web/images/*.jpg
 
 ArduRemoteID-%.bin: *.cpp *.ino *.h romfs_files.h
 	@echo "Building $* on $(CHIP)"
