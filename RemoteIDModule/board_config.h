@@ -5,6 +5,7 @@
 #pragma once
 
 #ifdef BOARD_ESP32S3_DEV
+#define BOARD_ID 1
 #define PIN_CAN_TX GPIO_NUM_47
 #define PIN_CAN_RX GPIO_NUM_38
 
@@ -12,6 +13,7 @@
 #define PIN_UART_RX 17
 
 #elif defined(BOARD_ESP32C3_DEV)
+#define BOARD_ID 2
 #define PIN_CAN_TX GPIO_NUM_5
 #define PIN_CAN_RX GPIO_NUM_4
 
@@ -19,6 +21,7 @@
 #define PIN_UART_RX 2
 
 #elif defined(BOARD_BLUEMARK_DB200)
+#define BOARD_ID 3
 
 #define PIN_CAN_TX GPIO_NUM_0 // this goes to the TX pin (= input) of the NXP CAN transceiver
 #define PIN_CAN_RX GPIO_NUM_5
@@ -37,6 +40,7 @@
 #define STATUS_LED_ON 1
 
 #elif defined(BOARD_BLUEMARK_DB110)
+#define BOARD_ID 4
 #define PIN_UART_TX 5
 #define PIN_UART_RX 4
 

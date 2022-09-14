@@ -17,8 +17,13 @@ const Parameters::Param Parameters::params[] = {
     { "BT5_RATE",          Parameters::ParamType::FLOAT,  (const void*)&g.bt5_rate,         1, 0, 5 },
     { "WEBSERVER_ENABLE",  Parameters::ParamType::UINT8,  (const void*)&g.webserver_enable, 1, 0, 1 },
     { "WIFI_SSID",         Parameters::ParamType::CHAR20, (const void*)&g.wifi_ssid, },
-    { "WIFI_PASSWORD",     Parameters::ParamType::CHAR20, (const void*)&g.wifi_password, },
+    { "WIFI_PASSWORD",     Parameters::ParamType::CHAR20, (const void*)&g.wifi_password,    0, 0, 0, PARAM_FLAG_HIDDEN },
     { "BCAST_POWERUP",     Parameters::ParamType::UINT8,  (const void*)&g.bcast_powerup,    1, 0, 1 },
+    { "PUBLIC_KEY1",       Parameters::ParamType::CHAR64, (const void*)&g.public_keys[0], },
+    { "PUBLIC_KEY2",       Parameters::ParamType::CHAR64, (const void*)&g.public_keys[1], },
+    { "PUBLIC_KEY3",       Parameters::ParamType::CHAR64, (const void*)&g.public_keys[2], },
+    { "PUBLIC_KEY4",       Parameters::ParamType::CHAR64, (const void*)&g.public_keys[3], },
+    { "PUBLIC_KEY5",       Parameters::ParamType::CHAR64, (const void*)&g.public_keys[4], },
     { "",                  Parameters::ParamType::NONE,   nullptr,  },
 };
 
@@ -76,7 +81,13 @@ void Parameters::Param::set_char20(const char *v) const
 {
     memset((void*)ptr, 0, 21);
     strncpy((char *)ptr, v, 20);
-    Serial.printf("Set %s -> '%s'\n", name, (const char *)ptr);
+    nvs_set_str(handle, name, v);
+}
+
+void Parameters::Param::set_char64(const char *v) const
+{
+    memset((void*)ptr, 0, 65);
+    strncpy((char *)ptr, v, 64);
     nvs_set_str(handle, name, v);
 }
 
@@ -101,7 +112,12 @@ float Parameters::Param::get_float() const
 const char *Parameters::Param::get_char20() const
 {
     const char *p = (const char *)ptr;
-    Serial.printf("Get %s -> '%s'\n", name, p);
+    return p;
+}
+
+const char *Parameters::Param::get_char64() const
+{
+    const char *p = (const char *)ptr;
     return p;
 }
 
@@ -148,6 +164,11 @@ void Parameters::init(void)
             break;
         case ParamType::CHAR20: {
             size_t len = 21;
+            nvs_get_str(handle, p.name, (char *)p.ptr, &len);
+            break;
+        }
+        case ParamType::CHAR64: {
+            size_t len = 65;
             nvs_get_str(handle, p.name, (char *)p.ptr, &len);
             break;
         }
