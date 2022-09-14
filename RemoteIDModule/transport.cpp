@@ -3,6 +3,7 @@
  */
 #include <Arduino.h>
 #include "transport.h"
+#include "parameters.h"
 
 const char *Transport::parse_fail = "uninitialised";
 
@@ -36,7 +37,7 @@ uint8_t Transport::arm_status_check(const char *&reason)
 
     if (last_location_ms == 0 || now_ms - last_location_ms > max_age_location_ms) {
         reason = "missing location message";
-    } else if (last_basic_id_ms == 0 || now_ms - last_basic_id_ms > max_age_other_ms) {
+    } else if (!g.have_basic_id_info() && (last_basic_id_ms == 0 || now_ms - last_basic_id_ms > max_age_other_ms)) {
         reason = "missing basic_id message";
     } else if (last_self_id_ms == 0  || now_ms - last_self_id_ms > max_age_other_ms) {
         reason = "missing self_id message";

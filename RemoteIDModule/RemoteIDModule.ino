@@ -149,9 +149,17 @@ static void set_data(Transport &t)
     const auto &location = t.get_location();
 
     // BasicID
-    UAS_data.BasicID[0].UAType = (ODID_uatype_t)basic_id.ua_type;
-    UAS_data.BasicID[0].IDType = (ODID_idtype_t)basic_id.id_type;
-    ODID_COPY_STR(UAS_data.BasicID[0].UASID, basic_id.uas_id);
+    if (g.have_basic_id_info()) {
+        // from parameters
+        UAS_data.BasicID[0].UAType = (ODID_uatype_t)g.ua_type;
+        UAS_data.BasicID[0].IDType = (ODID_idtype_t)g.id_type;
+        ODID_COPY_STR(UAS_data.BasicID[0].UASID, g.uas_id);
+    } else {
+        // from transport
+        UAS_data.BasicID[0].UAType = (ODID_uatype_t)basic_id.ua_type;
+        UAS_data.BasicID[0].IDType = (ODID_idtype_t)basic_id.id_type;
+        ODID_COPY_STR(UAS_data.BasicID[0].UASID, basic_id.uas_id);
+    }
     UAS_data.BasicIDValid[0] = 1;
 
     // OperatorID

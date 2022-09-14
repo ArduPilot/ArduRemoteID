@@ -14,6 +14,8 @@ public:
     uint8_t can_node;
     uint8_t bcast_powerup;
     uint32_t baudrate = 57600;
+    uint8_t ua_type;
+    uint8_t id_type;
     char uas_id[21] = "ABCD123456789";
     float wifi_nan_rate;
     float bt4_rate;
@@ -59,6 +61,8 @@ public:
     static const Param *find_by_index(uint16_t idx);
 
     void init(void);
+
+    bool have_basic_id_info(void) const;
 private:
     void load_defaults(void);
 };
