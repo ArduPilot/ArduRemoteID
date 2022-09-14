@@ -10,6 +10,8 @@ static nvs_handle handle;
 const Parameters::Param Parameters::params[] = {
     { "LOCK_LEVEL",        Parameters::ParamType::UINT8,  (const void*)&g.lock_level,       0, 0, 2 },
     { "CAN_NODE",          Parameters::ParamType::UINT8,  (const void*)&g.can_node,         0, 0, 127 },
+    { "UA_TYPE",           Parameters::ParamType::UINT8,  (const void*)&g.ua_type,          0, 0, 15 },
+    { "ID_TYPE",           Parameters::ParamType::UINT8,  (const void*)&g.id_type,          0, 0, 4 },
     { "UAS_ID",            Parameters::ParamType::CHAR20, (const void*)&g.uas_id[0],        0, 0, 0 },
     { "BAUDRATE",          Parameters::ParamType::UINT32, (const void*)&g.baudrate,         57600, 9600, 921600 },
     { "WIFI_NAN_RATE",     Parameters::ParamType::FLOAT,  (const void*)&g.wifi_nan_rate,    0, 0, 5 },
@@ -182,4 +184,12 @@ void Parameters::init(void)
                  mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
     }
+}
+
+/*
+  check if BasicID info is filled in with parameters
+ */
+bool Parameters::have_basic_id_info(void) const
+{
+    return strlen(g.uas_id) > 0 && g.id_type > 0 && g.ua_type > 0;
 }
