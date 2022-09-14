@@ -62,7 +62,7 @@ bool CheckFirmware::check_partition(const uint8_t *flash, uint32_t flash_len,
     return crypto_check_final(actx) == 0;
 }
 
-bool CheckFirmware::check_OTA_partition(const esp_partition_t *part, const uint8_t *lead_bytes, uint32_t lead_length)
+bool CheckFirmware::check_OTA_partition(const esp_partition_t *part, const uint8_t *lead_bytes, uint32_t lead_length, uint32_t &board_id)
 {
     Serial.printf("Checking partition %s\n", part->label);
     spi_flash_mmap_handle_t handle;
@@ -90,6 +90,9 @@ bool CheckFirmware::check_OTA_partition(const esp_partition_t *part, const uint8
         spi_flash_munmap(handle);
         return false;
     }
+    board_id = ad->board_id;
+
+    bool no_keys = true;
 
     for (uint8_t i=0; i<MAX_PUBLIC_KEYS; i++) {
         const char *b64_key = g.public_keys[i].b64_key;
@@ -98,6 +101,7 @@ bool CheckFirmware::check_OTA_partition(const esp_partition_t *part, const uint8
         if (strncmp(b64_key, ktype, strlen(ktype)) != 0) {
             continue;
         }
+        no_keys = false;
         b64_key += strlen(ktype);
         uint8_t key[32];
         int32_t out_len = base64_decode(b64_key, key, sizeof(key));
@@ -112,6 +116,10 @@ bool CheckFirmware::check_OTA_partition(const esp_partition_t *part, const uint8
         Serial.printf("check failed key %u\n", i);
     }
     spi_flash_munmap(handle);
+    if (no_keys) {
+        Serial.printf("No public keys - accepting firmware\n");
+        return true;
+    }
     Serial.printf("firmware failed checks\n");
     return false;
 }
@@ -128,7 +136,17 @@ bool CheckFirmware::check_OTA_next(const uint8_t *lead_bytes, uint32_t lead_leng
         Serial.printf("No next OTA partition\n");
         return false;
     }
-    return check_OTA_partition(part, lead_bytes, lead_length);
+    uint32_t board_id=0;
+    bool sig_ok = check_OTA_partition(part, lead_bytes, lead_length, board_id);
+    // if app descriptor has a board ID and the ID is wrong then reject
+    if (board_id != 0 && board_id != BOARD_ID) {
+        return false;
+    }
+    if (g.lock_level == 0) {
+        // if unlocked then accept any firmware
+        return true;
+    }
+    return sig_ok;
 }
 
 bool CheckFirmware::check_OTA_running(void)
@@ -138,7 +156,8 @@ bool CheckFirmware::check_OTA_running(void)
         Serial.printf("No running OTA partition\n");
         return false;
     }
-    return check_OTA_partition(running_part, nullptr, 0);
+    uint32_t board_id=0;
+    return check_OTA_partition(running_part, nullptr, 0, board_id);
 }
         
 esp_err_t esp_partition_read_raw(const esp_partition_t* partition,

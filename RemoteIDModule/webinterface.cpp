@@ -108,7 +108,7 @@ void WebInterface::init(void)
                 uint8_t ff = 0xff;
                 Update.write(&ff, 1);
             }
-            if (!CheckFirmware::check_OTA_next(lead_bytes, lead_len) && g.lock_level > 0) {
+            if (!CheckFirmware::check_OTA_next(lead_bytes, lead_len)) {
                 Serial.printf("failed firmware check\n");
             } else if (Update.end(true)) {
                 Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
