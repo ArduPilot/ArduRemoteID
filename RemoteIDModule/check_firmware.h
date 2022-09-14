@@ -21,7 +21,7 @@ public:
     static bool check_OTA_running(void);
 
 private:
-    static bool check_OTA_partition(const esp_partition_t *part, const uint8_t *lead_bytes, uint32_t lead_length);
+    static bool check_OTA_partition(const esp_partition_t *part, const uint8_t *lead_bytes, uint32_t lead_length, uint32_t &board_id);
     static bool check_partition(const uint8_t *flash, uint32_t flash_len,
                                 const uint8_t *lead_bytes, uint32_t lead_length,
                                 const app_descriptor_t *ad, const uint8_t public_key[32]);
