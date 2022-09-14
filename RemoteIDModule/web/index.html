@@ -6,42 +6,51 @@
     <title>ArduRemoteID</title>
     <meta name="description" content="ArduPilot RemoteID Module.">
     <link rel="stylesheet" type="text/css" href="styles/main.css">
+    <script src='js/jquery.min.js'></script>
 </head>
 
 <body>
-<form name='loginForm'>
-  <table width='20%' bgcolor='A09F9F' align='center'>
-    <tr>
-      <td colspan=2>
-        <center><font size=4><b>ArduRemoteID Login</b></font></center>
-        <br>
-      </td>
-      <br>
-      <br>
-    </tr>
-    <br>
-    <br>
-    <tr>
-      <td>Password:</td>
-      <td><input type='Password' size=25 name='pwd'><br></td>
-      <br>
-      <br>
-    </tr>
-    <tr>
-      <td><input type='submit' onclick='check(this.form)' value='Login'></td>
-    </tr>
-  </table>
-</form>
+  <h1>ArduRemoteID</h1>
 
-<script>
-  function check(form) {
-      if (form.pwd.value=='admin') {
-          window.open('/uploader.html')
-      } else {
-          alert('Incorrect Password')
-      }
-  }
-</script>
+  <h2>Status</h2>
+
+  <h2>Firmware Update</h2>
+
+  <form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>
+    <input type='file' name='update'>
+    <input type='submit' value='Update'>
+  </form>
+  <div id='progress'>upload progress: 0%</div>
+
+  <script>
+    $('form').submit(function(e) {
+        e.preventDefault();
+        var form = $('#upload_form')[0];
+        var data = new FormData(form);
+        $.ajax({
+            url: '/update',
+            type: 'POST',
+            data: data,
+            contentType: false,
+            processData:false,
+            xhr: function() {
+                var xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener('progress', function(evt) {
+                    if (evt.lengthComputable) {
+                        var per = evt.loaded / evt.total;
+                        $('#progress').html('progress: ' + Math.round(per*100) + '%');
+                    }
+                }, false);
+                return xhr;
+            },
+            success:function(d, s) {
+                console.log('success!')
+            },
+            error: function (a, b, c) {
+            }
+        });
+    });
+  </script>
 
 </body>
 </html>

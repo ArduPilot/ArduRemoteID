@@ -2,9 +2,11 @@
 
 #include <stdint.h>
 
-#define MAX_PUBLIC_KEYS 10
+#define MAX_PUBLIC_KEYS 5
 #define PUBLIC_KEY_LEN 32
 #define PARAM_NAME_MAX_LEN 16
+
+#define PARAM_FLAG_HIDDEN (1U<<0)
 
 class Parameters {
 public:
@@ -19,16 +21,9 @@ public:
     uint8_t webserver_enable;
     char wifi_ssid[21] = "RID_123456";
     char wifi_password[21] = "penguin1234";
-
-    /*
-      header at the front of storage
-     */
-    struct header {
-        struct public_key {
-            uint8_t key[PUBLIC_KEY_LEN];
-        } public_keys[MAX_PUBLIC_KEYS];
-        uint32_t reserved[30];
-    };
+    struct {
+        char b64_key[64];
+    } public_keys[MAX_PUBLIC_KEYS];
 
     enum class ParamType {
         NONE=0,
@@ -36,6 +31,7 @@ public:
         UINT32=2,
         FLOAT=3,
         CHAR20=4,
+        CHAR64=5,
     };
 
     struct Param {
@@ -45,14 +41,17 @@ public:
         float default_value;
         float min_value;
         float max_value;
+        uint16_t flags;
         void set_float(float v) const;
         void set_uint8(uint8_t v) const;
         void set_uint32(uint32_t v) const;
         void set_char20(const char *v) const;
+        void set_char64(const char *v) const;
         uint8_t get_uint8() const;
         uint32_t get_uint32() const;
         float get_float() const;
         const char *get_char20() const;
+        const char *get_char64() const;
     };
     static const struct Param params[];
 

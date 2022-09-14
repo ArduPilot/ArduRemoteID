@@ -8,6 +8,7 @@
 #include <Update.h>
 #include "parameters.h"
 #include "romfs.h"
+#include "check_firmware.h"
 
 static WebServer server(80);
 
@@ -20,7 +21,6 @@ class ROMFS_Handler : public RequestHandler
         if (uri == "/") {
             uri = "/index.html";
         }
-        Serial.printf("canHandle: %s\n", uri.c_str());
         uri = "web" + uri;
         if (ROMFS::exists(uri.c_str())) {
             return true;
@@ -74,40 +74,43 @@ void WebInterface::init(void)
     IPAddress myIP = WiFi.softAPIP();
 
     server.addHandler( &ROMFS_Handler );
-#if 0
-    /*return index page which is stored in serverIndex */
-    server.on("/", HTTP_GET, []() {
-        server.sendHeader("Connection", "close");
-        server.send(200, "text/html", ROMFS::find_string("web/login.html"));
-    });
-    server.on("/serverIndex", HTTP_GET, []() {
-        server.sendHeader("Connection", "close");
-        server.send(200, "text/html", ROMFS::find_string("web/uploader.html"));
-    });
-    server.on("/js/jquery.min.js", HTTP_GET, []() {
-        server.sendHeader("Connection", "close");
-        server.send(200, "text/html", ROMFS::find_string("web/js/jquery.min.js"));
-    });
-#endif
+
     /*handling uploading firmware file */
     server.on("/update", HTTP_POST, []() {
         server.sendHeader("Connection", "close");
         server.send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
         ESP.restart();
-    }, []() {
+    }, [this]() {
         HTTPUpload& upload = server.upload();
         if (upload.status == UPLOAD_FILE_START) {
             Serial.printf("Update: %s\n", upload.filename.c_str());
+            lead_len = 0;
             if (!Update.begin(UPDATE_SIZE_UNKNOWN)) { //start with max available size
                 Update.printError(Serial);
             }
         } else if (upload.status == UPLOAD_FILE_WRITE) {
             /* flashing firmware to ESP*/
+            if (lead_len < sizeof(lead_bytes)) {
+                uint32_t n = sizeof(lead_bytes)-lead_len;
+                if (n > upload.currentSize) {
+                    n = upload.currentSize;
+                }
+                memcpy(&lead_bytes[lead_len], upload.buf, n);
+                lead_len += n;
+            }
             if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
                 Update.printError(Serial);
             }
         } else if (upload.status == UPLOAD_FILE_END) {
-            if (Update.end(true)) { //true to set the size to the current progress
+            // write extra bytes to force flush of the buffer before we check signature
+            uint32_t extra = SPI_FLASH_SEC_SIZE+1;
+            while (extra--) {
+                uint8_t ff = 0xff;
+                Update.write(&ff, 1);
+            }
+            if (!CheckFirmware::check_OTA_next(lead_bytes, lead_len) && g.lock_level > 0) {
+                Serial.printf("failed firmware check\n");
+            } else if (Update.end(true)) {
                 Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
             } else {
                 Update.printError(Serial);

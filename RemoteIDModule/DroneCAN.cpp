@@ -595,6 +595,15 @@ void DroneCAN::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transf
             vp->set_char20(v);
             break;
         }
+        case Parameters::ParamType::CHAR64: {
+            if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_STRING_VALUE) {
+                return;
+            }
+            char v[65] {};
+            strncpy(v, (const char *)&req.value.string_value.data[0], req.value.string_value.len);
+            vp->set_char64(v);
+            break;
+        }
         default:
             return;
         }
@@ -634,6 +643,16 @@ void DroneCAN::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transf
         case Parameters::ParamType::CHAR20: {
             pkt.value.union_tag = UAVCAN_PROTOCOL_PARAM_VALUE_STRING_VALUE;
             const char *s = vp->get_char20();
+            if (vp->flags & PARAM_FLAG_HIDDEN) {
+                s = "********";
+            }
+            strncpy((char*)pkt.value.string_value.data, s, sizeof(pkt.value.string_value.data));
+            pkt.value.string_value.len = strlen(s);
+            break;
+        }
+        case Parameters::ParamType::CHAR64: {
+            pkt.value.union_tag = UAVCAN_PROTOCOL_PARAM_VALUE_STRING_VALUE;
+            const char *s = vp->get_char64();
             strncpy((char*)pkt.value.string_value.data, s, sizeof(pkt.value.string_value.data));
             pkt.value.string_value.len = strlen(s);
             break;
