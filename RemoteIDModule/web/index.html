@@ -11,16 +11,81 @@
 </head>
 
 <body>
+  <a href="/index.html"><img src="images/logo.jpg" alt="ArduPilot"></a></p>
   <h1>ArduRemoteID</h1>
 
   <h2>Status</h2>
 
-  <table class="values">
-    <tr><td>Version</td><td><div id="STATUS:VERSION"></div></td></tr>
-    <tr><td>Up Time</td><td><div id="STATUS:UPTIME"></div></td></tr>
-    <tr><td>Free Memory</td><td><div id="STATUS:FREEMEM"></div></td></tr>
-  </table>
+  <fieldset>
+    <legend>System</legend>
+    <table class="values">
+      <tr><td>Version</td><td><div id="STATUS:VERSION"></div></td></tr>
+      <tr><td>Up Time</td><td><div id="STATUS:UPTIME"></div></td></tr>
+      <tr><td>Free Memory</td><td><div id="STATUS:FREEMEM"></div></td></tr>
+    </table>
+  </fieldset>
+  <fieldset>
+    <legend>BasicID</legend>
+    <table class="values">
+      <tr><td>UAType</td><td><div id="BASICID:UAType"></div></td></tr>
+      <tr><td>IDType</td><td><div id="BASICID:IDType"></div></td></tr>
+      <tr><td>UASID</td><td><div id="BASICID:UASID"></div></td></tr>
+    </table>
+  </fieldset>
+  <fieldset>
+    <legend>OperatorID</legend>
+    <table class="values">
+      <tr><td>IDType</td><td><div id="OPERATORID:IDType"></div></td></tr>
+      <tr><td>ID</td><td><div id="OPERATORID:ID"></div></td></tr>
+    </table>
+  </fieldset>
+  <fieldset>
+    <legend>SelfID</legend>
+    <table class="values">
+      <tr><td>DescriptionType</td><td><div id="SELFID:DescType"></div></td></tr>
+      <tr><td>Description</td><td><div id="SELFID:Desc"></div></td></tr>
+    </table>
+  </fieldset>
+  <fieldset>
+    <legend>System</legend>
+    <table class="values">
+      <tr><td>OperatorLocationType</td><td><div id="SYSTEM:OperatorLocationType"></div></td></tr>
+      <tr><td>ClassificationType</td><td><div id="SYSTEM:ClassificationType"></div></td></tr>
+      <tr><td>OperatorLatitude</td><td><div id="SYSTEM:OperatorLatitude"></div></td></tr>
+      <tr><td>OperatorLongitude</td><td><div id="SYSTEM:OperatorLongitude"></div></td></tr>
+      <tr><td>AreaCount</td><td><div id="SYSTEM:AreaCount"></div></td></tr>
+      <tr><td>AreaRadius</td><td><div id="SYSTEM:AreaRadius"></div></td></tr>
+      <tr><td>AreaCeiling</td><td><div id="SYSTEM:AreaCeiling"></div></td></tr>
+      <tr><td>AreaFloor</td><td><div id="SYSTEM:AreaFloor"></div></td></tr>
+      <tr><td>CategoryEU</td><td><div id="SYSTEM:CategoryEU"></div></td></tr>
+      <tr><td>ClassEU</td><td><div id="SYSTEM:ClassEU"></div></td></tr>
+      <tr><td>OperatorAltitudeGeo</td><td><div id="SYSTEM:OperatorAltitudeGeo"></div></td></tr>
+      <tr><td>Timestamp</td><td><div id="SYSTEM:Timestamp"></div></td></tr>
+    </table>
+  </fieldset>
 
+  <fieldset>
+    <legend>Location</legend>
+    <table class="values">
+      <tr><td>Status</td><td><div id="LOCATION:Status"></div><td></tr>
+      <tr><td>Direction</td><td><div id="LOCATION:Direction"></div><td></tr>
+      <tr><td>SpeedHorizontal</td><td><div id="LOCATION:SpeedHorizontal"></div><td></tr>
+      <tr><td>SpeedVertical</td><td><div id="LOCATION:SpeedVertical"></div><td></tr>
+      <tr><td>Latitude</td><td><div id="LOCATION:Latitude"></div><td></tr>
+      <tr><td>Longitude</td><td><div id="LOCATION:Longitude"></div><td></tr>
+      <tr><td>AltitudeBaro</td><td><div id="LOCATION:AltitudeBaro"></div><td></tr>
+      <tr><td>AltitudeGeo</td><td><div id="LOCATION:AltitudeGeo"></div><td></tr>
+      <tr><td>HeightType</td><td><div id="LOCATION:HeightType"></div><td></tr>
+      <tr><td>Height</td><td><div id="LOCATION:Height"></div><td></tr>
+      <tr><td>HorizAccuracy</td><td><div id="LOCATION:HorizAccuracy"></div><td></tr>
+      <tr><td>VertAccuracy</td><td><div id="LOCATION:VertAccuracy"></div><td></tr>
+      <tr><td>BaroAccuracy</td><td><div id="LOCATION:BaroAccuracy"></div><td></tr>
+      <tr><td>SpeedAccuracy</td><td><div id="LOCATION:SpeedAccuracy"></div><td></tr>
+      <tr><td>TSAccuracy</td><td><div id="LOCATION:TSAccuracy"></div><td></tr>
+      <tr><td>TimeStamp</td><td><div id="LOCATION:TimeStamp"></div><td></tr>
+    </table>
+  </fieldset>
+  
   <h2>Firmware Update</h2>
 
   <form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>

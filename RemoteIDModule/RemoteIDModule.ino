@@ -137,6 +137,81 @@ static const char *check_parse(void)
     return nullptr;
 }
 
+static String escape_string(String s)
+{
+    s.replace("\"", "");
+    return s;
+}
+
+/*
+  create a json string from a table
+ */
+static String json_format(const json_table_t *table, uint8_t n)
+{
+    String s = "{";
+    for (uint8_t i=0; i<n; i++) {
+        const auto &t = table[i];
+        s += "\"" + t.name + "\" : ";
+        s += "\"" + escape_string(t.value) + "\"";
+        if (i != n-1) {
+            s += ",";
+        }
+    }
+    s += "}";
+    return s;
+}
+
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+
+String status_json(void)
+{
+    const uint32_t now_s = millis() / 1000;
+    const uint32_t sec = now_s % 60;
+    const uint32_t min = (now_s / 60) % 60;
+    const uint32_t hr = (now_s / 3600) % 24;
+    const json_table_t table[] = {
+        { "STATUS:VERSION", String(FW_VERSION_MAJOR) + "." + String(FW_VERSION_MINOR) },
+        { "STATUS:UPTIME", String(hr) + ":" + String(min) + ":" + String(sec) },
+        { "STATUS:FREEMEM", String(ESP.getFreeHeap()) },
+        { "BASICID:UAType", String(UAS_data.BasicID[0].UAType) },
+        { "BASICID:IDType", String(UAS_data.BasicID[0].IDType) },
+        { "BASICID:UASID", String(UAS_data.BasicID[0].UASID) },
+        { "OPERATORID:IDType", String(UAS_data.OperatorID.OperatorIdType) },
+        { "OPERATORID:ID", String(UAS_data.OperatorID.OperatorId) },
+        { "SELFID:DescType", String(UAS_data.SelfID.DescType) },
+        { "SELFID:Desc", String(UAS_data.SelfID.Desc) },
+        { "SYSTEM:OperatorLocationType", String(UAS_data.System.OperatorLocationType) },
+        { "SYSTEM:ClassificationType", String(UAS_data.System.ClassificationType) },
+        { "SYSTEM:OperatorLatitude", String(UAS_data.System.OperatorLatitude) },
+        { "SYSTEM:OperatorLongitude", String(UAS_data.System.OperatorLongitude) },
+        { "SYSTEM:AreaCount", String(UAS_data.System.AreaCount) },
+        { "SYSTEM:AreaRadius", String(UAS_data.System.AreaRadius) },
+        { "SYSTEM:AreaCeiling", String(UAS_data.System.AreaCeiling) },
+        { "SYSTEM:AreaFloor", String(UAS_data.System.AreaFloor) },
+        { "SYSTEM:CategoryEU", String(UAS_data.System.CategoryEU) },
+        { "SYSTEM:ClassEU", String(UAS_data.System.ClassEU) },
+        { "SYSTEM:OperatorAltitudeGeo", String(UAS_data.System.OperatorAltitudeGeo) },
+        { "SYSTEM:Timestamp", String(UAS_data.System.Timestamp) },
+        { "LOCATION:Status", String(UAS_data.Location.Status) },
+        { "LOCATION:Direction", String(UAS_data.Location.Direction) },
+        { "LOCATION:SpeedHorizontal", String(UAS_data.Location.SpeedHorizontal) },
+        { "LOCATION:SpeedVertical", String(UAS_data.Location.SpeedVertical) },
+        { "LOCATION:Latitude", String(UAS_data.Location.Latitude) },
+        { "LOCATION:Longitude", String(UAS_data.Location.Longitude) },
+        { "LOCATION:AltitudeBaro", String(UAS_data.Location.AltitudeBaro) },
+        { "LOCATION:AltitudeGeo", String(UAS_data.Location.AltitudeGeo) },
+        { "LOCATION:HeightType", String(UAS_data.Location.HeightType) },
+        { "LOCATION:Height", String(UAS_data.Location.Height) },
+        { "LOCATION:HorizAccuracy", String(UAS_data.Location.HorizAccuracy) },
+        { "LOCATION:VertAccuracy", String(UAS_data.Location.VertAccuracy) },
+        { "LOCATION:BaroAccuracy", String(UAS_data.Location.BaroAccuracy) },
+        { "LOCATION:SpeedAccuracy", String(UAS_data.Location.SpeedAccuracy) },
+        { "LOCATION:TSAccuracy", String(UAS_data.Location.TSAccuracy) },
+        { "LOCATION:TimeStamp", String(UAS_data.Location.TimeStamp) },
+    };
+    return json_format(table, ARRAY_SIZE(table));
+}
+
 /*
   fill in UAS_data from MAVLink packets
  */
