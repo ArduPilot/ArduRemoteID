@@ -191,8 +191,10 @@ String status_json(void)
     const uint32_t sec = now_s % 60;
     const uint32_t min = (now_s / 60) % 60;
     const uint32_t hr = (now_s / 3600) % 24;
+    char githash[20];
+    snprintf(githash, sizeof(githash), "(%08x)", GIT_VERSION);
     const json_table_t table[] = {
-        { "STATUS:VERSION", String(FW_VERSION_MAJOR) + "." + String(FW_VERSION_MINOR) },
+        { "STATUS:VERSION", String(FW_VERSION_MAJOR) + "." + String(FW_VERSION_MINOR) + " " + githash},
         { "STATUS:UPTIME", String(hr) + ":" + String(min) + ":" + String(sec) },
         { "STATUS:FREEMEM", String(ESP.getFreeHeap()) },
         { "BASICID:UAType", ENUM_MAP(uatype, UAS_data.BasicID[0].UAType) },
