@@ -90,48 +90,85 @@ static const enum_map_t enum_status[] = {
 };
 
 static const enum_map_t enum_height[] = {
-    { ODID_HEIGHT_REF_OVER_TAKEOFF , "REF_OVER_TAKEOFF" },
-    { ODID_HEIGHT_REF_OVER_GROUND , "REF_OVER_GROUND" },
+    { ODID_HEIGHT_REF_OVER_TAKEOFF , "OVER_TAKEOFF" },
+    { ODID_HEIGHT_REF_OVER_GROUND , "OVER_GROUND" },
 };
 
 static const enum_map_t enum_hacc[] = {
     { ODID_HOR_ACC_UNKNOWN , "UNKNOWN" },
-    { ODID_HOR_ACC_10NM , "10NM" },
-    { ODID_HOR_ACC_4NM , "4NM" },
-    { ODID_HOR_ACC_2NM , "2NM" },
-    { ODID_HOR_ACC_1NM , "1NM" },
-    { ODID_HOR_ACC_0_5NM , "0_5NM" },
-    { ODID_HOR_ACC_0_3NM , "0_3NM" },
-    { ODID_HOR_ACC_0_1NM , "0_1NM" },
-    { ODID_HOR_ACC_0_05NM , "0_05NM" },
-    { ODID_HOR_ACC_30_METER , "30_METER" },
-    { ODID_HOR_ACC_10_METER , "10_METER" },
-    { ODID_HOR_ACC_3_METER , "3_METER" },
-    { ODID_HOR_ACC_1_METER , "1_METER" },
+    { ODID_HOR_ACC_10NM , "10 nm" },
+    { ODID_HOR_ACC_4NM , "4 nm" },
+    { ODID_HOR_ACC_2NM , "2 nm" },
+    { ODID_HOR_ACC_1NM , "1 nm" },
+    { ODID_HOR_ACC_0_5NM , "0.5 nm" },
+    { ODID_HOR_ACC_0_3NM , "0.3 nm" },
+    { ODID_HOR_ACC_0_1NM , "0.1 nm" },
+    { ODID_HOR_ACC_0_05NM , "0.05 nm" },
+    { ODID_HOR_ACC_30_METER , "30 m" },
+    { ODID_HOR_ACC_10_METER , "10 m" },
+    { ODID_HOR_ACC_3_METER , "3 m" },
+    { ODID_HOR_ACC_1_METER , "1 m" },
 };
 
 static const enum_map_t enum_vacc[] = {
     { ODID_VER_ACC_UNKNOWN , "UNKNOWN" },
-    { ODID_VER_ACC_150_METER , "150_METER" },
-    { ODID_VER_ACC_45_METER , "45_METER" },
-    { ODID_VER_ACC_25_METER , "25_METER" },
-    { ODID_VER_ACC_10_METER , "10_METER" },
-    { ODID_VER_ACC_3_METER , "3_METER" },
-    { ODID_VER_ACC_1_METER , "1_METER" },
+    { ODID_VER_ACC_150_METER , "150 m" },
+    { ODID_VER_ACC_45_METER , "45 m" },
+    { ODID_VER_ACC_25_METER , "25 m" },
+    { ODID_VER_ACC_10_METER , "10 m" },
+    { ODID_VER_ACC_3_METER , "3 m" },
+    { ODID_VER_ACC_1_METER , "1 m" },
 };
 
 static const enum_map_t enum_sacc[] = {
     { ODID_SPEED_ACC_UNKNOWN , "UNKNOWN" },
-    { ODID_SPEED_ACC_10_METERS_PER_SECOND , "10_METERS_PER_SECOND" },
-    { ODID_SPEED_ACC_3_METERS_PER_SECOND , "3_METERS_PER_SECOND" },
-    { ODID_SPEED_ACC_1_METERS_PER_SECOND , "1_METERS_PER_SECOND" },
-    { ODID_SPEED_ACC_0_3_METERS_PER_SECOND , "0_3_METERS_PER_SECOND" },
+    { ODID_SPEED_ACC_10_METERS_PER_SECOND , "10 m/s" },
+    { ODID_SPEED_ACC_3_METERS_PER_SECOND , "3 m/s" },
+    { ODID_SPEED_ACC_1_METERS_PER_SECOND , "1 m/s" },
+    { ODID_SPEED_ACC_0_3_METERS_PER_SECOND , "0.3 m/s" },
 };
 
 static const enum_map_t enum_desctype[] = {
-    { ODID_DESC_TYPE_TEXT , "TYPE_TEXT" },
-    { ODID_DESC_TYPE_EMERGENCY , "TYPE_EMERGENCY" },
-    { ODID_DESC_TYPE_EXTENDED_STATUS , "TYPE_EXTENDED_STATUS" },
+    { ODID_DESC_TYPE_TEXT , "TEXT" },
+    { ODID_DESC_TYPE_EMERGENCY , "EMERGENCY" },
+    { ODID_DESC_TYPE_EXTENDED_STATUS , "EXTENDED_STATUS" },
+};
+
+static const enum_map_t enum_classeu[] = {
+    { ODID_CLASS_EU_UNDECLARED , "UNDECLARED" },
+    { ODID_CLASS_EU_CLASS_0 , "CLASS_0" },
+    { ODID_CLASS_EU_CLASS_1 , "CLASS_1" },
+    { ODID_CLASS_EU_CLASS_2 , "CLASS_2" },
+    { ODID_CLASS_EU_CLASS_3 , "CLASS_3" },
+    { ODID_CLASS_EU_CLASS_4 , "CLASS_4" },
+    { ODID_CLASS_EU_CLASS_5 , "CLASS_5" },
+    { ODID_CLASS_EU_CLASS_6 , "CLASS_6" },
+};
+
+static const enum_map_t enum_cateu[] = {
+    { ODID_CATEGORY_EU_UNDECLARED , "UNDECLARED" },
+    { ODID_CATEGORY_EU_OPEN , "OPEN" },
+    { ODID_CATEGORY_EU_SPECIFIC , "SPECIFIC" },
+    { ODID_CATEGORY_EU_CERTIFIED , "CERTIFIED" },
+};
+
+static const enum_map_t enum_tsacc[] = {
+    { ODID_TIME_ACC_UNKNOWN , "UNKNOWN" },
+    { ODID_TIME_ACC_0_1_SECOND , "0.1 s" },
+    { ODID_TIME_ACC_0_2_SECOND , "0.2 s" },
+    { ODID_TIME_ACC_0_3_SECOND , "0.3 s" },
+    { ODID_TIME_ACC_0_4_SECOND , "0.4 s" },
+    { ODID_TIME_ACC_0_5_SECOND , "0.5 s" },
+    { ODID_TIME_ACC_0_6_SECOND , "0.6 s" },
+    { ODID_TIME_ACC_0_7_SECOND , "0.7 s" },
+    { ODID_TIME_ACC_0_8_SECOND , "0.8 s" },
+    { ODID_TIME_ACC_0_9_SECOND , "0.9 s" },
+    { ODID_TIME_ACC_1_0_SECOND , "1.0 s" },
+    { ODID_TIME_ACC_1_1_SECOND , "1.1 s" },
+    { ODID_TIME_ACC_1_2_SECOND , "1.2 s" },
+    { ODID_TIME_ACC_1_3_SECOND , "1.3 s" },
+    { ODID_TIME_ACC_1_4_SECOND , "1.4 s" },
+    { ODID_TIME_ACC_1_5_SECOND , "1.5 s" },
 };
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
@@ -167,22 +204,22 @@ String status_json(void)
         { "SELFID:Desc", String(UAS_data.SelfID.Desc) },
         { "SYSTEM:OperatorLocationType", ENUM_MAP(loctype, UAS_data.System.OperatorLocationType) },
         { "SYSTEM:ClassificationType", ENUM_MAP(classif, UAS_data.System.ClassificationType) },
-        { "SYSTEM:OperatorLatitude", String(UAS_data.System.OperatorLatitude) },
-        { "SYSTEM:OperatorLongitude", String(UAS_data.System.OperatorLongitude) },
+        { "SYSTEM:OperatorLatitude", String(UAS_data.System.OperatorLatitude, 8) },
+        { "SYSTEM:OperatorLongitude", String(UAS_data.System.OperatorLongitude, 8) },
         { "SYSTEM:AreaCount", String(UAS_data.System.AreaCount) },
         { "SYSTEM:AreaRadius", String(UAS_data.System.AreaRadius) },
         { "SYSTEM:AreaCeiling", String(UAS_data.System.AreaCeiling) },
         { "SYSTEM:AreaFloor", String(UAS_data.System.AreaFloor) },
-        { "SYSTEM:CategoryEU", String(UAS_data.System.CategoryEU) },
-        { "SYSTEM:ClassEU", String(UAS_data.System.ClassEU) },
+        { "SYSTEM:CategoryEU", ENUM_MAP(cateu, UAS_data.System.CategoryEU) },
+        { "SYSTEM:ClassEU", ENUM_MAP(classeu, UAS_data.System.ClassEU) },
         { "SYSTEM:OperatorAltitudeGeo", String(UAS_data.System.OperatorAltitudeGeo) },
         { "SYSTEM:Timestamp", String(UAS_data.System.Timestamp) },
         { "LOCATION:Status", ENUM_MAP(status, UAS_data.Location.Status) },
         { "LOCATION:Direction", String(UAS_data.Location.Direction) },
         { "LOCATION:SpeedHorizontal", String(UAS_data.Location.SpeedHorizontal) },
         { "LOCATION:SpeedVertical", String(UAS_data.Location.SpeedVertical) },
-        { "LOCATION:Latitude", String(UAS_data.Location.Latitude) },
-        { "LOCATION:Longitude", String(UAS_data.Location.Longitude) },
+        { "LOCATION:Latitude", String(UAS_data.Location.Latitude, 8) },
+        { "LOCATION:Longitude", String(UAS_data.Location.Longitude, 8) },
         { "LOCATION:AltitudeBaro", String(UAS_data.Location.AltitudeBaro) },
         { "LOCATION:AltitudeGeo", String(UAS_data.Location.AltitudeGeo) },
         { "LOCATION:HeightType", ENUM_MAP(height, UAS_data.Location.HeightType) },
@@ -191,7 +228,7 @@ String status_json(void)
         { "LOCATION:VertAccuracy", ENUM_MAP(vacc, UAS_data.Location.VertAccuracy) },
         { "LOCATION:BaroAccuracy", ENUM_MAP(vacc, UAS_data.Location.BaroAccuracy) },
         { "LOCATION:SpeedAccuracy", ENUM_MAP(sacc, UAS_data.Location.SpeedAccuracy) },
-        { "LOCATION:TSAccuracy", String(UAS_data.Location.TSAccuracy) },
+        { "LOCATION:TSAccuracy", ENUM_MAP(tsacc, UAS_data.Location.TSAccuracy) },
         { "LOCATION:TimeStamp", String(UAS_data.Location.TimeStamp) },
     };
     return json_format(table, ARRAY_SIZE(table));
