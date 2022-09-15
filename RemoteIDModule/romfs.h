@@ -8,6 +8,7 @@ class ROMFS {
 public:
     static bool exists(const char *fname);
     static ROMFS_Stream *find_stream(const char *fname);
+    static const char *find_string(const char *name);
 
     struct embedded_file {
         const char *filename;

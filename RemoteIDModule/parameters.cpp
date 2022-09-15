@@ -3,6 +3,7 @@
 #include "parameters.h"
 #include <nvs_flash.h>
 #include <string.h>
+#include "romfs.h"
 
 Parameters g;
 static nvs_handle handle;
@@ -22,13 +23,14 @@ const Parameters::Param Parameters::params[] = {
     { "BT5_POWER",         Parameters::ParamType::FLOAT,  (const void*)&g.bt5_power,        18, -27, 18 },
     { "WEBSERVER_ENABLE",  Parameters::ParamType::UINT8,  (const void*)&g.webserver_enable, 1, 0, 1 },
     { "WIFI_SSID",         Parameters::ParamType::CHAR20, (const void*)&g.wifi_ssid, },
-    { "WIFI_PASSWORD",     Parameters::ParamType::CHAR20, (const void*)&g.wifi_password,    0, 0, 0, PARAM_FLAG_HIDDEN, 8 },
+    { "WIFI_PASSWORD",     Parameters::ParamType::CHAR20, (const void*)&g.wifi_password,    0, 0, 0, PARAM_FLAG_PASSWORD, 8 },
     { "BCAST_POWERUP",     Parameters::ParamType::UINT8,  (const void*)&g.bcast_powerup,    1, 0, 1 },
     { "PUBLIC_KEY1",       Parameters::ParamType::CHAR64, (const void*)&g.public_keys[0], },
     { "PUBLIC_KEY2",       Parameters::ParamType::CHAR64, (const void*)&g.public_keys[1], },
     { "PUBLIC_KEY3",       Parameters::ParamType::CHAR64, (const void*)&g.public_keys[2], },
     { "PUBLIC_KEY4",       Parameters::ParamType::CHAR64, (const void*)&g.public_keys[3], },
     { "PUBLIC_KEY5",       Parameters::ParamType::CHAR64, (const void*)&g.public_keys[4], },
+    { "DONE_INIT",         Parameters::ParamType::UINT8,  (const void*)&g.done_init,        0, 0, 0, PARAM_FLAG_HIDDEN},
     { "",                  Parameters::ParamType::NONE,   nullptr,  },
 };
 
@@ -193,6 +195,14 @@ void Parameters::init(void)
                  mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
     }
+
+    if (g.done_init == 0) {
+        set_by_name_uint8("DONE_INIT", 1);
+        // setup public keys
+        set_by_name_char64("PUBLIC_KEY1", ROMFS::find_string("public_keys/ArduPilot_public_key1.dat"));
+        set_by_name_char64("PUBLIC_KEY2", ROMFS::find_string("public_keys/ArduPilot_public_key2.dat"));
+        set_by_name_char64("PUBLIC_KEY3", ROMFS::find_string("public_keys/ArduPilot_public_key2.dat"));
+    }
 }
 
 /*
@@ -201,4 +211,24 @@ void Parameters::init(void)
 bool Parameters::have_basic_id_info(void) const
 {
     return strlen(g.uas_id) > 0 && g.id_type > 0 && g.ua_type > 0;
+}
+
+bool Parameters::set_by_name_uint8(const char *name, uint8_t v)
+{
+    const auto *f = find(name);
+    if (!f) {
+        return false;
+    }
+    f->set_uint8(v);
+    return true;
+}
+
+bool Parameters::set_by_name_char64(const char *name, const char *s)
+{
+    const auto *f = find(name);
+    if (!f) {
+        return false;
+    }
+    f->set_char64(s);
+    return true;
 }
