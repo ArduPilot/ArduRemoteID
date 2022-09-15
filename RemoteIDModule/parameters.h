@@ -7,7 +7,8 @@
 #define PARAM_NAME_MAX_LEN 16
 
 #define PARAM_FLAG_NONE 0
-#define PARAM_FLAG_HIDDEN (1U<<0)
+#define PARAM_FLAG_PASSWORD (1U<<0)
+#define PARAM_FLAG_HIDDEN (1U<<1)
 
 class Parameters {
 public:
@@ -24,6 +25,7 @@ public:
     float bt4_power;
     float bt5_rate;
     float bt5_power;
+    uint8_t done_init;
     uint8_t webserver_enable;
     char wifi_ssid[21] = "RID_123456";
     char wifi_password[21] = "penguin1234";
@@ -68,6 +70,9 @@ public:
     void init(void);
 
     bool have_basic_id_info(void) const;
+
+    bool set_by_name_uint8(const char *name, uint8_t v);
+    bool set_by_name_char64(const char *name, const char *s);
 private:
     void load_defaults(void);
 };
