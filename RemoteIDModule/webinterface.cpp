@@ -64,6 +64,60 @@ class ROMFS_Handler : public RequestHandler
 
 } ROMFS_Handler;
 
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+
+typedef struct {
+    String name;
+    String value;
+} json_table_t;
+
+/*
+  create a json string from a table
+ */
+static String json_format(const json_table_t *table, uint8_t n)
+{
+    String s = "{";
+    for (uint8_t i=0; i<n; i++) {
+        const auto &t = table[i];
+        s += "\"" + t.name + "\" : ";
+        s += "\"" + t.value + "\"";
+        if (i != n-1) {
+            s += ",";
+        }
+    }
+    s += "}";
+    return s;
+}
+
+/*
+  serve files from ROMFS
+ */
+class AJAX_Handler : public RequestHandler
+{
+    bool canHandle(HTTPMethod method, String uri) {
+        Serial.printf("ajax check '%s'", uri);
+        return uri == "/ajax/status.json";
+    }
+
+    bool handle(WebServer& server, HTTPMethod requestMethod, String requestUri) {
+        if (requestUri != "/ajax/status.json") {
+            return false;
+        }
+        const uint32_t now_s = millis() / 1000;
+        const uint32_t sec = now_s % 60;
+        const uint32_t min = (now_s / 60) % 60;
+        const uint32_t hr = (now_s / 3600) % 24;
+        const json_table_t table[] = {
+            { "STATUS:VERSION", String(FW_VERSION_MAJOR) + "." + String(FW_VERSION_MINOR) },
+            { "STATUS:UPTIME", String(hr) + ":" + String(min) + ":" + String(sec) },
+            { "STATUS:FREEMEM", String(ESP.getFreeHeap()) },
+        };
+        server.send(200, "application/json", json_format(table, ARRAY_SIZE(table)));
+        return true;
+    }
+
+} AJAX_Handler;
+
 /*
   init web server
  */
@@ -74,6 +128,7 @@ void WebInterface::init(void)
     IPAddress myIP = WiFi.softAPIP();
 
     server.addHandler( &ROMFS_Handler );
+    server.addHandler( &AJAX_Handler );
 
     /*handling uploading firmware file */
     server.on("/update", HTTP_POST, []() {
