@@ -18,4 +18,6 @@ private:
     uint8_t legacy_payload[36];
     uint8_t longrange_payload[250];
     bool started;
+
+    uint8_t dBm_to_tx_power(float dBm) const;
 };

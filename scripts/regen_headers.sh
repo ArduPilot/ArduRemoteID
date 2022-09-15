@@ -10,7 +10,7 @@ rm -rf libraries/DroneCAN_generated
 python3 modules/dronecan_dsdlc/dronecan_dsdlc.py -O libraries/DroneCAN_generated modules/DSDL/uavcan modules/DSDL/dronecan modules/DSDL/com
 
 # cope with horrible Arduino library handling
-PACKETS="NodeStatus GetNodeInfo HardwareVersion SoftwareVersion RestartNode dynamic_node_id remoteid param"
+PACKETS="NodeStatus GetNodeInfo HardwareVersion SoftwareVersion RestartNode dynamic_node_id remoteid param Log"
 for p in $PACKETS; do
     (
         cd libraries/DroneCAN_generated

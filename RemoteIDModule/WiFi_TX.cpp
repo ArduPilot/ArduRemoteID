@@ -8,6 +8,7 @@
 #include <esp_wifi.h>
 #include <WiFi.h>
 #include <esp_system.h>
+#include "parameters.h"
 
 bool WiFi_NAN::init(void)
 {
@@ -39,6 +40,7 @@ bool WiFi_NAN::init(void)
     if (esp_read_mac(WiFi_mac_addr, ESP_MAC_WIFI_STA) != ESP_OK) {
         return false;
     }
+    esp_wifi_set_max_tx_power(dBm_to_tx_power(g.wifi_power));
 
     return true;
 }
@@ -68,4 +70,18 @@ bool WiFi_NAN::transmit(ODID_UAS_Data &UAS_data)
     }
 
     return true;
+}
+
+/*
+  map dBm to a TX power
+ */
+uint8_t WiFi_NAN::dBm_to_tx_power(float dBm) const
+{
+    if (dBm < 2) {
+        dBm = 2;
+    }
+    if (dBm > 20) {
+        dBm = 20;
+    }
+    return uint8_t((dBm+1.125) * 4);
 }

@@ -57,6 +57,8 @@ private:
     void handle_Location(CanardRxTransfer* transfer);
     void handle_param_getset(CanardInstance* ins, CanardRxTransfer* transfer);
 
+    void can_printf(const char *fmt, ...);
+
 public:
     void onTransferReceived(CanardInstance* ins, CanardRxTransfer* transfer);
     bool shouldAcceptTransfer(const CanardInstance* ins,
