@@ -9,6 +9,7 @@
 #include "parameters.h"
 #include "romfs.h"
 #include "check_firmware.h"
+#include "status.h"
 
 static WebServer server(80);
 
@@ -63,8 +64,6 @@ class ROMFS_Handler : public RequestHandler
     }
 
 } ROMFS_Handler;
-
-extern String status_json(void);
 
 /*
   serve files from ROMFS

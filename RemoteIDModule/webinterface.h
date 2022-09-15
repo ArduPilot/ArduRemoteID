@@ -7,11 +7,6 @@
 #include <Arduino.h>
 #include "version.h"
 
-typedef struct {
-    String name;
-    String value;
-} json_table_t;
-
 class WebInterface {
 public:
     void init(void);
