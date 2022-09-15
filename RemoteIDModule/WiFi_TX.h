@@ -17,4 +17,6 @@ private:
     uint8_t wifi_channel = 6;
     size_t ssid_length;
     uint8_t send_counter;
+
+    uint8_t dBm_to_tx_power(float dBm) const;
 };

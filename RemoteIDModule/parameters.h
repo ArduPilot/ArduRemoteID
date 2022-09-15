@@ -6,6 +6,7 @@
 #define PUBLIC_KEY_LEN 32
 #define PARAM_NAME_MAX_LEN 16
 
+#define PARAM_FLAG_NONE 0
 #define PARAM_FLAG_HIDDEN (1U<<0)
 
 class Parameters {
@@ -18,8 +19,11 @@ public:
     uint8_t id_type;
     char uas_id[21] = "ABCD123456789";
     float wifi_nan_rate;
+    float wifi_power;
     float bt4_rate;
+    float bt4_power;
     float bt5_rate;
+    float bt5_power;
     uint8_t webserver_enable;
     char wifi_ssid[21] = "RID_123456";
     char wifi_password[21] = "penguin1234";
@@ -44,6 +48,7 @@ public:
         float min_value;
         float max_value;
         uint16_t flags;
+        uint8_t min_len;
         void set_float(float v) const;
         void set_uint8(uint8_t v) const;
         void set_uint32(uint32_t v) const;

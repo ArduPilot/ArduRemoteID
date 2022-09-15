@@ -8,6 +8,7 @@
 #include <time.h>
 #include "DroneCAN.h"
 #include "parameters.h"
+#include <stdarg.h>
 
 #include <canard.h>
 #include <uavcan.protocol.NodeStatus.h>
@@ -15,6 +16,7 @@
 #include <uavcan.protocol.RestartNode.h>
 #include <uavcan.protocol.dynamic_node_id.Allocation.h>
 #include <uavcan.protocol.param.GetSet.h>
+#include <uavcan.protocol.debug.LogMessage.h>
 #include <dronecan.remoteid.BasicID.h>
 #include <dronecan.remoteid.Location.h>
 #include <dronecan.remoteid.SelfID.h>
@@ -592,7 +594,11 @@ void DroneCAN::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transf
             }
             char v[21] {};
             strncpy(v, (const char *)&req.value.string_value.data[0], req.value.string_value.len);
-            vp->set_char20(v);
+            if (vp->min_len > 0 && strlen(v) < vp->min_len) {
+                can_printf("%s too short - min %u", vp->name, vp->min_len);
+            } else {
+                vp->set_char20(v);
+            }
             break;
         }
         case Parameters::ParamType::CHAR64: {
@@ -677,6 +683,33 @@ void DroneCAN::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transf
                            &buffer[0],
                            total_size);
 }
+
+// printf to CAN LogMessage for debugging
+void DroneCAN::can_printf(const char *fmt, ...)
+{
+    uavcan_protocol_debug_LogMessage pkt {};
+    uint8_t buffer[UAVCAN_PROTOCOL_DEBUG_LOGMESSAGE_MAX_SIZE] {};
+    va_list ap;
+    va_start(ap, fmt);
+    uint32_t n = vsnprintf((char*)pkt.text.data, sizeof(pkt.text.data), fmt, ap);
+    va_end(ap);
+    pkt.text.len = n;
+    if (sizeof(pkt.text.data) < n) {
+        pkt.text.len = sizeof(pkt.text.data);
+    }
+
+    uint32_t len = uavcan_protocol_debug_LogMessage_encode(&pkt, buffer);
+    static uint8_t tx_id;
+
+    canardBroadcast(&canard,
+                    UAVCAN_PROTOCOL_DEBUG_LOGMESSAGE_SIGNATURE,
+                    UAVCAN_PROTOCOL_DEBUG_LOGMESSAGE_ID,
+                    &tx_id,
+                    CANARD_TRANSFER_PRIORITY_LOW,
+                    buffer,
+                    len);
+}
+
 
 
 #if 0

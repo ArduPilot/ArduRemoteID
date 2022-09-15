@@ -13,9 +13,9 @@
 
 #include <BLEDevice.h>
 #include <BLEAdvertising.h>
+#include "parameters.h"
 
-// set max power
-static const int8_t tx_power = ESP_PWR_LVL_P18;
+
 
 //interval min/max are configured for 1 Hz update rate. Somehow dynamic setting of these fields fails
 //shorter intervals lead to more BLE transmissions. This would result in increased power consumption and can lead to more interference to other radio systems.
@@ -26,7 +26,7 @@ static esp_ble_gap_ext_adv_params_t legacy_adv_params = {
     .channel_map = ADV_CHNL_ALL,
     .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_WLST, // we want unicast non-connectable transmission
-    .tx_power = tx_power,
+    .tx_power = 0,
     .primary_phy = ESP_BLE_GAP_PHY_1M,
     .max_skip = 0,
     .secondary_phy = ESP_BLE_GAP_PHY_1M,
@@ -41,7 +41,7 @@ static esp_ble_gap_ext_adv_params_t ext_adv_params_coded = {
     .channel_map = ADV_CHNL_ALL,
     .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_WLST, // we want unicast non-connectable transmission
-    .tx_power = tx_power,
+    .tx_power = 0,
     .primary_phy = ESP_BLE_GAP_PHY_CODED,
     .max_skip = 0,
     .secondary_phy = ESP_BLE_GAP_PHY_CODED,
@@ -56,13 +56,48 @@ static esp_ble_gap_ext_adv_params_t blename_adv_params = {
     .channel_map = ADV_CHNL_ALL,
     .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_WLST, // we want unicast non-connectable transmission
-    .tx_power = tx_power,
+    .tx_power = 0,
     .primary_phy = ESP_BLE_GAP_PHY_1M,
     .max_skip = 0,
     .secondary_phy = ESP_BLE_GAP_PHY_1M,
     .sid = 2,
     .scan_req_notif = false,
 };
+
+/*
+  map dBm to a TX power
+ */
+uint8_t BLE_TX::dBm_to_tx_power(float dBm) const
+{
+    static const struct {
+        uint8_t level;
+        float dBm;
+    } dBm_table[] = {
+        { ESP_PWR_LVL_N27,-27 },
+        { ESP_PWR_LVL_N24,-24 },
+        { ESP_PWR_LVL_N21,-21 },
+        { ESP_PWR_LVL_N18,-18 },
+        { ESP_PWR_LVL_N15,-15 },
+        { ESP_PWR_LVL_N12,-12 },
+        { ESP_PWR_LVL_N9,  -9 },
+        { ESP_PWR_LVL_N6,  -6 },
+        { ESP_PWR_LVL_N3,  -3 },
+        { ESP_PWR_LVL_N0,   0 },
+        { ESP_PWR_LVL_P3,   3 },
+        { ESP_PWR_LVL_P6,   6 },
+        { ESP_PWR_LVL_P9,   9 },
+        { ESP_PWR_LVL_P12, 12 },
+        { ESP_PWR_LVL_P15, 15 },
+        { ESP_PWR_LVL_P18, 18 },
+    };
+    for (const auto &t : dBm_table) {
+        if (dBm <= t.dBm) {
+            return t.level;
+        }
+    }
+    return ESP_PWR_LVL_P18;
+}
+
 
 static BLEMultiAdvertising advert(3);
 
@@ -73,6 +108,11 @@ bool BLE_TX::init(void)
     }
     initialised = true;
     BLEDevice::init("");
+
+    // setup power levels
+    legacy_adv_params.tx_power = dBm_to_tx_power(g.bt4_power);
+    ext_adv_params_coded.tx_power = dBm_to_tx_power(g.bt5_power);
+    blename_adv_params.tx_power = dBm_to_tx_power(g.bt4_power);
 
     // generate random mac address
     uint8_t mac_addr[6];

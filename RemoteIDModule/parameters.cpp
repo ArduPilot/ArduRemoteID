@@ -15,11 +15,14 @@ const Parameters::Param Parameters::params[] = {
     { "UAS_ID",            Parameters::ParamType::CHAR20, (const void*)&g.uas_id[0],        0, 0, 0 },
     { "BAUDRATE",          Parameters::ParamType::UINT32, (const void*)&g.baudrate,         57600, 9600, 921600 },
     { "WIFI_NAN_RATE",     Parameters::ParamType::FLOAT,  (const void*)&g.wifi_nan_rate,    0, 0, 5 },
+    { "WIFI_POWER",        Parameters::ParamType::FLOAT,  (const void*)&g.wifi_power,       20, 2, 20 },
     { "BT4_RATE",          Parameters::ParamType::FLOAT,  (const void*)&g.bt4_rate,         1, 0, 5 },
+    { "BT4_POWER",         Parameters::ParamType::FLOAT,  (const void*)&g.bt4_power,        18, -27, 18 },
     { "BT5_RATE",          Parameters::ParamType::FLOAT,  (const void*)&g.bt5_rate,         1, 0, 5 },
+    { "BT5_POWER",         Parameters::ParamType::FLOAT,  (const void*)&g.bt5_power,        18, -27, 18 },
     { "WEBSERVER_ENABLE",  Parameters::ParamType::UINT8,  (const void*)&g.webserver_enable, 1, 0, 1 },
     { "WIFI_SSID",         Parameters::ParamType::CHAR20, (const void*)&g.wifi_ssid, },
-    { "WIFI_PASSWORD",     Parameters::ParamType::CHAR20, (const void*)&g.wifi_password,    0, 0, 0, PARAM_FLAG_HIDDEN },
+    { "WIFI_PASSWORD",     Parameters::ParamType::CHAR20, (const void*)&g.wifi_password,    0, 0, 0, PARAM_FLAG_HIDDEN, 8 },
     { "BCAST_POWERUP",     Parameters::ParamType::UINT8,  (const void*)&g.bcast_powerup,    1, 0, 1 },
     { "PUBLIC_KEY1",       Parameters::ParamType::CHAR64, (const void*)&g.public_keys[0], },
     { "PUBLIC_KEY2",       Parameters::ParamType::CHAR64, (const void*)&g.public_keys[1], },
@@ -81,6 +84,9 @@ void Parameters::Param::set_float(float v) const
 
 void Parameters::Param::set_char20(const char *v) const
 {
+    if (min_len > 0 && strlen(v) < min_len) {
+        return;
+    }
     memset((void*)ptr, 0, 21);
     strncpy((char *)ptr, v, 20);
     nvs_set_str(handle, name, v);
@@ -88,6 +94,9 @@ void Parameters::Param::set_char20(const char *v) const
 
 void Parameters::Param::set_char64(const char *v) const
 {
+    if (min_len > 0 && strlen(v) < min_len) {
+        return;
+    }
     memset((void*)ptr, 0, 65);
     strncpy((char *)ptr, v, 64);
     nvs_set_str(handle, name, v);
