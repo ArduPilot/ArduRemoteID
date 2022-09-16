@@ -47,6 +47,19 @@
 #define PIN_STATUS_LED GPIO_NUM_8 // LED to signal the status
 #define STATUS_LED_ON 1
 
+#elif defined(BOARD_JW_TBD)
+#define BOARD_ID 5
+#define PIN_CAN_TX GPIO_NUM_47
+#define PIN_CAN_RX GPIO_NUM_38
+
+#define PIN_UART_TX 18
+#define PIN_UART_RX 17
+
+#define PIN_STATUS_LED GPIO_NUM_5 // LED to signal the status
+#define LED_MODE_FLASH 1 // flashing LED configuration
+#define STATUS_LED_ON 1
+
+#define CAN_APP_NODE_NAME "JW TBD"
 #else
 #error "unsupported board"
 #endif
