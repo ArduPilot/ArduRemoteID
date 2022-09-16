@@ -44,6 +44,10 @@ static WebInterface webif;
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 
+static uint32_t last_led_trig_ms;
+static bool arm_check_ok = false; // goes true for LED arm check status
+static bool pfst_check_ok = false; 
+
 /*
   setup serial ports
  */
@@ -91,6 +95,12 @@ void setup()
     // optional CAN termination control
     pinMode(PIN_CAN_TERM, OUTPUT);
     digitalWrite(PIN_CAN_TERM, HIGH);
+#endif
+
+#ifdef PIN_STATUS_LED
+    // LED off if good to arm
+    pfst_check_ok = true;   // note - this will need to be expanded to better capture PFST test status
+    pinMode(PIN_STATUS_LED, OUTPUT);
 #endif
 
     esp_log_level_set("*", ESP_LOG_DEBUG);
@@ -219,11 +229,7 @@ static void set_data(Transport &t)
     }
     t.set_parse_fail(reason);
 
-#ifdef PIN_STATUS_LED
-    // LED off if good to arm
-    pinMode(PIN_STATUS_LED, OUTPUT);
-    digitalWrite(PIN_STATUS_LED, reason==nullptr?!STATUS_LED_ON:STATUS_LED_ON);
-#endif
+    arm_check_ok = (reason==nullptr);
 
     uint32_t now_ms = millis();
     uint32_t location_age_ms = now_ms - t.get_last_location_ms();
@@ -231,6 +237,31 @@ static void set_data(Transport &t)
     if (location_age_ms < last_location_age_ms) {
         last_location_ms = t.get_last_location_ms();
     }
+}
+
+void set_output_led(uint32_t _now) {
+#ifdef PIN_STATUS_LED
+#ifdef LED_MODE_FLASH
+    // LED off if good to arm
+    //pinMode(PIN_STATUS_LED, OUTPUT);
+    
+    if (arm_check_ok && pfst_check_ok) {
+        digitalWrite(PIN_STATUS_LED, STATUS_LED_ON);
+        last_led_trig_ms = 0; 
+    } else if (!arm_check_ok && pfst_check_ok) {
+        if (_now - last_led_trig_ms > 100) {
+            digitalWrite(PIN_STATUS_LED,!digitalRead(PIN_STATUS_LED));
+            last_led_trig_ms = _now;
+        }
+    } else {
+        digitalWrite(PIN_STATUS_LED, STATUS_LED_ON);
+        last_led_trig_ms = 0;
+    }
+#else
+    // Default LED Behavior
+    digitalWrite(arm_check_ok?!STATUS_LED_ON:STATUS_LED_ON);
+#endif // LED_MODE_FLASH
+#endif // PIN_STATUS_LED
 }
 
 static uint8_t loop_counter = 0;
@@ -318,6 +349,9 @@ void loop()
         ble.transmit_legacy_name(UAS_data);
     }
 
+#ifdef PIN_STATUS_LED
+    set_output_led(now_ms);
+#endif 
     // sleep for a bit for power saving
     delay(1);
 }
