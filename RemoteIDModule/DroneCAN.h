@@ -10,8 +10,10 @@
 #include <dronecan.remoteid.SelfID.h>
 #include <dronecan.remoteid.System.h>
 #include <dronecan.remoteid.OperatorID.h>
+#include <dronecan.remoteid.SecureCommand.h>
 
 #define CAN_POOL_SIZE 4096
+
 
 class DroneCAN : public Transport {
 public:
@@ -47,6 +49,7 @@ private:
     uint32_t send_next_node_id_allocation_request_at_ms;
     uint32_t node_id_allocation_unique_id_offset;
     uint32_t last_DNA_start_ms;
+    uint8_t session_key[8];
 
     uavcan_protocol_NodeStatus node_status;
 
@@ -56,8 +59,11 @@ private:
     void handle_System(CanardRxTransfer* transfer);
     void handle_Location(CanardRxTransfer* transfer);
     void handle_param_getset(CanardInstance* ins, CanardRxTransfer* transfer);
+    void handle_SecureCommand(CanardInstance* ins, CanardRxTransfer* transfer);
 
     void can_printf(const char *fmt, ...);
+    void make_session_key(uint8_t key[8]) const;
+    bool check_signature(const dronecan_remoteid_SecureCommandRequest &pkt);
 
 public:
     void onTransferReceived(CanardInstance* ins, CanardRxTransfer* transfer);
