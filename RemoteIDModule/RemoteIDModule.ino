@@ -259,7 +259,7 @@ void set_output_led(uint32_t _now) {
     }
 #else
     // Default LED Behavior
-    digitalWrite(arm_check_ok?!STATUS_LED_ON:STATUS_LED_ON);
+    digitalWrite(PIN_STATUS_LED,arm_check_ok?!STATUS_LED_ON:STATUS_LED_ON);
 #endif // LED_MODE_FLASH
 #endif // PIN_STATUS_LED
 }
