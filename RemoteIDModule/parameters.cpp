@@ -12,8 +12,8 @@ static nvs_handle handle;
 const Parameters::Param Parameters::params[] = {
     { "LOCK_LEVEL",        Parameters::ParamType::UINT8,  (const void*)&g.lock_level,       0, 0, 2 },
     { "CAN_NODE",          Parameters::ParamType::UINT8,  (const void*)&g.can_node,         0, 0, 127 },
-    { "UA_TYPE",           Parameters::ParamType::UINT8,  (const void*)&g.ua_type,          0, 0, 15 },
-    { "ID_TYPE",           Parameters::ParamType::UINT8,  (const void*)&g.id_type,          0, 0, 4 },
+    { "UAS_TYPE",          Parameters::ParamType::UINT8,  (const void*)&g.ua_type,          0, 0, 15 },
+    { "UAS_ID_TYPE",       Parameters::ParamType::UINT8,  (const void*)&g.id_type,          0, 0, 4 },
     { "UAS_ID",            Parameters::ParamType::CHAR20, (const void*)&g.uas_id[0],        0, 0, 0 },
     { "BAUDRATE",          Parameters::ParamType::UINT32, (const void*)&g.baudrate,         57600, 9600, 921600 },
     { "WIFI_NAN_RATE",     Parameters::ParamType::FLOAT,  (const void*)&g.wifi_nan_rate,    0, 0, 5 },
