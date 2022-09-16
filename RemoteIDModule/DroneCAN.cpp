@@ -576,51 +576,56 @@ void DroneCAN::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transf
     if (vp->flags & PARAM_FLAG_HIDDEN) {
         vp = nullptr;
     }
-    if (vp != nullptr && req.name.len != 0 && req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_EMPTY) {
-        // param set
-        switch (vp->ptype) {
-        case Parameters::ParamType::UINT8:
-            if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE) {
+    if (vp != nullptr && req.name.len != 0 &&
+        req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_EMPTY) {
+        if (g.lock_level != 0) {
+            can_printf("Parameters locked");
+        } else {
+            // param set
+            switch (vp->ptype) {
+            case Parameters::ParamType::UINT8:
+                if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE) {
+                    return;
+                }
+                vp->set_uint8(uint8_t(req.value.integer_value));
+                break;
+            case Parameters::ParamType::UINT32:
+                if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE) {
+                    return;
+                }
+                vp->set_uint32(uint32_t(req.value.integer_value));
+                break;
+            case Parameters::ParamType::FLOAT:
+                if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_REAL_VALUE) {
+                    return;
+                }
+                vp->set_float(req.value.real_value);
+                break;
+            case Parameters::ParamType::CHAR20: {
+                if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_STRING_VALUE) {
+                    return;
+                }
+                char v[21] {};
+                strncpy(v, (const char *)&req.value.string_value.data[0], req.value.string_value.len);
+                if (vp->min_len > 0 && strlen(v) < vp->min_len) {
+                    can_printf("%s too short - min %u", vp->name, vp->min_len);
+                } else {
+                    vp->set_char20(v);
+                }
+                break;
+            }
+            case Parameters::ParamType::CHAR64: {
+                if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_STRING_VALUE) {
+                    return;
+                }
+                char v[65] {};
+                strncpy(v, (const char *)&req.value.string_value.data[0], req.value.string_value.len);
+                vp->set_char64(v);
+                break;
+            }
+            default:
                 return;
             }
-            vp->set_uint8(uint8_t(req.value.integer_value));
-            break;
-        case Parameters::ParamType::UINT32:
-            if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE) {
-                return;
-            }
-            vp->set_uint32(uint32_t(req.value.integer_value));
-            break;
-        case Parameters::ParamType::FLOAT:
-            if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_REAL_VALUE) {
-                return;
-            }
-            vp->set_float(req.value.real_value);
-            break;
-        case Parameters::ParamType::CHAR20: {
-            if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_STRING_VALUE) {
-                return;
-            }
-            char v[21] {};
-            strncpy(v, (const char *)&req.value.string_value.data[0], req.value.string_value.len);
-            if (vp->min_len > 0 && strlen(v) < vp->min_len) {
-                can_printf("%s too short - min %u", vp->name, vp->min_len);
-            } else {
-                vp->set_char20(v);
-            }
-            break;
-        }
-        case Parameters::ParamType::CHAR64: {
-            if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_STRING_VALUE) {
-                return;
-            }
-            char v[65] {};
-            strncpy(v, (const char *)&req.value.string_value.data[0], req.value.string_value.len);
-            vp->set_char64(v);
-            break;
-        }
-        default:
-            return;
         }
     }
     if (vp != nullptr) {
