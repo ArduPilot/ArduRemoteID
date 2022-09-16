@@ -73,6 +73,14 @@ public:
 
     bool set_by_name_uint8(const char *name, uint8_t v);
     bool set_by_name_char64(const char *name, const char *s);
+    bool set_by_name_string(const char *name, const char *s);
+
+    /*
+      return a public key
+    */
+    bool get_public_key(uint8_t i, uint8_t key[32]) const;
+    bool no_public_keys(void) const;
+
 private:
     void load_defaults(void);
 };

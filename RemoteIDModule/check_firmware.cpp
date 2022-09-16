@@ -3,50 +3,7 @@
 #include "monocypher.h"
 #include "parameters.h"
 #include <string.h>
-
-/*
-  simple base64 decoder, not particularly efficient, but small
- */
-static int32_t base64_decode(const char *s, uint8_t *out, const uint32_t max_len)
-{
-    static const char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-    const char *p;
-    uint32_t n = 0;
-    uint32_t i = 0;
-    while (*s && (p=strchr(b64,*s))) {
-        const uint8_t idx = (p - b64);
-        const uint32_t byte_offset = (i*6)/8;
-        const uint32_t bit_offset = (i*6)%8;
-        out[byte_offset] &= ~((1<<(8-bit_offset))-1);
-        if (bit_offset < 3) {
-            if (byte_offset >= max_len) {
-                break;
-            }
-            out[byte_offset] |= (idx << (2-bit_offset));
-            n = byte_offset+1;
-        } else {
-            if (byte_offset >= max_len) {
-                break;
-            }
-            out[byte_offset] |= (idx >> (bit_offset-2));
-            n = byte_offset+1;
-            if (byte_offset+1 >= max_len) {
-                break;
-            }
-            out[byte_offset+1] = (idx << (8-(bit_offset-2))) & 0xFF;
-            n = byte_offset+2;
-        }
-        s++; i++;
-    }
-
-    if ((n > 0) && (*s == '=')) {
-        n -= 1;
-    }
-
-    return n;
-}
-
+#include "util.h"
 
 bool CheckFirmware::check_partition(const uint8_t *flash, uint32_t flash_len,
                                     const uint8_t *lead_bytes, uint32_t lead_length,
@@ -92,20 +49,15 @@ bool CheckFirmware::check_OTA_partition(const esp_partition_t *part, const uint8
     }
     board_id = ad->board_id;
 
-    bool no_keys = true;
+    if (g.no_public_keys()) {
+        Serial.printf("No public keys - accepting firmware\n");
+        spi_flash_munmap(handle);
+        return true;
+    }
 
     for (uint8_t i=0; i<MAX_PUBLIC_KEYS; i++) {
-        const char *b64_key = g.public_keys[i].b64_key;
-        Serial.printf("Checking public key: '%s'\n", b64_key);
-        const char *ktype = "PUBLIC_KEYV1:";
-        if (strncmp(b64_key, ktype, strlen(ktype)) != 0) {
-            continue;
-        }
-        no_keys = false;
-        b64_key += strlen(ktype);
         uint8_t key[32];
-        int32_t out_len = base64_decode(b64_key, key, sizeof(key));
-        if (out_len != 32) {
+        if (!g.get_public_key(i, key)) {
             continue;
         }
         if (check_partition((const uint8_t *)ptr, img_len, lead_bytes, lead_length, ad, key)) {
@@ -116,10 +68,6 @@ bool CheckFirmware::check_OTA_partition(const esp_partition_t *part, const uint8
         Serial.printf("check failed key %u\n", i);
     }
     spi_flash_munmap(handle);
-    if (no_keys) {
-        Serial.printf("No public keys - accepting firmware\n");
-        return true;
-    }
     Serial.printf("firmware failed checks\n");
     return false;
 }

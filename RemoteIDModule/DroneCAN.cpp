@@ -9,6 +9,8 @@
 #include "DroneCAN.h"
 #include "parameters.h"
 #include <stdarg.h>
+#include "util.h"
+#include "monocypher.h"
 
 #include <canard.h>
 #include <uavcan.protocol.NodeStatus.h>
@@ -154,6 +156,9 @@ void DroneCAN::onTransferReceived(CanardInstance* ins,
     case UAVCAN_PROTOCOL_PARAM_GETSET_ID:
         handle_param_getset(ins, transfer);
         break;
+    case DRONECAN_REMOTEID_SECURECOMMAND_ID:
+        handle_SecureCommand(ins, transfer);
+        break;
     default:
         //Serial.printf("reject %u\n", transfer->data_type_id);
         break;
@@ -181,6 +186,7 @@ bool DroneCAN::shouldAcceptTransfer(const CanardInstance* ins,
         ACCEPT_ID(DRONECAN_REMOTEID_SELFID);
         ACCEPT_ID(DRONECAN_REMOTEID_OPERATORID);
         ACCEPT_ID(DRONECAN_REMOTEID_SYSTEM);
+        ACCEPT_ID(DRONECAN_REMOTEID_SECURECOMMAND);
         ACCEPT_ID(UAVCAN_PROTOCOL_PARAM_GETSET);
         return true;
     }
@@ -680,6 +686,135 @@ void DroneCAN::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transf
                            transfer->source_node_id,
                            UAVCAN_PROTOCOL_PARAM_GETSET_SIGNATURE,
                            UAVCAN_PROTOCOL_PARAM_GETSET_ID,
+                           &transfer->transfer_id,
+                           transfer->priority,
+                           CanardResponse,
+                           &buffer[0],
+                           total_size);
+}
+
+/*
+  make a session key
+ */
+void DroneCAN::make_session_key(uint8_t key[8]) const
+{
+    struct {
+        uint32_t time_us;
+        uint8_t mac[8];
+        uint32_t rand;
+    } data {};
+    static_assert(sizeof(data) % 4 == 0, "data must be multiple of 4 bytes");
+
+    esp_efuse_mac_get_default(data.mac);
+    data.time_us = micros();
+    data.rand = random(0xFFFFFFFF);
+    const uint64_t c64 = crc_crc64((const uint32_t *)&data, sizeof(data)/sizeof(uint32_t));
+    memcpy(key, (uint8_t *)&c64, 8);
+}
+
+/*
+  check signature in a command against bootloader public keys
+ */
+bool DroneCAN::check_signature(const dronecan_remoteid_SecureCommandRequest &pkt)
+{
+    if (g.no_public_keys()) {
+        // allow through if no keys are setup
+        return true;
+    }
+    if (pkt.sig_length != 64) {
+        // monocypher signatures are 64 bytes
+        return false;
+    }
+    
+    /*
+      look over all public keys, if one matches then we are OK
+     */
+    for (uint8_t i=0; i<MAX_PUBLIC_KEYS; i++) {
+        uint8_t key[32];
+        if (!g.get_public_key(i, key)) {
+            continue;
+        }
+        crypto_check_ctx ctx {};
+        crypto_check_ctx_abstract *actx = (crypto_check_ctx_abstract*)&ctx;
+        const uint8_t data_length = pkt.data.len - pkt.sig_length;
+        crypto_check_init(actx, &pkt.data.data[data_length], key);
+
+        crypto_check_update(actx, (const uint8_t*)&pkt.sequence, sizeof(pkt.sequence));
+        crypto_check_update(actx, (const uint8_t*)&pkt.operation, sizeof(pkt.operation));
+        crypto_check_update(actx, pkt.data.data, data_length);
+        if (pkt.operation != DRONECAN_REMOTEID_SECURECOMMAND_REQUEST_SECURE_COMMAND_GET_REMOTEID_SESSION_KEY) {
+            crypto_check_update(actx, session_key, sizeof(session_key));
+        }
+        if (crypto_check_final(actx) == 0) {
+            // good signature
+            return true;
+        }
+    }
+    return false;
+}
+
+/*
+  handle SecureCommand
+ */
+void DroneCAN::handle_SecureCommand(CanardInstance* ins, CanardRxTransfer* transfer)
+{
+    dronecan_remoteid_SecureCommandRequest req;
+    if (dronecan_remoteid_SecureCommandRequest_decode(transfer, &req)) {
+        return;
+    }
+
+    dronecan_remoteid_SecureCommandResponse reply {};
+    reply.result = DRONECAN_REMOTEID_SECURECOMMAND_RESPONSE_RESULT_UNSUPPORTED;
+    reply.sequence = req.sequence;
+    reply.operation = req.operation;
+
+    if (!check_signature(req)) {
+        reply.result = DRONECAN_REMOTEID_SECURECOMMAND_RESPONSE_RESULT_DENIED;
+        goto send_reply;
+    }
+    
+    switch (req.operation) {
+    case DRONECAN_REMOTEID_SECURECOMMAND_REQUEST_SECURE_COMMAND_GET_REMOTEID_SESSION_KEY: {
+        make_session_key(session_key);
+        memcpy(reply.data.data, session_key, sizeof(session_key));
+        reply.data.len = sizeof(session_key);
+        reply.result = DRONECAN_REMOTEID_SECURECOMMAND_RESPONSE_RESULT_ACCEPTED;
+        break;
+    }
+    case DRONECAN_REMOTEID_SECURECOMMAND_REQUEST_SECURE_COMMAND_SET_REMOTEID_CONFIG: {
+        Serial.printf("SECURE_COMMAND_SET_REMOTEID_CONFIG\n");
+        int16_t data_len = req.data.len - req.sig_length;
+        req.data.data[data_len] = 0;
+        /*
+          command buffer is nul separated set of NAME=VALUE pairs
+         */
+        reply.result = DRONECAN_REMOTEID_SECURECOMMAND_RESPONSE_RESULT_ACCEPTED;
+        char *command = (char *)req.data.data;
+        while (data_len > 0) {
+            uint8_t cmdlen = strlen(command);
+            Serial.printf("set_config %s", command);
+            char *eq = strchr(command, '=');
+            if (eq != nullptr) {
+                *eq = 0;
+                if (!g.set_by_name_string(command, eq+1)) {
+                    reply.result = DRONECAN_REMOTEID_SECURECOMMAND_RESPONSE_RESULT_FAILED;
+                }
+            }
+            command += cmdlen+1;
+            data_len -= cmdlen+1;
+        }
+        break;
+    }
+    }
+
+send_reply:
+    uint8_t buffer[UAVCAN_PROTOCOL_PARAM_GETSET_RESPONSE_MAX_SIZE] {};
+    uint16_t total_size = dronecan_remoteid_SecureCommandResponse_encode(&reply, buffer);
+
+    canardRequestOrRespond(ins,
+                           transfer->source_node_id,
+                           DRONECAN_REMOTEID_SECURECOMMAND_SIGNATURE,
+                           DRONECAN_REMOTEID_SECURECOMMAND_ID,
                            &transfer->transfer_id,
                            transfer->priority,
                            CanardResponse,

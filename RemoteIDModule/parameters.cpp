@@ -4,6 +4,7 @@
 #include <nvs_flash.h>
 #include <string.h>
 #include "romfs.h"
+#include "util.h"
 
 Parameters g;
 static nvs_handle handle;
@@ -230,5 +231,63 @@ bool Parameters::set_by_name_char64(const char *name, const char *s)
         return false;
     }
     f->set_char64(s);
+    return true;
+}
+
+bool Parameters::set_by_name_string(const char *name, const char *s)
+{
+    const auto *f = find(name);
+    if (!f) {
+        return false;
+    }
+    switch (f->ptype) {
+        case ParamType::UINT8:
+            f->set_uint8(uint8_t(strtoul(s, nullptr, 0)));
+            return true;
+        case ParamType::UINT32:
+            f->set_uint32(strtoul(s, nullptr, 0));
+            return true;
+        case ParamType::FLOAT:
+            f->set_float(atof(s));
+            return true;
+        case ParamType::CHAR20:
+            f->set_char20(s);
+            return true;
+        case ParamType::CHAR64:
+            f->set_char64(s);
+            return true;
+    }
+    return false;
+}
+
+/*
+  return a public key
+ */
+bool Parameters::get_public_key(uint8_t i, uint8_t key[32]) const
+{
+    if (i >= MAX_PUBLIC_KEYS) {
+        return false;
+    }
+    const char *b64_key = g.public_keys[i].b64_key;
+    const char *ktype = "PUBLIC_KEYV1:";
+    if (strncmp(b64_key, ktype, strlen(ktype)) != 0) {
+        return false;
+    }
+    b64_key += strlen(ktype);
+    int32_t out_len = base64_decode(b64_key, key, 32);
+    if (out_len != 32) {
+        return false;
+    }
+    return true;
+}
+
+bool Parameters::no_public_keys(void) const
+{
+    for (uint8_t i=0; i<MAX_PUBLIC_KEYS; i++) {
+        uint8_t key[32];
+        if (get_public_key(i, key)) {
+            return false;
+        }
+    }
     return true;
 }
