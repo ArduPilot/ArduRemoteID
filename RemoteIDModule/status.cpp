@@ -6,6 +6,7 @@
 #include "version.h"
 #include <opendroneid.h>
 #include "status.h"
+#include "util.h"
 
 extern ODID_UAS_Data UAS_data;
 
@@ -170,8 +171,6 @@ static const enum_map_t enum_tsacc[] = {
     { ODID_TIME_ACC_1_4_SECOND , "1.4 s" },
     { ODID_TIME_ACC_1_5_SECOND , "1.5 s" },
 };
-
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 static String enum_string(const enum_map_t *m, uint8_t n, int v)
 {
