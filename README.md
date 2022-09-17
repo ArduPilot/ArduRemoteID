@@ -118,6 +118,9 @@ WIFI_SSID and password from WIFI_PASSWORD which you can set with
 DroneCAN parameter tools such as the DroneCAN GUI tool or
 MissionPlanner CAN tool.
 
+The default SSID is RID_xxxxxxxx where xxxxxxxx is the factory WiFi
+MAC address of the board. The default password is ArduRemoteID.
+
 The web server has a secure firmware update mechanism which will only
 allow a properly signed firmware with a signature corresponding to one
 of the 5 public keys in the parameters. If no public keys are set then

@@ -27,8 +27,8 @@ public:
     float bt5_power;
     uint8_t done_init;
     uint8_t webserver_enable;
-    char wifi_ssid[21] = "RID_123456";
-    char wifi_password[21] = "penguin1234";
+    char wifi_ssid[21] = "";
+    char wifi_password[21] = "ArduRemoteID";
     struct {
         char b64_key[64];
     } public_keys[MAX_PUBLIC_KEYS];
