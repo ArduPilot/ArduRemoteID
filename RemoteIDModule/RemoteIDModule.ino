@@ -20,6 +20,7 @@
 #include "webinterface.h"
 #include "check_firmware.h"
 #include <esp_ota_ops.h>
+#include "efuse.h"
 
 #if AP_DRONECAN_ENABLED
 static DroneCAN dronecan;
@@ -69,6 +70,8 @@ void setup()
 #if AP_DRONECAN_ENABLED
     dronecan.init();
 #endif
+
+    set_efuses();
 
     CheckFirmware::check_OTA_running();
 

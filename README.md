@@ -160,6 +160,20 @@ IDs for your board.
 
 Once signed you can upload the firmware via the web server.
 
+## LOCK_LEVEL Parameter
+
+The LOCK_LEVEL parameter is the way a vendor can lock down the
+RemoteID board so that it is tamper resistant. if any valid public
+keys have been set then setting LOCK_LEVEL=1 will prevent any
+parameter changes using the DroneCAN or MAVLink interfaces. All
+parameter changes will need to be made via the SecureCommand
+signed interface.
+
+Setting LOCK_LEVEL=2 will also cause the ESP32 eFuses to be set to
+prevent firmware updates except via the signed web interface. This is
+a permanent change and cannot be undone even if the LOCK_LEVEL is
+changed back to 0 or 1 via SecureCommand.
+
 ## ArduPilot Support
 
 Support for OpenDroneID is in ArduPilot master and is also in the
