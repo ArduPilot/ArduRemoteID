@@ -61,11 +61,14 @@ public:
         float get_float() const;
         const char *get_char20() const;
         const char *get_char64() const;
+        bool get_as_float(float &v) const;
+        void set_as_float(float v) const;
     };
     static const struct Param params[];
 
     static const Param *find(const char *name);
     static const Param *find_by_index(uint16_t idx);
+    static const Param *find_by_index_float(uint16_t idx);
 
     void init(void);
 
@@ -80,6 +83,9 @@ public:
     */
     bool get_public_key(uint8_t i, uint8_t key[32]) const;
     bool no_public_keys(void) const;
+
+    static uint16_t param_count_float(void);
+    static int16_t param_index_float(const Param *p);
 
 private:
     void load_defaults(void);

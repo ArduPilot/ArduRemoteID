@@ -36,6 +36,52 @@ const Parameters::Param Parameters::params[] = {
 };
 
 /*
+  get count of parameters capable of being converted to load
+ */
+uint16_t Parameters::param_count_float(void)
+{
+    uint16_t count = 0;
+    for (const auto &p : params) {
+        if (p.flags & PARAM_FLAG_HIDDEN) {
+            continue;
+        }
+        switch (p.ptype) {
+        case ParamType::UINT8:
+        case ParamType::UINT32:
+        case ParamType::FLOAT:
+            count++;
+            break;
+        }
+    }
+    // remove 1 for DONE_INIT
+    return count-1;
+}
+
+/*
+  get index of parameter counting only those capable of representation as float
+ */
+int16_t Parameters::param_index_float(const Parameters::Param *f)
+{
+    uint16_t count = 0;
+    for (const auto &p : params) {
+    switch (p.ptype) {
+        if (p.flags & PARAM_FLAG_HIDDEN) {
+            continue;
+        }
+        case ParamType::UINT8:
+        case ParamType::UINT32:
+        case ParamType::FLOAT:
+            if (&p == f) {
+                return count;
+            }
+            count++;
+            break;
+    }
+    }
+    return -1;
+}
+
+/*
   find by name
  */
 const Parameters::Param *Parameters::find(const char *name)
@@ -53,10 +99,34 @@ const Parameters::Param *Parameters::find(const char *name)
  */
 const Parameters::Param *Parameters::find_by_index(uint16_t index)
 {
-    if (index >= (sizeof(params)/sizeof(params[0])-1)) {
+    if (index >= ARRAY_SIZE(params)-2) {
         return nullptr;
     }
     return &params[index];
+}
+
+/*
+  find by index
+ */
+const Parameters::Param *Parameters::find_by_index_float(uint16_t index)
+{
+    uint16_t count = 0;
+    for (const auto &p : params) {
+    switch (p.ptype) {
+        if (p.flags & PARAM_FLAG_HIDDEN) {
+            continue;
+        }
+        case ParamType::UINT8:
+        case ParamType::UINT32:
+        case ParamType::FLOAT:
+            if (index == count) {
+                return &p;
+            }
+            count++;
+            break;
+    }
+    }
+    return nullptr;
 }
 
 void Parameters::Param::set_uint8(uint8_t v) const
@@ -133,6 +203,45 @@ const char *Parameters::Param::get_char64() const
 {
     const char *p = (const char *)ptr;
     return p;
+}
+
+/*
+  get parameter as a float
+ */
+bool Parameters::Param::get_as_float(float &v) const
+{
+    switch (ptype) {
+        case ParamType::UINT8:
+            v = float(get_uint8());
+            break;
+        case ParamType::UINT32:
+            v = float(get_uint32());
+            break;
+        case ParamType::FLOAT:
+            v = get_float();
+            break;
+    default:
+        return false;
+    }
+    return true;
+}
+
+/*
+  set parameter from a float
+ */
+void Parameters::Param::set_as_float(float v) const
+{
+    switch (ptype) {
+        case ParamType::UINT8:
+            set_uint8(uint8_t(v));
+            break;
+        case ParamType::UINT32:
+            set_uint32(uint32_t(v));
+            break;
+        case ParamType::FLOAT:
+            set_float(v);
+            break;
+    }
 }
 
 

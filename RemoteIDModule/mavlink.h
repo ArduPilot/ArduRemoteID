@@ -3,6 +3,7 @@
  */
 #pragma once
 #include "transport.h"
+#include "parameters.h"
 
 /*
   abstraction for MAVLink on a serial port
@@ -19,6 +20,8 @@ private:
     mavlink_channel_t chan;
     uint32_t last_hb_ms;
     uint32_t last_hb_warn_ms;
+    uint32_t param_request_last_ms;
+    const Parameters::Param *param_next;
 
     void update_receive(void);
     void update_send(void);

@@ -5,6 +5,7 @@
 #include "mavlink.h"
 #include "board_config.h"
 #include "version.h"
+#include "parameters.h"
 
 #define SERIAL_BAUD 115200
 
@@ -12,7 +13,7 @@ static HardwareSerial *serial_ports[MAVLINK_COMM_NUM_BUFFERS];
 
 #include <generated/mavlink_helpers.h>
 
-mavlink_system_t mavlink_system = {0,MAV_COMP_ID_ODID_TXRX_1};
+mavlink_system_t mavlink_system = {0, MAV_COMP_ID_ODID_TXRX_1};
 
 /*
   send a buffer out a MAVLink channel
@@ -45,13 +46,32 @@ void MAVLinkSerial::init(void)
 
 void MAVLinkSerial::update(void)
 {
+    const uint32_t now_ms = millis();
+
     if (mavlink_system.sysid != 0) {
         update_send();
-    } else if (millis() - last_hb_warn_ms >= 2000) {
+    } else if (now_ms - last_hb_warn_ms >= 2000) {
         last_hb_warn_ms = millis();
         serial.printf("Waiting for heartbeat\n");
     }
     update_receive();
+
+    if (param_request_last_ms != 0 && now_ms - param_request_last_ms > 50) {
+        param_request_last_ms = now_ms;
+        float value;
+        if (param_next->get_as_float(value)) {
+            mavlink_msg_param_value_send(chan,
+                                         param_next->name, value,
+                                         MAV_PARAM_TYPE_REAL32,
+                                         g.param_count_float(),
+                                         g.param_index_float(param_next));
+        }
+        param_next++;
+        if (param_next->ptype == Parameters::ParamType::NONE) {
+            param_next = nullptr;
+            param_request_last_ms = 0;
+        }
+    }
 }
 
 void MAVLinkSerial::update_send(void)
@@ -160,6 +180,57 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_OPERATOR_ID: {
         mavlink_msg_open_drone_id_operator_id_decode(&msg, &operator_id);
         last_operator_id_ms = now_ms;
+        break;
+    }
+    case MAVLINK_MSG_ID_PARAM_REQUEST_LIST: {
+        param_next = g.find_by_index_float(0);
+        param_request_last_ms = millis();
+        break;
+    };
+    case MAVLINK_MSG_ID_PARAM_REQUEST_READ: {
+        mavlink_param_request_read_t pkt;
+        mavlink_msg_param_request_read_decode(&msg, &pkt);
+        const Parameters::Param *p;
+        if (pkt.param_index < 0) {
+            p = g.find(pkt.param_id);
+        } else {
+            p = g.find_by_index_float(pkt.param_index);
+        }
+        float value;
+        if (!p || !p->get_as_float(value)) {
+            return;
+        }
+        mavlink_msg_param_value_send(chan,
+                                     p->name, value,
+                                     MAV_PARAM_TYPE_REAL32,
+                                     g.param_count_float(),
+                                     g.param_index_float(p));
+        break;
+    }
+    case MAVLINK_MSG_ID_PARAM_SET: {
+        mavlink_param_set_t pkt;
+        mavlink_msg_param_set_decode(&msg, &pkt);
+        auto *p = g.find(pkt.param_id);
+        float value;
+        if (pkt.param_type != MAV_PARAM_TYPE_REAL32 ||
+            !p || !p->get_as_float(value)) {
+            return;
+        }
+        p->get_as_float(value);
+        if (g.lock_level != 0 &&
+            (strcmp(p->name, "LOCK_LEVEL") != 0 ||
+             uint8_t(pkt.param_value) <= uint8_t(value))) {
+            // only param set allowed is to increase lock level
+            mav_printf(MAV_SEVERITY_ERROR, "Parameters locked");
+        } else {
+            p->set_as_float(pkt.param_value);
+        }
+        p->get_as_float(value);
+        mavlink_msg_param_value_send(chan,
+                                     p->name, value,
+                                     MAV_PARAM_TYPE_REAL32,
+                                     g.param_count_float(),
+                                     g.param_index_float(p));
         break;
     }
     default:
