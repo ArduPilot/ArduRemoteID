@@ -12,6 +12,8 @@
 #define PIN_UART_TX 18
 #define PIN_UART_RX 17
 
+#define WS2812_LED_PIN GPIO_NUM_48
+
 #elif defined(BOARD_ESP32C3_DEV)
 #define BOARD_ID 2
 #define PIN_CAN_TX GPIO_NUM_5
@@ -19,6 +21,8 @@
 
 #define PIN_UART_TX 3
 #define PIN_UART_RX 2
+
+#define WS2812_LED_PIN GPIO_NUM_8
 
 #elif defined(BOARD_BLUEMARK_DB200)
 #define BOARD_ID 3
@@ -37,7 +41,8 @@
 #define PIN_UART_RX 2
 
 #define PIN_STATUS_LED GPIO_NUM_8 // LED to signal the status
-#define STATUS_LED_ON 1
+// LED off when ready to arm
+#define STATUS_LED_OK 0
 
 #elif defined(BOARD_BLUEMARK_DB110)
 #define BOARD_ID 4
@@ -45,7 +50,8 @@
 #define PIN_UART_RX 4
 
 #define PIN_STATUS_LED GPIO_NUM_8 // LED to signal the status
-#define STATUS_LED_ON 1
+// LED off when ready to arm
+#define STATUS_LED_OK 0
 
 #elif defined(BOARD_JW_TBD)
 #define BOARD_ID 5
@@ -57,7 +63,8 @@
 
 #define PIN_STATUS_LED GPIO_NUM_5 // LED to signal the status
 #define LED_MODE_FLASH 1 // flashing LED configuration
-#define STATUS_LED_ON 1
+// LED on when ready to arm
+#define STATUS_LED_OK 1
 
 #define CAN_APP_NODE_NAME "JW TBD"
 #else

@@ -36,6 +36,7 @@ setup:
 	@echo "Installing ESP32 support"
 	$(ARDUINO_CLI) core update-index --config-file arduino-cli.yaml
 	$(ARDUINO_CLI) core install esp32:esp32@$(ESP32_VER)
+	$(ARDUINO_CLI) lib install "Adafruit NeoPixel"
 
 headers:
 	@../scripts/git-version.sh
@@ -48,7 +49,7 @@ ArduRemoteID-%.bin: *.cpp *.ino *.h romfs_files.h
 	@echo "Building $* on $(CHIP)"
 	@BUILD_FLAGS="-DBOARD_$*"
 	@rm -rf build build-$*
-	@$(ARDUINO_CLI) compile -b esp32:esp32:$(CHIP) --export-binaries --build-property build.extra_flags=-DBOARD_$* --build-property upload.maximum_size=$(APP_PARTITION_SIZE)
+	@$(ARDUINO_CLI) compile -b esp32:esp32:$(CHIP) --export-binaries --build-property build.extra_flags="-DBOARD_$* -DESP32" --build-property upload.maximum_size=$(APP_PARTITION_SIZE)
 	@cp build/esp32.esp32.$(CHIP)/RemoteIDModule.ino.bin ArduRemoteID_$*_OTA.bin
 	@echo "Merging $*"
 	@python3 $(ESPTOOL) --chip $(CHIP) merge_bin -o ArduRemoteID-$*.bin --flash_size 4MB 0x0 build/esp32.esp32.$(CHIP)/RemoteIDModule.ino.bootloader.bin 0x8000 build/esp32.esp32.$(CHIP)/RemoteIDModule.ino.partitions.bin 0xe000 $(ESP32_TOOLS)/partitions/boot_app0.bin 0x10000 build/esp32.esp32.$(CHIP)/RemoteIDModule.ino.bin
