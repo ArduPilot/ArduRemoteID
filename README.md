@@ -83,10 +83,14 @@ the following options, after selecting the COMM port that the board is attached:
 
 subsequent re-flashing of newer releases should not require holding the "boot" button during power-up of the board as the USB cable is attached.
 
-## DroneCAN Parameters
+## Parameters
 
-The firmware comes with a set of DroneCAN accessible parameters which
-control the behaviour of the board.
+The firmware comes with a set of parameters which are accessible from
+DroneCAN or MAVLink. The parameters allow for a lot of flexibility in
+controlling the behaviour of the board.
+
+DroneCAN allows control of any parameter. Using MAVLink only
+non-string parameters are accessible.
 
 ![DroneCan Parameters](images/DroneCAN-parameters.jpg)
 
