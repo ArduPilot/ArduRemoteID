@@ -72,4 +72,14 @@ protected:
     static mavlink_open_drone_id_self_id_t self_id;
     static mavlink_open_drone_id_system_t system;
     static mavlink_open_drone_id_operator_id_t operator_id;
+
+    void make_session_key(uint8_t key[8]) const;
+
+    /*
+      check signature in a command against public keys
+    */
+    bool check_signature(uint8_t sig_length, uint8_t data_len, uint32_t sequence, uint32_t operation,
+                         const uint8_t *data);
+
+    uint8_t session_key[8];
 };

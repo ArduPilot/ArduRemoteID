@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include "transport.h"
 #include "parameters.h"
+#include "util.h"
+#include "monocypher.h"
 
 const char *Transport::parse_fail = "uninitialised";
 
@@ -57,3 +59,65 @@ uint8_t Transport::arm_status_check(const char *&reason)
 
     return status;
 }
+
+/*
+  make a session key
+ */
+void Transport::make_session_key(uint8_t key[8]) const
+{
+    struct {
+        uint32_t time_us;
+        uint8_t mac[8];
+        uint32_t rand;
+    } data {};
+    static_assert(sizeof(data) % 4 == 0, "data must be multiple of 4 bytes");
+
+    esp_efuse_mac_get_default(data.mac);
+    data.time_us = micros();
+    data.rand = random(0xFFFFFFFF);
+    const uint64_t c64 = crc_crc64((const uint32_t *)&data, sizeof(data)/sizeof(uint32_t));
+    memcpy(key, (uint8_t *)&c64, 8);
+}
+
+/*
+  check signature in a command against public keys
+ */
+bool Transport::check_signature(uint8_t sig_length, uint8_t data_len, uint32_t sequence, uint32_t operation,
+                                const uint8_t *data)
+{
+    if (g.no_public_keys()) {
+        // allow through if no keys are setup
+        return true;
+    }
+    if (sig_length != 64) {
+        // monocypher signatures are 64 bytes
+        return false;
+    }
+    
+    /*
+      loop over all public keys, if one matches then we are OK
+     */
+    for (uint8_t i=0; i<MAX_PUBLIC_KEYS; i++) {
+        uint8_t key[32];
+        if (!g.get_public_key(i, key)) {
+            continue;
+        }
+        crypto_check_ctx ctx {};
+        crypto_check_ctx_abstract *actx = (crypto_check_ctx_abstract*)&ctx;
+        crypto_check_init(actx, &data[data_len], key);
+
+        crypto_check_update(actx, (const uint8_t*)&sequence, sizeof(sequence));
+        crypto_check_update(actx, (const uint8_t*)&operation, sizeof(operation));
+        crypto_check_update(actx, data, data_len);
+        if (operation != SECURE_COMMAND_GET_SESSION_KEY &&
+            operation != SECURE_COMMAND_GET_REMOTEID_SESSION_KEY) {
+            crypto_check_update(actx, session_key, sizeof(session_key));
+        }
+        if (crypto_check_final(actx) == 0) {
+            // good signature
+            return true;
+        }
+    }
+    return false;
+}
+
