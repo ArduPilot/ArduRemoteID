@@ -28,7 +28,8 @@ void MAVLinkSerial::handle_secure_command(const mavlink_secure_command_t &pkt)
 
     switch (pkt.operation) {
 
-    case SECURE_COMMAND_GET_SESSION_KEY: {
+    case SECURE_COMMAND_GET_SESSION_KEY:
+    case SECURE_COMMAND_GET_REMOTEID_SESSION_KEY: {
         make_session_key(session_key);
         reply.data_length = sizeof(session_key);
         memcpy(reply.data, session_key, reply.data_length);
@@ -106,6 +107,33 @@ void MAVLinkSerial::handle_secure_command(const mavlink_secure_command_t &pkt)
             g.remove_public_key(key_idx+i);
         }
         reply.result = MAV_RESULT_ACCEPTED;
+        break;
+    }
+    case SECURE_COMMAND_SET_REMOTEID_CONFIG: {
+        int16_t data_len = pkt.data_length;
+        char data[pkt.data_length+1];
+        memcpy(data, pkt.data, pkt.data_length);
+        data[pkt.data_length] = 0;
+        /*
+          command buffer is nul separated set of NAME=VALUE pairs
+         */
+        reply.result = MAV_RESULT_ACCEPTED;
+        char *command = (char *)data;
+        while (data_len > 0) {
+            uint8_t cmdlen = strlen(command);
+            char *eq = strchr(command, '=');
+            if (eq != nullptr) {
+                *eq = 0;
+                if (!g.set_by_name_string(command, eq+1)) {
+                    mav_printf(MAV_SEVERITY_INFO, "set %s failed", command);
+                    reply.result = MAV_RESULT_FAILED;
+                } else {
+                    mav_printf(MAV_SEVERITY_INFO, "set %s OK", command);
+                }
+            }
+            command += cmdlen+1;
+            data_len -= cmdlen+1;
+        }
         break;
     }
     }
