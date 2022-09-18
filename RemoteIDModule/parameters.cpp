@@ -400,3 +400,29 @@ bool Parameters::no_public_keys(void) const
     }
     return true;
 }
+
+bool Parameters::set_public_key(uint8_t i, const uint8_t key[32])
+{
+    if (i >= MAX_PUBLIC_KEYS) {
+        return false;
+    }
+    char *s = base64_encode(key, PUBLIC_KEY_LEN);
+    if (s == nullptr) {
+        return false;
+    }
+    char name[] = "PUBLIC_KEYx";
+    name[strlen(name)-2] = '1'+i;
+    bool ret = set_by_name_char64(name, s);
+    delete[] s;
+    return ret;
+}
+
+bool Parameters::remove_public_key(uint8_t i)
+{
+    if (i >= MAX_PUBLIC_KEYS) {
+        return false;
+    }
+    char name[] = "PUBLIC_KEYx";
+    name[strlen(name)-2] = '1'+i;
+    return set_by_name_char64(name, "");
+}

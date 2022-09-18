@@ -27,6 +27,7 @@ private:
     void update_send(void);
     void process_packet(mavlink_status_t &status, mavlink_message_t &msg);
     void mav_printf(uint8_t severity, const char *fmt, ...);
+    void handle_secure_command(const mavlink_secure_command_t &pkt);
 
     void arm_status_send(void);
 };

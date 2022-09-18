@@ -233,6 +233,13 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
                                      g.param_index_float(p));
         break;
     }
+    case MAVLINK_MSG_ID_SECURE_COMMAND:
+    case MAVLINK_MSG_ID_SECURE_COMMAND_REPLY: {
+        mavlink_secure_command_t pkt;
+        mavlink_msg_secure_command_decode(&msg, &pkt);
+        handle_secure_command(pkt);
+        break;
+    }
     default:
         // we don't care about other packets
         break;

@@ -82,6 +82,8 @@ public:
       return a public key
     */
     bool get_public_key(uint8_t i, uint8_t key[32]) const;
+    bool set_public_key(uint8_t i, const uint8_t key[32]);
+    bool remove_public_key(uint8_t i);
     bool no_public_keys(void) const;
 
     static uint16_t param_count_float(void);

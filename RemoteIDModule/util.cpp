@@ -27,13 +27,13 @@ uint64_t crc_crc64(const uint32_t *data, uint16_t num_words)
     return crc;
 }
 
+static const char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
 /*
   simple base64 decoder, not particularly efficient, but small
  */
 int32_t base64_decode(const char *s, uint8_t *out, const uint32_t max_len)
 {
-    static const char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
     const char *p;
     uint32_t n = 0;
     uint32_t i = 0;
@@ -70,4 +70,38 @@ int32_t base64_decode(const char *s, uint8_t *out, const uint32_t max_len)
     return n;
 }
 
+/*
+  encode as base64, returning allocated string
+*/
+char *base64_encode(const uint8_t *d, int len)
+{
+    uint32_t bit_offset, byte_offset, idx, i;
+    uint32_t bytes = (len*8 + 5)/6;
+    uint32_t pad_bytes = (bytes % 4) ? 4 - (bytes % 4) : 0;
 
+    char *out = new char[bytes+pad_bytes+1];
+    if (!out) {
+        return nullptr;
+    }
+
+    for (i=0;i<bytes;i++) {
+        byte_offset = (i*6)/8;
+        bit_offset = (i*6)%8;
+        if (bit_offset < 3) {
+            idx = (d[byte_offset] >> (2-bit_offset)) & 0x3FU;
+        } else {
+            idx = (d[byte_offset] << (bit_offset-2)) & 0x3FU;
+            if (byte_offset+1 < len) {
+                idx |= (d[byte_offset+1] >> (8-(bit_offset-2)));
+            }
+        }
+        out[i] = b64[idx];
+    }
+
+    for (;i<bytes+pad_bytes;i++) {
+        out[i] = '=';
+    }
+    out[i] = 0;
+
+    return out;
+}
