@@ -21,6 +21,7 @@
 #include "check_firmware.h"
 #include <esp_ota_ops.h>
 #include "efuse.h"
+#include "led.h"
 
 #if AP_DRONECAN_ENABLED
 static DroneCAN dronecan;
@@ -44,7 +45,6 @@ static WebInterface webif;
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 
-static uint32_t last_led_trig_ms;
 static bool arm_check_ok = false; // goes true for LED arm check status
 static bool pfst_check_ok = false; 
 
@@ -57,6 +57,9 @@ void setup()
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 
     g.init();
+
+    led.set_state(Led::LedState::INIT);
+    led.update();
 
     // Serial for debug printf
     Serial.begin(g.baudrate);
@@ -97,11 +100,10 @@ void setup()
     digitalWrite(PIN_CAN_TERM, HIGH);
 #endif
 
-#ifdef PIN_STATUS_LED
-    // LED off if good to arm
     pfst_check_ok = true;   // note - this will need to be expanded to better capture PFST test status
-    pinMode(PIN_STATUS_LED, OUTPUT);
-#endif
+
+    // initially set LED for fail
+    led.set_state(Led::LedState::ARM_FAIL);
 
     esp_log_level_set("*", ESP_LOG_DEBUG);
 
@@ -230,6 +232,7 @@ static void set_data(Transport &t)
     t.set_parse_fail(reason);
 
     arm_check_ok = (reason==nullptr);
+    led.set_state(pfst_check_ok && arm_check_ok? Led::LedState::ARM_OK : Led::LedState::ARM_FAIL);
 
     uint32_t now_ms = millis();
     uint32_t location_age_ms = now_ms - t.get_last_location_ms();
@@ -237,31 +240,6 @@ static void set_data(Transport &t)
     if (location_age_ms < last_location_age_ms) {
         last_location_ms = t.get_last_location_ms();
     }
-}
-
-void set_output_led(uint32_t _now) {
-#ifdef PIN_STATUS_LED
-#ifdef LED_MODE_FLASH
-    // LED off if good to arm
-    //pinMode(PIN_STATUS_LED, OUTPUT);
-    
-    if (arm_check_ok && pfst_check_ok) {
-        digitalWrite(PIN_STATUS_LED, STATUS_LED_ON);
-        last_led_trig_ms = 0; 
-    } else if (!arm_check_ok && pfst_check_ok) {
-        if (_now - last_led_trig_ms > 100) {
-            digitalWrite(PIN_STATUS_LED,!digitalRead(PIN_STATUS_LED));
-            last_led_trig_ms = _now;
-        }
-    } else {
-        digitalWrite(PIN_STATUS_LED, STATUS_LED_ON);
-        last_led_trig_ms = 0;
-    }
-#else
-    // Default LED Behavior
-    digitalWrite(PIN_STATUS_LED,arm_check_ok?!STATUS_LED_ON:STATUS_LED_ON);
-#endif // LED_MODE_FLASH
-#endif // PIN_STATUS_LED
 }
 
 static uint8_t loop_counter = 0;
@@ -295,6 +273,8 @@ void loop()
     bool have_location = false;
     const uint32_t last_location_ms = transport.get_last_location_ms();
     const uint32_t last_system_ms = transport.get_last_system_ms();
+
+    led.update();
 
     if (g.bcast_powerup) {
         // if we are broadcasting on powerup we always mark location valid
@@ -349,9 +329,6 @@ void loop()
         ble.transmit_legacy_name(UAS_data);
     }
 
-#ifdef PIN_STATUS_LED
-    set_output_led(now_ms);
-#endif 
     // sleep for a bit for power saving
     delay(1);
 }

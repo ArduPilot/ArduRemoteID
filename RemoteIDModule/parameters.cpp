@@ -64,10 +64,10 @@ int16_t Parameters::param_index_float(const Parameters::Param *f)
 {
     uint16_t count = 0;
     for (const auto &p : params) {
-    switch (p.ptype) {
         if (p.flags & PARAM_FLAG_HIDDEN) {
             continue;
         }
+        switch (p.ptype) {
         case ParamType::UINT8:
         case ParamType::UINT32:
         case ParamType::FLOAT:
@@ -76,7 +76,7 @@ int16_t Parameters::param_index_float(const Parameters::Param *f)
             }
             count++;
             break;
-    }
+        }
     }
     return -1;
 }
@@ -112,10 +112,10 @@ const Parameters::Param *Parameters::find_by_index_float(uint16_t index)
 {
     uint16_t count = 0;
     for (const auto &p : params) {
-    switch (p.ptype) {
         if (p.flags & PARAM_FLAG_HIDDEN) {
             continue;
         }
+        switch (p.ptype) {
         case ParamType::UINT8:
         case ParamType::UINT32:
         case ParamType::FLOAT:
@@ -124,7 +124,7 @@ const Parameters::Param *Parameters::find_by_index_float(uint16_t index)
             }
             count++;
             break;
-    }
+        }
     }
     return nullptr;
 }
