@@ -178,6 +178,35 @@ prevent firmware updates except via the signed web interface. This is
 a permanent change and cannot be undone even if the LOCK_LEVEL is
 changed back to 0 or 1 via SecureCommand.
 
+## Secure Parameter Update
+
+Once LOCK_LEVEL is 1 or 2 you cannot use normal parameter commands to
+set parameters. Instead you need to use the DroneCAN SecureCommand
+interface or the MAVLink SECURE_COMMAND interface.
+
+For DroneCAN see the script in scripts/secure_command.py, for example
+this command would change the UAS_TYPE to 3:
+
+```
+scripts/secure_command.py mavcan::14550 --private-key my_private_key.dat --target-node=125 UAS_TYPE=3
+```
+
+For MAVLink you can use the SecureCommand module in MAVProxy. For
+example:
+
+```
+module load SecureCommand
+securecommand set private_keyfile my_private_key.dat
+securecommand getsessionkey
+securecommand setconfig UAS_TYPE=3
+```
+
+You can also use secure commands to set LOCK_LEVEL back to zero, but
+note that if you have set LOCK_LEVEL=2 then the setting of the eFuse
+bits is not undone. You will be able to change parameters but you will
+not be able to flash firmware via the USB port. You can still flash a
+signed firmware using the web interface.
+
 ## ArduPilot Support
 
 Support for OpenDroneID is in ArduPilot master and is also in the
