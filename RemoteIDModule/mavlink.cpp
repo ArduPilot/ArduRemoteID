@@ -42,6 +42,7 @@ void MAVLinkSerial::init(void)
     // print banner at startup
     serial.printf("ArduRemoteID version %u.%u %08x\n",
                   FW_VERSION_MAJOR, FW_VERSION_MINOR, GIT_VERSION);
+    mavlink_system.sysid = g.mavlink_sysid;
 }
 
 void MAVLinkSerial::update(void)
@@ -50,6 +51,8 @@ void MAVLinkSerial::update(void)
 
     if (mavlink_system.sysid != 0) {
         update_send();
+    } else if (g.mavlink_sysid != 0) {
+        mavlink_system.sysid = g.mavlink_sysid;
     } else if (now_ms - last_hb_warn_ms >= 2000) {
         last_hb_warn_ms = millis();
         serial.printf("Waiting for heartbeat\n");

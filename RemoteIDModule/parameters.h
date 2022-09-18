@@ -27,6 +27,7 @@ public:
     float bt5_power;
     uint8_t done_init;
     uint8_t webserver_enable;
+    uint8_t mavlink_sysid;
     char wifi_ssid[21] = "";
     char wifi_password[21] = "ArduRemoteID";
     struct {
