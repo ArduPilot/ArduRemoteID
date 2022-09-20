@@ -29,6 +29,7 @@ private:
     bool computeTimings(uint32_t target_bitrate, Timings& out_timings);
 
     uint32_t bitrate;
+    uint32_t last_bus_recovery_ms;
 };
 
 /**
