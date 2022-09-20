@@ -21,6 +21,8 @@ void Led::init(void)
 
 void Led::update(void)
 {
+    init();
+
     const uint32_t now_ms = millis();
 
 #ifdef PIN_STATUS_LED
