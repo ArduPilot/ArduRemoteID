@@ -64,7 +64,9 @@ make a dual-transport implementation easy.
 
 ## Releases
 
-Pre-built releases are in the releases folder on github.
+Pre-built releases are in the releases list folder on github.
+
+https://github.com/ArduPilot/ArduRemoteID/releases
 
 ## Flashing
 
