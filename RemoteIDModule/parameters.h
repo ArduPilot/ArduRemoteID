@@ -20,6 +20,7 @@ public:
     uint8_t id_type;
     char uas_id[21] = "ABCD123456789";
     float wifi_nan_rate;
+    float wifi_beacon_rate;
     float wifi_power;
     float bt4_rate;
     float bt4_power;
@@ -30,6 +31,7 @@ public:
     uint8_t mavlink_sysid;
     char wifi_ssid[21] = "";
     char wifi_password[21] = "ArduRemoteID";
+    uint8_t wifi_channel = 6;
     struct {
         char b64_key[64];
     } public_keys[MAX_PUBLIC_KEYS];

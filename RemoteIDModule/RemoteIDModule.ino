@@ -16,6 +16,8 @@
 #include "DroneCAN.h"
 #include "WiFi_TX.h"
 #include "BLE_TX.h"
+#include <esp_wifi.h>
+#include <WiFi.h>
 #include "parameters.h"
 #include "webinterface.h"
 #include "check_firmware.h"
@@ -32,7 +34,7 @@ static MAVLinkSerial mavlink1{Serial1, MAVLINK_COMM_0};
 static MAVLinkSerial mavlink2{Serial,  MAVLINK_COMM_1};
 #endif
 
-static WiFi_NAN wifi;
+static WiFi_TX wifi;
 static BLE_TX ble;
 
 #define DEBUG_BAUDRATE 57600
@@ -60,6 +62,8 @@ void setup()
 
     led.set_state(Led::LedState::INIT);
     led.update();
+
+    wifi.init(); //always call the init function even if WiFi transmission modes are disabled.
 
     // Serial for debug printf
     Serial.begin(g.baudrate);
@@ -327,11 +331,18 @@ void loop()
     
     set_data(transport);
 
-    static uint32_t last_update_wifi_ms;
+    static uint32_t last_update_wifi_nan_ms;
     if (g.wifi_nan_rate > 0 &&
-        now_ms - last_update_wifi_ms > 1000/g.wifi_nan_rate) {
-        last_update_wifi_ms = now_ms;
-        wifi.transmit(UAS_data);
+        now_ms - last_update_wifi_nan_ms > 1000/g.wifi_nan_rate) {
+        last_update_wifi_nan_ms = now_ms;
+        wifi.transmit_nan(UAS_data);
+    }
+
+    static uint32_t last_update_wifi_beacon_ms;
+    if (g.wifi_beacon_rate > 0 &&
+        now_ms - last_update_wifi_beacon_ms > 1000/g.wifi_beacon_rate) {
+        last_update_wifi_beacon_ms = now_ms;
+        wifi.transmit_beacon(UAS_data);
     }
 
     static uint32_t last_update_bt5_ms;
