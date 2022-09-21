@@ -90,7 +90,6 @@ class AJAX_Handler : public RequestHandler
 void WebInterface::init(void)
 {
     Serial.printf("WAP start %s %s\n", g.wifi_ssid, g.wifi_password);
-    WiFi.softAP(g.wifi_ssid, g.wifi_password);
     IPAddress myIP = WiFi.softAPIP();
 
     server.addHandler( &AJAX_Handler );
