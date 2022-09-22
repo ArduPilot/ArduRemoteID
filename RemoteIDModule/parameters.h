@@ -19,6 +19,10 @@ public:
     uint8_t ua_type;
     uint8_t id_type;
     char uas_id[21] = "ABCD123456789";
+    //
+    uint8_t operator_id_type;
+    char operator_id[21];  // For debug = "ABC1234567890";
+    //
     float wifi_nan_rate;
     float wifi_power;
     float bt4_rate;
@@ -74,6 +78,7 @@ public:
     void init(void);
 
     bool have_basic_id_info(void) const;
+    bool have_operator_id_info(void) const;
 
     bool set_by_name_uint8(const char *name, uint8_t v);
     bool set_by_name_char64(const char *name, const char *s);
