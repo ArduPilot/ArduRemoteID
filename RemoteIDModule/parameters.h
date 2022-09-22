@@ -19,6 +19,10 @@ public:
     uint8_t ua_type;
     uint8_t id_type;
     char uas_id[21] = "ABCD123456789";
+    //
+    uint8_t description_type;
+    char description[24];  // For debug = "Pesticides are sprayed";
+    //
     float wifi_nan_rate;
     float wifi_power;
     float bt4_rate;
@@ -41,6 +45,7 @@ public:
         FLOAT=3,
         CHAR20=4,
         CHAR64=5,
+        CHAR23=6,
     };
 
     struct Param {
@@ -56,11 +61,13 @@ public:
         void set_uint8(uint8_t v) const;
         void set_uint32(uint32_t v) const;
         void set_char20(const char *v) const;
+        void set_char23(const char *v) const;
         void set_char64(const char *v) const;
         uint8_t get_uint8() const;
         uint32_t get_uint32() const;
         float get_float() const;
         const char *get_char20() const;
+        const char *get_char23() const;
         const char *get_char64() const;
         bool get_as_float(float &v) const;
         void set_as_float(float v) const;
@@ -74,6 +81,7 @@ public:
     void init(void);
 
     bool have_basic_id_info(void) const;
+    bool have_self_id_info(void) const;
 
     bool set_by_name_uint8(const char *name, uint8_t v);
     bool set_by_name_char64(const char *name, const char *s);

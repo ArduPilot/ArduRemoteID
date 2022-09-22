@@ -614,6 +614,19 @@ void DroneCAN::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transf
                 }
                 break;
             }
+            case Parameters::ParamType::CHAR23: {
+                if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_STRING_VALUE) {
+                    return;
+                }
+                char v[24] {};
+                strncpy(v, (const char *)&req.value.string_value.data[0], req.value.string_value.len);
+                if (vp->min_len > 0 && strlen(v) < vp->min_len) {
+                    can_printf("%s too short - min %u", vp->name, vp->min_len);
+                } else {
+                    vp->set_char23(v);
+                }
+                break;
+            }
             case Parameters::ParamType::CHAR64: {
                 if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_STRING_VALUE) {
                     return;
@@ -666,6 +679,13 @@ void DroneCAN::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transf
             if (vp->flags & PARAM_FLAG_PASSWORD) {
                 s = "********";
             }
+            strncpy((char*)pkt.value.string_value.data, s, sizeof(pkt.value.string_value.data));
+            pkt.value.string_value.len = strlen(s);
+            break;
+        }
+        case Parameters::ParamType::CHAR23: {
+            pkt.value.union_tag = UAVCAN_PROTOCOL_PARAM_VALUE_STRING_VALUE;
+            const char *s = vp->get_char23();
             strncpy((char*)pkt.value.string_value.data, s, sizeof(pkt.value.string_value.data));
             pkt.value.string_value.len = strlen(s);
             break;
