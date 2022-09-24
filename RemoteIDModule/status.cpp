@@ -182,6 +182,28 @@ static String enum_string(const enum_map_t *m, uint8_t n, int v)
     return String(v);
 }
 
+/**
+ * When latitude and longitude are 0, set to UNKNOWN
+ * 
+ * @param lat latitude
+ * @param lon longitude
+ * @param select 0:latitude 1:longitude
+ */
+static String LatLonString(double lat, double lon, uint8_t select)
+{
+    if (lat != 0.0 || lon != 0.0) {
+        switch (select) {
+        case 0:  // lat
+            return String(lat, 8);
+        case 1:  // lon
+            return String(lon, 8);
+        default:
+            break;
+        }
+    }
+    return "UNKNOWN";
+}
+
 #define ENUM_MAP(ename, v) enum_string(enum_ ## ename, ARRAY_SIZE(enum_ ## ename), int(v))
 
 String status_json(void)
@@ -208,8 +230,8 @@ String status_json(void)
         { "SELFID:Desc", String(UAS_data.SelfID.Desc) },
         { "SYSTEM:OperatorLocationType", ENUM_MAP(loctype, UAS_data.System.OperatorLocationType) },
         { "SYSTEM:ClassificationType", ENUM_MAP(classif, UAS_data.System.ClassificationType) },
-        { "SYSTEM:OperatorLatitude", String(UAS_data.System.OperatorLatitude, 8) },
-        { "SYSTEM:OperatorLongitude", String(UAS_data.System.OperatorLongitude, 8) },
+        { "SYSTEM:OperatorLatitude", LatLonString(UAS_data.System.OperatorLatitude, UAS_data.System.OperatorLongitude, 0) },
+        { "SYSTEM:OperatorLongitude", LatLonString(UAS_data.System.OperatorLatitude, UAS_data.System.OperatorLongitude, 1) },
         { "SYSTEM:AreaCount", String(UAS_data.System.AreaCount) },
         { "SYSTEM:AreaRadius", String(UAS_data.System.AreaRadius) },
         { "SYSTEM:AreaCeiling", String(UAS_data.System.AreaCeiling) },
@@ -222,8 +244,8 @@ String status_json(void)
         { "LOCATION:Direction", String(UAS_data.Location.Direction) },
         { "LOCATION:SpeedHorizontal", String(UAS_data.Location.SpeedHorizontal) },
         { "LOCATION:SpeedVertical", String(UAS_data.Location.SpeedVertical) },
-        { "LOCATION:Latitude", String(UAS_data.Location.Latitude, 8) },
-        { "LOCATION:Longitude", String(UAS_data.Location.Longitude, 8) },
+        { "LOCATION:Latitude", LatLonString(UAS_data.Location.Latitude, UAS_data.Location.Longitude, 0) },
+        { "LOCATION:Longitude", LatLonString(UAS_data.Location.Latitude, UAS_data.Location.Longitude, 1) },
         { "LOCATION:AltitudeBaro", String(UAS_data.Location.AltitudeBaro) },
         { "LOCATION:AltitudeGeo", String(UAS_data.Location.AltitudeGeo) },
         { "LOCATION:HeightType", ENUM_MAP(height, UAS_data.Location.HeightType) },
@@ -237,4 +259,3 @@ String status_json(void)
     };
     return json_format(table, ARRAY_SIZE(table));
 }
-
