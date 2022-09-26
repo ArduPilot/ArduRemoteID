@@ -153,8 +153,13 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
         break;
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_BASIC_ID: {
-        mavlink_msg_open_drone_id_basic_id_decode(&msg, &basic_id);
-        last_basic_id_ms = now_ms;
+        mavlink_open_drone_id_basic_id_t basic_id_tmp;
+        mavlink_msg_open_drone_id_basic_id_decode(&msg, &basic_id_tmp);
+        if ((strlen((const char*) basic_id_tmp.uas_id) > 0) && (basic_id_tmp.id_type > 0) && (basic_id_tmp.id_type <= MAV_ODID_ID_TYPE_SPECIFIC_SESSION_ID)) {
+            //only update if we receive valid data
+            basic_id = basic_id_tmp;
+            last_basic_id_ms = now_ms;
+        }
         break;
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_AUTHENTICATION: {

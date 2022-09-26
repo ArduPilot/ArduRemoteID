@@ -466,14 +466,18 @@ void DroneCAN::readUniqueID(uint8_t id[6])
 void DroneCAN::handle_BasicID(CanardRxTransfer* transfer)
 {
     dronecan_remoteid_BasicID pkt {};
-    auto &mpkt = basic_id;
     dronecan_remoteid_BasicID_decode(transfer, &pkt);
-    last_basic_id_ms = millis();
-    memset(&mpkt, 0, sizeof(mpkt));
-    COPY_STR(id_or_mac);
-    COPY_FIELD(id_type);
-    COPY_FIELD(ua_type);
-    COPY_STR(uas_id);
+
+    if ((pkt.uas_id.len > 0) && (pkt.id_type > 0) && (pkt.id_type <= MAV_ODID_ID_TYPE_SPECIFIC_SESSION_ID)) {
+        //only update if we receive valid data
+        auto &mpkt = basic_id;
+        memset(&mpkt, 0, sizeof(mpkt));
+        COPY_STR(id_or_mac);
+        COPY_FIELD(id_type);
+        COPY_FIELD(ua_type);
+        COPY_STR(uas_id);
+        last_basic_id_ms = millis();
+    }
 }
 
 void DroneCAN::handle_SelfID(CanardRxTransfer* transfer)

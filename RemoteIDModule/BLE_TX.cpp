@@ -298,10 +298,32 @@ bool BLE_TX::transmit_legacy(ODID_UAS_Data &UAS_data)
         legacy_length = sizeof(header) + 1 + sizeof(operatorid_encoded);
 
         break;
+
+    case  5: //in case of dual basic ID
+        if (UAS_data.BasicIDValid[1]) {
+            ODID_BasicID_encoded basicid2_encoded;
+            memset(&basicid2_encoded, 0, sizeof(basicid2_encoded));
+            if (encodeBasicIDMessage(&basicid2_encoded, &UAS_data.BasicID[1]) != ODID_SUCCESS) {
+                break;
+            }
+
+            memcpy(&legacy_payload[sizeof(header)], &msg_counters[ODID_MSG_COUNTER_BASIC_ID], 1); //set packet counter
+            msg_counters[ODID_MSG_COUNTER_BASIC_ID]++;
+            //msg_counters[ODID_MSG_COUNTER_BASIC_ID] %= 256; //likely not be needed as it is defined as unint_8
+
+            memcpy(&legacy_payload[sizeof(header) + 1], &basicid2_encoded, sizeof(basicid2_encoded));
+            legacy_length = sizeof(header) + 1 + sizeof(basicid2_encoded);
+        }
+        break;
     }
 
     legacy_phase++;
-    legacy_phase %= 5;
+
+    if (UAS_data.BasicIDValid[1]) {
+        legacy_phase %= 6;
+    } else {
+        legacy_phase %= 5;
+    }
 
     advert.setAdvertisingData(0, legacy_length, legacy_payload);
 

@@ -177,6 +177,10 @@ static void set_data(Transport &t)
       UAS_ID string via a MAVLink BASIC_ID message and also offers a
       migration path from the old approach of GCS setting these values
       to having them as parameters
+
+      BasicID 2 can be set in parameters, or provided via mavlink We
+      don't persist the BasicID2 if provided via mavlink to allow
+      users to change BasicID2 on different days
      */
     if (!g.have_basic_id_info()) {
         if (basic_id.ua_type != 0 &&
@@ -196,13 +200,30 @@ static void set_data(Transport &t)
         UAS_data.BasicID[0].UAType = (ODID_uatype_t)g.ua_type;
         UAS_data.BasicID[0].IDType = (ODID_idtype_t)g.id_type;
         ODID_COPY_STR(UAS_data.BasicID[0].UASID, g.uas_id);
-    } else {
-        // from transport
-        UAS_data.BasicID[0].UAType = (ODID_uatype_t)basic_id.ua_type;
-        UAS_data.BasicID[0].IDType = (ODID_idtype_t)basic_id.id_type;
-        ODID_COPY_STR(UAS_data.BasicID[0].UASID, basic_id.uas_id);
+        UAS_data.BasicIDValid[0] = 1;
+
+        // BasicID 2
+        if (g.have_basic_id_2_info()) {
+            // from parameters
+            UAS_data.BasicID[1].UAType = (ODID_uatype_t)g.ua_type_2;
+            UAS_data.BasicID[1].IDType = (ODID_idtype_t)g.id_type_2;
+            ODID_COPY_STR(UAS_data.BasicID[1].UASID, g.uas_id_2);
+            UAS_data.BasicIDValid[1] = 1;
+        } else if (strcmp((const char*)g.uas_id, (const char*)basic_id.uas_id) != 0) {
+            /*
+              no BasicID 2 in the parameters, if one is provided on MAVLink
+              and it is a different uas_id from the basicID1 then use it as BasicID2
+            */
+            if (basic_id.ua_type != 0 &&
+                basic_id.id_type != 0 &&
+                strnlen((const char *)basic_id.uas_id, 20) > 0) {
+                UAS_data.BasicID[1].UAType = (ODID_uatype_t)basic_id.ua_type;
+                UAS_data.BasicID[1].IDType = (ODID_idtype_t)basic_id.id_type;
+                ODID_COPY_STR(UAS_data.BasicID[1].UASID, basic_id.uas_id);
+                UAS_data.BasicIDValid[1] = 1;
+            }
+        }
     }
-    UAS_data.BasicIDValid[0] = 1;
 
     // OperatorID
     UAS_data.OperatorID.OperatorIdType = (ODID_operatorIdType_t)operator_id.operator_id_type;
