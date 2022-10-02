@@ -283,6 +283,11 @@ static void set_data(Transport &t)
     t.set_parse_fail(reason);
 
     arm_check_ok = (reason==nullptr);
+
+    if (g.options & OPTIONS_FORCE_ARM_OK) {
+        arm_check_ok = true;
+    }
+
     led.set_state(pfst_check_ok && arm_check_ok? Led::LedState::ARM_OK : Led::LedState::ARM_FAIL);
 
     uint32_t now_ms = millis();

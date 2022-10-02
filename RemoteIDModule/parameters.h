@@ -35,6 +35,7 @@ public:
     char wifi_ssid[21] = "";
     char wifi_password[21] = "ArduRemoteID";
     uint8_t wifi_channel = 6;
+    uint8_t options;
     struct {
         char b64_key[64];
     } public_keys[MAX_PUBLIC_KEYS];
@@ -99,5 +100,8 @@ public:
 private:
     void load_defaults(void);
 };
+
+// bits for OPTIONS parameter
+#define OPTIONS_FORCE_ARM_OK 1U<<0
 
 extern Parameters g;
