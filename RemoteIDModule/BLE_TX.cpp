@@ -21,8 +21,8 @@
 //shorter intervals lead to more BLE transmissions. This would result in increased power consumption and can lead to more interference to other radio systems.
 static esp_ble_gap_ext_adv_params_t legacy_adv_params = {
     .type = ESP_BLE_GAP_SET_EXT_ADV_PROP_LEGACY_NONCONN,
-    .interval_min = 192, //(unsigned int) 0.75*1000/(OUTPUT_RATE_HZ*6)/0.625; //allow ble controller to have some room for transmission.
-    .interval_max = 267, //(unsigned int) 1000/(OUTPUT_RATE_HZ*6)/0.625;
+    .interval_min = 192,
+    .interval_max = 267,
     .channel_map = ADV_CHNL_ALL,
     .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_WLST, // we want unicast non-connectable transmission
@@ -36,8 +36,8 @@ static esp_ble_gap_ext_adv_params_t legacy_adv_params = {
 
 static esp_ble_gap_ext_adv_params_t ext_adv_params_coded = {
     .type = ESP_BLE_GAP_SET_EXT_ADV_PROP_NONCONN_NONSCANNABLE_UNDIRECTED, //set to unicast advertising
-    .interval_min = 1200, //(unsigned int) 0.75*1000/(OUTPUT_RATE_HZ)/0.625; //allow ble controller to have some room for transmission.
-    .interval_max = 1600, //(unsigned int) 1000/(OUTPUT_RATE_HZ)/0.625;
+    .interval_min = 1200,
+    .interval_max = 1600,
     .channel_map = ADV_CHNL_ALL,
     .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_WLST, // we want unicast non-connectable transmission
@@ -51,8 +51,8 @@ static esp_ble_gap_ext_adv_params_t ext_adv_params_coded = {
 
 static esp_ble_gap_ext_adv_params_t blename_adv_params = {
     .type = ESP_BLE_GAP_SET_EXT_ADV_PROP_LEGACY_NONCONN,
-    .interval_min = 1200, //(unsigned int) 0.75*1000/(OUTPUT_RATE_HZ)/0.625; //allow ble controller to have some room for transmission.
-    .interval_max = 1600,//(unsigned int) 1000/(OUTPUT_RATE_HZ)/0.625;;
+    .interval_min = 1200,
+    .interval_max = 1600,
     .channel_map = ADV_CHNL_ALL,
     .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_WLST, // we want unicast non-connectable transmission
@@ -114,6 +114,14 @@ bool BLE_TX::init(void)
     ext_adv_params_coded.tx_power = dBm_to_tx_power(g.bt5_power);
     blename_adv_params.tx_power = dBm_to_tx_power(g.bt4_power);
 
+    // set min/max interval based on output rate    
+    legacy_adv_params.interval_max =  (1000/(g.bt4_rate*5))/0.625; //need rework when PR #73 is merged. I.e. 5 = 5 or 6
+    legacy_adv_params.interval_min = 0.75*legacy_adv_params.interval_max;
+    ext_adv_params_coded.interval_max =  (1000/(g.bt5_rate))/0.625;
+    ext_adv_params_coded.interval_min = 0.75*ext_adv_params_coded.interval_max;
+    blename_adv_params.interval_max = (1000/(g.bt4_rate*5))/0.625;
+    blename_adv_params.interval_min = 0.75*blename_adv_params.interval_max;
+    
     // generate random mac address
     uint8_t mac_addr[6];
     generate_random_mac(mac_addr);
