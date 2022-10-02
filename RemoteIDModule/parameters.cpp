@@ -304,6 +304,8 @@ void Parameters::load_defaults(void)
     }
 }
 
+#define IMIN(a,b) ((a)<(b)?(a):(b))
+
 void Parameters::init(void)
 {
     load_defaults();
@@ -339,13 +341,18 @@ void Parameters::init(void)
         }
         }
     }
-
+    //fall back options for ssid. If the uas_id is not set, use the 4 chars from the MAC address instead
     if (strlen(g.wifi_ssid) == 0) {
-        uint8_t mac[6] {};
-        esp_read_mac(mac, ESP_MAC_WIFI_STA);
-        snprintf(wifi_ssid, 20, "RID_%02x%02x%02x%02x%02x%02x",
-                 mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-
+        if (strlen(g.uas_id) == 0) {
+            uint8_t mac[6] {};
+            esp_read_mac(mac, ESP_MAC_WIFI_STA);
+            snprintf(wifi_ssid, 20, "RID_02x%02x",
+                     mac[4], mac[5]);
+        } else {
+            const uint8_t ID_len = strlen(g.uas_id);
+            const uint8_t ID_tail = IMIN(4, ID_len);
+            snprintf(wifi_ssid, 20, "RID_%s", &g.uas_id[ID_len-ID_tail]);
+        }
     }
     if (g.to_factory_defaults == 1) {
         //should not happen, but in case the parameter is still set to 1, erase flash and reboot
