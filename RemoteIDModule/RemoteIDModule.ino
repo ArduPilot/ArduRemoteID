@@ -381,7 +381,6 @@ void loop()
         now_ms - last_update_bt4_ms > 200/g.bt4_rate) {
         last_update_bt4_ms = now_ms;
         ble.transmit_legacy(UAS_data);
-        ble.transmit_legacy_name(UAS_data);
     }
 
     // sleep for a bit for power saving
