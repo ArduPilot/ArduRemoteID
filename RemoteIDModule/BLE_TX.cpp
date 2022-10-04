@@ -189,20 +189,22 @@ bool BLE_TX::transmit_legacy(ODID_UAS_Data &UAS_data)
         break;
     }
 
-    case  1: {
-        ODID_BasicID_encoded basicid_encoded;
-        memset(&basicid_encoded, 0, sizeof(basicid_encoded));
-        if (encodeBasicIDMessage(&basicid_encoded, &UAS_data.BasicID[0]) != ODID_SUCCESS) {
-            break;
+    case  1:
+        if (g.have_basic_id_info()) { 
+            //only broadcast basic ID if it is set
+            ODID_BasicID_encoded basicid_encoded;
+            memset(&basicid_encoded, 0, sizeof(basicid_encoded));
+            if (encodeBasicIDMessage(&basicid_encoded, &UAS_data.BasicID[0]) != ODID_SUCCESS) {
+                break;
+            }
+
+            memcpy(&legacy_payload[sizeof(header)], &msg_counters[ODID_MSG_COUNTER_BASIC_ID], 1); //set packet counter
+            msg_counters[ODID_MSG_COUNTER_BASIC_ID]++;
+            //msg_counters[ODID_MSG_COUNTER_BASIC_ID] %= 256; //likely not be needed as it is defined as unint_8
+
+            memcpy(&legacy_payload[sizeof(header) + 1], &basicid_encoded, sizeof(basicid_encoded));
+            legacy_length = sizeof(header) + 1 + sizeof(basicid_encoded);
         }
-
-        memcpy(&legacy_payload[sizeof(header)], &msg_counters[ODID_MSG_COUNTER_BASIC_ID], 1); //set packet counter
-        msg_counters[ODID_MSG_COUNTER_BASIC_ID]++;
-        //msg_counters[ODID_MSG_COUNTER_BASIC_ID] %= 256; //likely not be needed as it is defined as unint_8
-
-        memcpy(&legacy_payload[sizeof(header) + 1], &basicid_encoded, sizeof(basicid_encoded));
-        legacy_length = sizeof(header) + 1 + sizeof(basicid_encoded);
-
         break;
     }
 
