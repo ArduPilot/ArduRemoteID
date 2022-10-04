@@ -14,6 +14,8 @@ uint32_t Transport::last_basic_id_ms;
 uint32_t Transport::last_self_id_ms;
 uint32_t Transport::last_operator_id_ms;
 uint32_t Transport::last_system_ms;
+uint32_t Transport::last_system_timestamp;
+float Transport::last_location_timestamp;
 
 mavlink_open_drone_id_location_t Transport::location;
 mavlink_open_drone_id_basic_id_t Transport::basic_id;
