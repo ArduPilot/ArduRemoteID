@@ -144,6 +144,11 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_LOCATION: {
         mavlink_msg_open_drone_id_location_decode(&msg, &location);
+        if (last_location_timestamp != location.timestamp) {
+            //only update the timestamp if we receive information with a different timestamp
+            last_location_ms = millis();
+            last_location_timestamp = location.timestamp;
+        }
         last_location_ms = now_ms;
         break;
     }
@@ -163,7 +168,11 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_SYSTEM: {
         mavlink_msg_open_drone_id_system_decode(&msg, &system);
-        last_system_ms = now_ms;
+        if ((last_system_timestamp != system.timestamp) || (system.timestamp == 0)) {
+            //only update the timestamp if we receive information with a different timestamp
+            last_system_ms = millis();
+            last_system_timestamp = system.timestamp;
+        }
         break;
     }
     case MAVLINK_MSG_ID_OPEN_DRONE_ID_SYSTEM_UPDATE: {
@@ -176,6 +185,11 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
         if (last_system_ms != 0) {
             // we can only mark system as updated if we have the other
             // information already
+            if ((last_system_timestamp != system.timestamp) || (pkt_system_update.timestamp == 0)) {
+                //only update the timestamp if we receive information with a different timestamp
+                last_system_ms = millis();
+                last_system_timestamp = pkt_system_update.timestamp;
+            }
             last_system_ms = now_ms;
         }
         break;

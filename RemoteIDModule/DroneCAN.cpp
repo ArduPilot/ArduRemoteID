@@ -493,7 +493,12 @@ void DroneCAN::handle_System(CanardRxTransfer* transfer)
     dronecan_remoteid_System pkt {};
     auto &mpkt = system;
     dronecan_remoteid_System_decode(transfer, &pkt);
-    last_system_ms = millis();
+
+    if ((last_system_timestamp != pkt.timestamp) || (pkt.timestamp == 0)) {
+        //only update the timestamp if we receive information with a different timestamp
+        last_system_ms = millis();
+        last_system_timestamp = pkt.timestamp;
+	}
     memset(&mpkt, 0, sizeof(mpkt));
 
     COPY_STR(id_or_mac);
@@ -529,7 +534,11 @@ void DroneCAN::handle_Location(CanardRxTransfer* transfer)
     dronecan_remoteid_Location pkt {};
     auto &mpkt = location;
     dronecan_remoteid_Location_decode(transfer, &pkt);
-    last_location_ms = millis();
+    if (last_location_timestamp != pkt.timestamp) {
+        //only update the timestamp if we receive information with a different timestamp
+        last_location_ms = millis();
+        last_location_timestamp = pkt.timestamp;
+    }
     memset(&mpkt, 0, sizeof(mpkt));
 
     COPY_STR(id_or_mac);

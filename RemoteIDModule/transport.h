@@ -65,6 +65,8 @@ protected:
     static uint32_t last_self_id_ms;
     static uint32_t last_operator_id_ms;
     static uint32_t last_system_ms;
+    static uint32_t last_system_timestamp;
+    static float last_location_timestamp;
 
     static mavlink_open_drone_id_location_t location;
     static mavlink_open_drone_id_basic_id_t basic_id;
