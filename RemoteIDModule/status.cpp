@@ -196,6 +196,7 @@ String status_json(void)
     snprintf(githash, sizeof(githash), "(%08x)", GIT_VERSION);
     const json_table_t table[] = {
         { "STATUS:VERSION", String(FW_VERSION_MAJOR) + "." + String(FW_VERSION_MINOR) + " " + githash},
+        { "STATUS:BOARD_ID", String(BOARD_ID)},
         { "STATUS:UPTIME", String(hr) + ":" + String(minsec_str) },
         { "STATUS:FREEMEM", String(ESP.getFreeHeap()) },
         { "BASICID:UAType", ENUM_MAP(uatype, UAS_data.BasicID[0].UAType) },

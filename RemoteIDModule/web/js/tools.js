@@ -40,6 +40,39 @@ function page_fill_json_html(json) {
         var element = document.getElementById(v);
         if (element) {
             element.innerHTML = json[v];
+        } else if (v == "STATUS:BOARD_ID") {
+			if(typeof page_fill_json_html.run_once == 'undefined' ) {
+				//run this code only once to avoid updating these fields
+                if (json[v] == "3") {
+                    document.getElementById("logo").src="images/bluemark.png";
+                    document.getElementById("logo").alt="BlueMark";
+                    document.getElementById("STATUS:BOARD").innerText = "BlueMark db200";
+                    document.getElementById("documentation").innerHTML = "<ul><li><a href='https://download.bluemark.io/db200.pdf'>db200 manual</a></li><li><a href='https://ardupilot.org/ardupilot/index.html'>ArduPilot Project</a></li><li><a href='https://github.com/ArduPilot/ArduRemoteID'>ArduRemoteID Project</a></li><li><a href='https://ardupilot.org/plane/docs/common-remoteid.html'>ArduPilot RemoteID Documentation</a></li><li><a href='https://www.opendroneid.org/'>OpenDroneID Website</a></li></ul>";
+                    document.body.style.background = "#fafafa";
+                } else if (json[v] == "4") {
+                    document.getElementById("logo").src="images/bluemark.png";
+                    document.getElementById("logo").alt="BlueMark";
+                    document.getElementById("STATUS:BOARD").innerText = "BlueMark db110";
+                    document.getElementById("documentation").innerHTML = "<ul><li><a href='https://download.bluemark.io/db110.pdf'>db110 manual</a></li><li><a href='https://ardupilot.org/ardupilot/index.html'>ArduPilot Project</a></li><li><a href='https://github.com/ArduPilot/ArduRemoteID'>ArduRemoteID Project</a></li><li><a href='https://ardupilot.org/plane/docs/common-remoteid.html'>ArduPilot RemoteID Documentation</a></li><li><a href='https://www.opendroneid.org/'>OpenDroneID Website</a></li></ul>";
+                    document.body.style.background = "#fafafa";
+                } else {
+                    document.getElementById("logo").src="images/logo.jpg";
+                    document.getElementById("logo").alt="ArduPilot";
+
+                    if (json[v] == "1") {
+						document.getElementById("STATUS:BOARD").innerText = "ESP32S3_DEV";
+					} else  if (json[v] == "2") {
+						document.getElementById("STATUS:BOARD").innerText = "ESP32C3_DEV";
+					} else	if (json[v] == "5") {
+						document.getElementById("STATUS:BOARD").innerText = "JW_TBD";
+					} else {
+						document.getElementById("STATUS:BOARD").innerText = "unknown";
+					}
+
+                    document.getElementById("documentation").innerHTML = "<ul><li><a href='https://ardupilot.org/ardupilot/index.html'>ArduPilot Project</a></li><li><a href='https://github.com/ArduPilot/ArduRemoteID'>ArduRemoteID Project</a></li><li><a href='https://ardupilot.org/plane/docs/common-remoteid.html'>ArduPilot RemoteID Documentation</a></li><li><a href='https://www.opendroneid.org/'>OpenDroneID Website</a></li></ul>";
+                }
+			}
+			run_once = 1;
         }
     }
 }
