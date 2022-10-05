@@ -115,12 +115,19 @@
                     if (evt.lengthComputable) {
                         var per = evt.loaded / evt.total;
                         $('#progress').html('progress: ' + Math.round(per*100) + '%');
+                        if (evt.loaded == evt.total) {
+                            setTimeout(function(){ //popup after 1 second
+                                $('#progress').html('progress: done');
+                                alert("Firmware upgrade completed!\n\nPress OK to reboot the RemoteID device.");
+                                window.location.reload(1);
+                            }, 1000);
+                        }
                     }
                 }, false);
                 return xhr;
             },
             success:function(d, s) {
-                console.log('success!')
+                console.log('success!');
             },
             error: function (a, b, c) {
             }
@@ -129,6 +136,10 @@
 
     // poll status information at 1Hz (900ms to cope with some lag)
     ajax_json_poll_fill("/ajax/status.json", 900);
+
+    $(document).ready(function() {
+        $('#progress').html(''); //disable progress text after loading the page
+    });
     </script>
 </body>
 </html>
