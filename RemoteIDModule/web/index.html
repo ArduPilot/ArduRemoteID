@@ -11,7 +11,7 @@
 </head>
 
 <body>
-  <a href="/index.html"><img src="images/logo.jpg" alt="ArduPilot"></a></p>
+  <a href="/index.html"><img id="logo" src="" alt="logo"></a></p>
   <h1>ArduRemoteID</h1>
 
   <h2>Status</h2>
@@ -20,6 +20,7 @@
     <legend>System</legend>
     <table class="values">
       <tr><td>Version</td><td><div id="STATUS:VERSION"></div></td></tr>
+      <tr><td>Board</td><td><div id="STATUS:BOARD"></div></td></tr>
       <tr><td>Up Time</td><td><div id="STATUS:UPTIME"></div></td></tr>
       <tr><td>Free Memory</td><td><div id="STATUS:FREEMEM"></div></td></tr>
     </table>
@@ -87,14 +88,8 @@
   </fieldset>
 
   <h2>Documentation</h2>
-
-  <ul>
-    <li><a href="https://ardupilot.org/ardupilot/index.html">ArduPilot Project</a></li>
-    <li><a href="https://github.com/ArduPilot/ArduRemoteID">ArduRemoteID Project</a></li>
-    <li><a href="https://ardupilot.org/plane/docs/common-remoteid.html">ArduPilot RemoteID Documentation</a></li>
-    <li><a href="https://www.opendroneid.org/">OpenDroneID Website</a></li>
-  </ul>
-
+  <div id="documentation">
+  </div>
   <h2>Firmware Update</h2>
 
   <form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>
@@ -135,6 +130,5 @@
     // poll status information at 1Hz (900ms to cope with some lag)
     ajax_json_poll_fill("/ajax/status.json", 900);
     </script>
-  
 </body>
 </html>
