@@ -582,7 +582,7 @@ void DroneCAN::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transf
     } else {
         vp = Parameters::find_by_index(req.index);
     }
-    if (vp->flags & PARAM_FLAG_HIDDEN) {
+    if (vp != nullptr && (vp->flags & PARAM_FLAG_HIDDEN)) {
         vp = nullptr;
     }
     if (vp != nullptr && req.name.len != 0 &&
