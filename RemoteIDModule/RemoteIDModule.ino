@@ -163,6 +163,26 @@ static void set_data(Transport &t)
     const auto &self_id = t.get_self_id();
     const auto &location = t.get_location();
 
+    /*
+      if we don't have BasicID info from parameters and we have it
+      from the DroneCAN or MAVLink transport then copy it to the
+      parameters to persist it. This makes it possible to set the
+      UAS_ID string via a MAVLink BASIC_ID message and also offers a
+      migration path from the old approach of GCS setting these values
+      to having them as parameters
+     */
+    if (!g.have_basic_id_info()) {
+        if (basic_id.ua_type != 0 &&
+            basic_id.id_type != 0 &&
+            strnlen((const char *)basic_id.uas_id, 20) > 0) {
+            g.set_by_name_uint8("UAS_TYPE", basic_id.ua_type);
+            g.set_by_name_uint8("UAS_ID_TYPE", basic_id.id_type);
+            char uas_id[21] {};
+            ODID_COPY_STR(uas_id, basic_id.uas_id);
+            g.set_by_name_string("UAS_ID", uas_id);
+        }
+    }
+
     // BasicID
     if (g.have_basic_id_info()) {
         // from parameters
