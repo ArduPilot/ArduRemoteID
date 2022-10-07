@@ -217,6 +217,9 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
         if (!p || !p->get_as_float(value)) {
             return;
         }
+        if (p != nullptr && (p->flags & PARAM_FLAG_HIDDEN)) {
+            return;
+        }
         mavlink_msg_param_value_send(chan,
                                      p->name, value,
                                      MAV_PARAM_TYPE_REAL32,
