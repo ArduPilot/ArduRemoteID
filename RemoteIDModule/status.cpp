@@ -204,6 +204,19 @@ static String LatLonString(double lat, double lon, uint8_t select)
     return "UNKNOWN";
 }
 
+/**
+ * UNKNOWN support for altitude
+ * 
+ * @param alt altitude
+ */
+static String AltString(float alt)
+{
+    if (alt <= -1000.0f) {
+        return "UNKNOWN";
+    }
+    return String(alt,2);
+}
+
 #define ENUM_MAP(ename, v) enum_string(enum_ ## ename, ARRAY_SIZE(enum_ ## ename), int(v))
 
 String status_json(void)
@@ -234,11 +247,11 @@ String status_json(void)
         { "SYSTEM:OperatorLongitude", LatLonString(UAS_data.System.OperatorLatitude, UAS_data.System.OperatorLongitude, 1) },
         { "SYSTEM:AreaCount", String(UAS_data.System.AreaCount) },
         { "SYSTEM:AreaRadius", String(UAS_data.System.AreaRadius) },
-        { "SYSTEM:AreaCeiling", String(UAS_data.System.AreaCeiling) },
-        { "SYSTEM:AreaFloor", String(UAS_data.System.AreaFloor) },
+        { "SYSTEM:AreaCeiling", AltString(UAS_data.System.AreaCeiling) },
+        { "SYSTEM:AreaFloor", AltString(UAS_data.System.AreaFloor) },
         { "SYSTEM:CategoryEU", ENUM_MAP(cateu, UAS_data.System.CategoryEU) },
         { "SYSTEM:ClassEU", ENUM_MAP(classeu, UAS_data.System.ClassEU) },
-        { "SYSTEM:OperatorAltitudeGeo", String(UAS_data.System.OperatorAltitudeGeo) },
+        { "SYSTEM:OperatorAltitudeGeo", AltString(UAS_data.System.OperatorAltitudeGeo) },
         { "SYSTEM:Timestamp", String(UAS_data.System.Timestamp) },
         { "LOCATION:Status", ENUM_MAP(status, UAS_data.Location.Status) },
         { "LOCATION:Direction", String(UAS_data.Location.Direction) },
@@ -246,10 +259,10 @@ String status_json(void)
         { "LOCATION:SpeedVertical", String(UAS_data.Location.SpeedVertical) },
         { "LOCATION:Latitude", LatLonString(UAS_data.Location.Latitude, UAS_data.Location.Longitude, 0) },
         { "LOCATION:Longitude", LatLonString(UAS_data.Location.Latitude, UAS_data.Location.Longitude, 1) },
-        { "LOCATION:AltitudeBaro", String(UAS_data.Location.AltitudeBaro) },
-        { "LOCATION:AltitudeGeo", String(UAS_data.Location.AltitudeGeo) },
+        { "LOCATION:AltitudeBaro", AltString(UAS_data.Location.AltitudeBaro) },
+        { "LOCATION:AltitudeGeo", AltString(UAS_data.Location.AltitudeGeo) },
         { "LOCATION:HeightType", ENUM_MAP(height, UAS_data.Location.HeightType) },
-        { "LOCATION:Height", String(UAS_data.Location.Height) },
+        { "LOCATION:Height", AltString(UAS_data.Location.Height) },
         { "LOCATION:HorizAccuracy", ENUM_MAP(hacc, UAS_data.Location.HorizAccuracy) },
         { "LOCATION:VertAccuracy", ENUM_MAP(vacc, UAS_data.Location.VertAccuracy) },
         { "LOCATION:BaroAccuracy", ENUM_MAP(vacc, UAS_data.Location.BaroAccuracy) },
