@@ -15,6 +15,8 @@ const Parameters::Param Parameters::params[] = {
     { "UAS_TYPE",          Parameters::ParamType::UINT8,  (const void*)&g.ua_type,          0, 0, 15 },
     { "UAS_ID_TYPE",       Parameters::ParamType::UINT8,  (const void*)&g.id_type,          0, 0, 4 },
     { "UAS_ID",            Parameters::ParamType::CHAR20, (const void*)&g.uas_id[0],        0, 0, 0 },
+    { "OPERATOR_ID_TYPE",  Parameters::ParamType::UINT8,  (const void*)&g.operator_id_type, 0, 0, 255 },
+    { "OPERATOR_ID",       Parameters::ParamType::CHAR20, (const void*)&g.operator_id[0],   0, 0, 0 },
     { "BAUDRATE",          Parameters::ParamType::UINT32, (const void*)&g.baudrate,         57600, 9600, 921600 },
     { "WIFI_NAN_RATE",     Parameters::ParamType::FLOAT,  (const void*)&g.wifi_nan_rate,    0, 0, 5 },
     { "WIFI_POWER",        Parameters::ParamType::FLOAT,  (const void*)&g.wifi_power,       20, 2, 20 },
@@ -327,6 +329,17 @@ void Parameters::init(void)
 bool Parameters::have_basic_id_info(void) const
 {
     return strlen(g.uas_id) > 0 && g.id_type > 0 && g.ua_type > 0;
+}
+
+/**
+ * check if OperatorID info is filled in with parameters 
+ * 
+ * @retval true  Has OPERATOR ID information.
+ * @retval false Does not have OPERATOR ID information.
+ */
+bool Parameters::have_operator_id_info(void) const
+{
+    return strlen(g.operator_id) > 0;
 }
 
 bool Parameters::set_by_name_uint8(const char *name, uint8_t v)
