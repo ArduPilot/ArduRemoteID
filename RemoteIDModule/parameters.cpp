@@ -23,7 +23,7 @@ const Parameters::Param Parameters::params[] = {
     { "BT4_POWER",         Parameters::ParamType::FLOAT,  (const void*)&g.bt4_power,        18, -27, 18 },
     { "BT5_RATE",          Parameters::ParamType::FLOAT,  (const void*)&g.bt5_rate,         1, 0, 5 },
     { "BT5_POWER",         Parameters::ParamType::FLOAT,  (const void*)&g.bt5_power,        18, -27, 18 },
-    { "WEBSERVER_ENABLE",  Parameters::ParamType::UINT8,  (const void*)&g.webserver_enable, 1, 0, 1 },
+    { "WEBSERVER_EN",      Parameters::ParamType::UINT8,  (const void*)&g.webserver_enable, 1, 0, 1 },
     { "WIFI_SSID",         Parameters::ParamType::CHAR20, (const void*)&g.wifi_ssid, },
     { "WIFI_PASSWORD",     Parameters::ParamType::CHAR20, (const void*)&g.wifi_password,    0, 0, 0, PARAM_FLAG_PASSWORD, 8 },
     { "WIFI_CHANNEL",      Parameters::ParamType::UINT8,  (const void*)&g.wifi_channel,    6, 1, 13 },
