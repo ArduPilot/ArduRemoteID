@@ -21,6 +21,7 @@ parser.add_argument("--bitrate", default=1000000, type=int, help="CAN bit rate")
 parser.add_argument("--node-id", default=100, type=int, help="local CAN node ID")
 parser.add_argument("--target-node", default=None, type=int, help="target node ID")
 parser.add_argument("--private-key", default=None, type=str, help="private key file")
+parser.add_argument("--bus-num", default=1, type=int, help="MAVCAN bus number")
 parser.add_argument("uri", default=None, type=str, help="CAN URI")
 parser.add_argument("paramop", default=None, type=str, help="parameter operation")
 args = parser.parse_args()
@@ -47,6 +48,7 @@ last_set_config = 0
 
 # Initializing a DroneCAN node instance.
 node = dronecan.make_node(args.uri, node_id=args.node_id, bitrate=args.bitrate)
+node.can_driver.set_bus(args.bus_num)
 
 # Initializing a node monitor
 node_monitor = dronecan.app.node_monitor.NodeMonitor(node)
