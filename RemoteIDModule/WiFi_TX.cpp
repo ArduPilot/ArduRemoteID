@@ -12,6 +12,11 @@
 
 bool WiFi_TX::init(void)
 {
+    if (initialised) {
+        return true;
+    }
+    initialised = true;
+
     //use a local MAC address to avoid tracking transponders based on their MAC address
     uint8_t mac_addr[6];
     generate_random_mac(mac_addr);
@@ -23,11 +28,10 @@ bool WiFi_TX::init(void)
     esp_base_mac_addr_set(mac_addr);
 
     if (g.webserver_enable == 0) {
-		WiFi.softAP(g.wifi_ssid, g.wifi_password, g.wifi_channel, false, 0); //make it visible and allow no connection
-	}
-	else {
-		WiFi.softAP(g.wifi_ssid, g.wifi_password, g.wifi_channel, false, 1); //make it visible and allow only 1 connection
-	}
+        WiFi.softAP(g.wifi_ssid, g.wifi_password, g.wifi_channel, false, 0); //make it visible and allow no connection
+    } else {
+        WiFi.softAP(g.wifi_ssid, g.wifi_password, g.wifi_channel, false, 1); //make it visible and allow only 1 connection
+    }
 
     if (esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20) != ESP_OK) {
         return false;
@@ -42,10 +46,8 @@ bool WiFi_TX::init(void)
 
 bool WiFi_TX::transmit_nan(ODID_UAS_Data &UAS_data)
 {
-    if (!initialised) {
-        initialised = true;
-        init();
-    }
+    init();
+
     uint8_t buffer[1024] {};
 
     int length;
@@ -70,10 +72,8 @@ bool WiFi_TX::transmit_nan(ODID_UAS_Data &UAS_data)
 //update the payload of the beacon frames in this function
 bool WiFi_TX::transmit_beacon(ODID_UAS_Data &UAS_data)
 {
-    if (!initialised) {
-        initialised = true;
-        init();
-    }
+    init();
+
     uint8_t buffer[1024] {};
 
     int length;
