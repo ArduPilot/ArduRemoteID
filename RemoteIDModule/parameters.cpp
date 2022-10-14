@@ -17,7 +17,7 @@ const Parameters::Param Parameters::params[] = {
     { "UAS_ID",            Parameters::ParamType::CHAR20, (const void*)&g.uas_id[0],        0, 0, 0 },
     { "BAUDRATE",          Parameters::ParamType::UINT32, (const void*)&g.baudrate,         57600, 9600, 921600 },
     { "WIFI_NAN_RATE",     Parameters::ParamType::FLOAT,  (const void*)&g.wifi_nan_rate,    0, 0, 5 },
-    { "WIFI_BEACON_RATE",  Parameters::ParamType::FLOAT,  (const void*)&g.wifi_beacon_rate,    0, 0, 5 },
+    { "WIFI_BCN_RATE",     Parameters::ParamType::FLOAT,  (const void*)&g.wifi_beacon_rate,    0, 0, 5 },
     { "WIFI_POWER",        Parameters::ParamType::FLOAT,  (const void*)&g.wifi_power,       20, 2, 20 },
     { "BT4_RATE",          Parameters::ParamType::FLOAT,  (const void*)&g.bt4_rate,         1, 0, 5 },
     { "BT4_POWER",         Parameters::ParamType::FLOAT,  (const void*)&g.bt4_power,        18, -27, 18 },

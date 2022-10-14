@@ -63,7 +63,10 @@ void setup()
     led.set_state(Led::LedState::INIT);
     led.update();
 
-    wifi.init(); //always call the init function even if WiFi transmission modes are disabled.
+    if (g.webserver_enable) {
+        // need WiFi for web server
+        wifi.init();
+    }
 
     // Serial for debug printf
     Serial.begin(g.baudrate);
