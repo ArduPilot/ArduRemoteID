@@ -226,14 +226,34 @@ static void set_data(Transport &t)
     }
 
     // OperatorID
-    UAS_data.OperatorID.OperatorIdType = (ODID_operatorIdType_t)operator_id.operator_id_type;
-    ODID_COPY_STR(UAS_data.OperatorID.OperatorId, operator_id.operator_id);
-    UAS_data.OperatorIDValid = 1;
+    if (g.have_operator_id_info()) {
+        // from parameters
+        UAS_data.OperatorID.OperatorIdType = (ODID_operatorIdType_t)g.operator_id_type;
+        ODID_COPY_STR(UAS_data.OperatorID.OperatorId, g.operator_id);
+        UAS_data.OperatorIDValid = 1;
+    } else {
+        // from transport
+        if (strlen(operator_id.operator_id) > 0) {
+            UAS_data.OperatorID.OperatorIdType = (ODID_operatorIdType_t)operator_id.operator_id_type;
+            ODID_COPY_STR(UAS_data.OperatorID.OperatorId, operator_id.operator_id);
+            UAS_data.OperatorIDValid = 1;
+        }
+    }
 
     // SelfID
-    UAS_data.SelfID.DescType = (ODID_desctype_t)self_id.description_type;
-    ODID_COPY_STR(UAS_data.SelfID.Desc, self_id.description);
-    UAS_data.SelfIDValid = 1;
+    if (g.have_self_id_info()) {
+        // from parameters
+        UAS_data.SelfID.DescType = (ODID_desctype_t)g.description_type;
+        ODID_COPY_STR(UAS_data.SelfID.Desc, g.description);
+        UAS_data.SelfIDValid = 1;
+    } else {
+        // from transport
+        if (strlen(self_id.description) > 0) {
+            UAS_data.SelfID.DescType = (ODID_desctype_t)self_id.description_type;
+            ODID_COPY_STR(UAS_data.SelfID.Desc, self_id.description);
+            UAS_data.SelfIDValid = 1;
+        }
+    }
 
     // System
     if (system.timestamp != 0) {
