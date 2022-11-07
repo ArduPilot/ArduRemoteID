@@ -45,8 +45,8 @@ headers:
 	@../scripts/git-version.sh
 	@cd .. && scripts/regen_headers.sh
 
-romfs_files.h: web/*.html web/js/*.js web/styles/*css web/images/*.jpg public_keys/*.dat
-	@../scripts/make_romfs.py romfs_files.h web/*.html web/js/*.js web/styles/*css web/images/*.jpg public_keys/*.dat
+romfs_files.h: web/*.html web/js/*.js web/styles/*css web/images/*.jpg web/images/*.png public_keys/*.dat
+	@../scripts/make_romfs.py romfs_files.h web/*.html web/js/*.js web/styles/*css web/images/*.jpg web/images/*.png public_keys/*.dat
 
 ArduRemoteID-%.bin: *.cpp *.ino *.h romfs_files.h
 	@echo "Building $* on $(CHIP)"
@@ -76,5 +76,5 @@ uploadota-%: checkdev
 upload: upload-ESP32S3_DEV
 
 clean:
-	rm -rf ..esp32* *.bin build*
+	rm -rf ..esp32* *.bin build* romfs_files.h
 
