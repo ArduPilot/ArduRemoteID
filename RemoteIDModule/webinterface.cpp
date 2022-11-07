@@ -44,6 +44,7 @@ class ROMFS_Handler : public RequestHandler
         } extensions[] = {
             { ".js", "text/javascript" },
             { ".jpg", "image/jpeg" },
+            { ".png", "image/png" },
             { ".css", "text/css" },
         };
         for (const auto &e : extensions) {
