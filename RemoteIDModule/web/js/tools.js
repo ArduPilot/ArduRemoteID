@@ -41,8 +41,8 @@ function page_fill_json_html(json) {
         if (element) {
             element.innerHTML = json[v];
         } else if (v == "STATUS:BOARD_ID") {
-			if(typeof page_fill_json_html.run_once == 'undefined' ) {
-				//run this code only once to avoid updating these fields
+	    if(typeof page_fill_json_html.run_once == 'undefined' ) {
+		//run this code only once to avoid updating these fields
                 if (json[v] == "3") {
                     document.getElementById("logo").src="images/bluemark.png";
                     document.getElementById("logo").alt="BlueMark";
@@ -60,19 +60,21 @@ function page_fill_json_html(json) {
                     document.getElementById("logo").alt="ArduPilot";
 
                     if (json[v] == "1") {
-						document.getElementById("STATUS:BOARD").innerText = "ESP32S3_DEV";
-					} else  if (json[v] == "2") {
-						document.getElementById("STATUS:BOARD").innerText = "ESP32C3_DEV";
-					} else	if (json[v] == "5") {
-						document.getElementById("STATUS:BOARD").innerText = "JW_TBD";
-					} else {
-						document.getElementById("STATUS:BOARD").innerText = "unknown";
-					}
+                        document.getElementById("STATUS:BOARD").innerText = "ESP32S3_DEV";
+                    } else if (json[v] == "2") {
+                        document.getElementById("STATUS:BOARD").innerText = "ESP32C3_DEV";
+                    } else if (json[v] == "5") {
+                        document.getElementById("STATUS:BOARD").innerText = "JW_TBD";
+                    } else if (json[v] == "6") {
+                        document.getElementById("STATUS:BOARD").innerText = "mRo-RID";
+                    } else {
+                        document.getElementById("STATUS:BOARD").innerText = "unknown:" + json[v];
+                    }
 
                     document.getElementById("documentation").innerHTML = "<ul><li><a href='https://ardupilot.org/ardupilot/index.html'>ArduPilot Project</a></li><li><a href='https://github.com/ArduPilot/ArduRemoteID'>ArduRemoteID Project</a></li><li><a href='https://ardupilot.org/plane/docs/common-remoteid.html'>ArduPilot RemoteID Documentation</a></li><li><a href='https://www.opendroneid.org/'>OpenDroneID Website</a></li></ul>";
                 }
-			}
-			run_once = 1;
+            }
+            run_once = 1;
         }
     }
 }
