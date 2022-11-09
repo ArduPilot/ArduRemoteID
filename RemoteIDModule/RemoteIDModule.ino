@@ -41,6 +41,7 @@ static BLE_TX ble;
 
 // OpenDroneID output data structure
 ODID_UAS_Data UAS_data;
+String status_reason;
 static uint32_t last_location_ms;
 static WebInterface webif;
 
@@ -304,10 +305,6 @@ void loop()
 
     const uint32_t now_ms = millis();
 
-    if (g.webserver_enable) {
-        webif.update();
-    }
-
     // the transports have common static data, so we can just use the
     // first for status
 #if AP_MAVLINK_ENABLED
@@ -324,6 +321,28 @@ void loop()
 
     led.update();
 
+    status_reason = "";
+
+    if (last_location_ms == 0 ||
+        now_ms - last_location_ms > 5000) {
+        UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
+    }
+
+    if (last_system_ms == 0 ||
+        now_ms - last_system_ms > 5000) {
+        UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
+    }
+
+    if (transport.get_parse_fail() != nullptr) {
+        UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
+        status_reason = String(transport.get_parse_fail());
+    }
+
+    // web update has to happen after we update Status above
+    if (g.webserver_enable) {
+        webif.update();
+    }
+
     if (g.bcast_powerup) {
         // if we are broadcasting on powerup we always mark location valid
         // so the location with default data is sent
@@ -339,20 +358,6 @@ void loop()
         }
     }
 
-    if (last_location_ms == 0 ||
-        now_ms - last_location_ms > 5000) {
-        UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
-    }
-
-    if (last_system_ms == 0 ||
-        now_ms - last_system_ms > 5000) {
-        UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
-    }
-
-    if (transport.get_parse_fail() != nullptr) {
-        UAS_data.Location.Status = ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE;
-    }
-    
     set_data(transport);
 
     static uint32_t last_update_wifi_nan_ms;

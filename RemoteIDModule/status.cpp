@@ -9,6 +9,7 @@
 #include "util.h"
 
 extern ODID_UAS_Data UAS_data;
+extern String status_reason;
 
 typedef struct {
     String name;
@@ -229,6 +230,10 @@ String status_json(void)
     snprintf(minsec_str, sizeof(minsec_str), "%02d:%02d", min, sec);
     char githash[20];
     snprintf(githash, sizeof(githash), "(%08x)", GIT_VERSION);
+    String reason = "";
+    if (status_reason != nullptr && status_reason.length() > 0) {
+        reason = "(" + status_reason + ")";
+    }
     const json_table_t table[] = {
         { "STATUS:VERSION", String(FW_VERSION_MAJOR) + "." + String(FW_VERSION_MINOR) + " " + githash},
         { "STATUS:BOARD_ID", String(BOARD_ID)},
@@ -256,7 +261,8 @@ String status_json(void)
         { "SYSTEM:ClassEU", ENUM_MAP(classeu, UAS_data.System.ClassEU) },
         { "SYSTEM:OperatorAltitudeGeo", AltString(UAS_data.System.OperatorAltitudeGeo) },
         { "SYSTEM:Timestamp", String(UAS_data.System.Timestamp) },
-        { "LOCATION:Status", ENUM_MAP(status, UAS_data.Location.Status) },
+        { "LOCATION:Status", ENUM_MAP(status, UAS_data.Location.Status)},
+        { "LOCATION:StatusReason", reason },
         { "LOCATION:Direction", String(UAS_data.Location.Direction) },
         { "LOCATION:SpeedHorizontal", String(UAS_data.Location.SpeedHorizontal) },
         { "LOCATION:SpeedVertical", String(UAS_data.Location.SpeedVertical) },
