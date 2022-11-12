@@ -99,7 +99,7 @@ bool BLE_TX::init(void)
     ext_adv_params_coded.tx_power = dBm_to_tx_power(g.bt5_power);
 
     // set min/max interval based on output rate    
-    legacy_adv_params.interval_max =  (1000/(g.bt4_rate*5))/0.625; //need rework when PR #73 is merged. I.e. 5 = 5 or 6
+    legacy_adv_params.interval_max =  (1000/(g.bt4_rate*6))/0.625; 
     legacy_adv_params.interval_min = 0.75*legacy_adv_params.interval_max;
     ext_adv_params_coded.interval_max =  (1000/(g.bt5_rate))/0.625;
     ext_adv_params_coded.interval_min = 0.75*ext_adv_params_coded.interval_max;
