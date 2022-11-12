@@ -40,7 +40,7 @@ bool CheckFirmware::check_OTA_partition(const esp_partition_t *part, const uint8
         spi_flash_munmap(handle);
         return false;
     }
-    Serial.printf("app descriptor at 0x%x size=%u id=%u\n", unsigned(ad)-unsigned(ptr), ad->image_size, ad->board_id);
+    Serial.printf("app descriptor at 0x%x size=%u id=%u (own id %u)\n", unsigned(ad)-unsigned(ptr), ad->image_size, ad->board_id,BOARD_ID);
     const uint32_t img_len = uint32_t(uintptr_t(ad) - uintptr_t(ptr));
     if (ad->image_size != img_len) {
         Serial.printf("app_descriptor bad size %u\n", ad->image_size);
@@ -72,28 +72,23 @@ bool CheckFirmware::check_OTA_partition(const esp_partition_t *part, const uint8
     return false;
 }
 
-bool CheckFirmware::check_OTA_next(const uint8_t *lead_bytes, uint32_t lead_length)
+bool CheckFirmware::check_OTA_next(const esp_partition_t *part, const uint8_t *lead_bytes, uint32_t lead_length)
 {
-    const auto *running_part = esp_ota_get_running_partition();
-    if (running_part == nullptr) {
-        Serial.printf("No running OTA partition\n");
-        return false;
-    }
-    const auto *part = esp_ota_get_next_update_partition(running_part);
-    if (part == nullptr) {
-        Serial.printf("No next OTA partition\n");
-        return false;
-    }
-    uint32_t board_id=0;
+    Serial.printf("Running partition %s\n", esp_ota_get_running_partition()->label);
+
+    uint32_t board_id = 0;
     bool sig_ok = check_OTA_partition(part, lead_bytes, lead_length, board_id);
+
+    if (g.lock_level == -1) {
+        // only if lock_level is -1 then accept any firmware
+        return true;
+    }
+
     // if app descriptor has a board ID and the ID is wrong then reject
     if (board_id != 0 && board_id != BOARD_ID) {
         return false;
     }
-    if (g.lock_level == 0) {
-        // if unlocked then accept any firmware
-        return true;
-    }
+
     return sig_ok;
 }
 

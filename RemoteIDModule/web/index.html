@@ -121,16 +121,18 @@
                 var xhr = new window.XMLHttpRequest();
                 xhr.upload.addEventListener('progress', function(evt) {
                     if (evt.lengthComputable) {
-                        var per = evt.loaded / evt.total;
-                        $('#progress').html('progress: ' + Math.round(per*100) + '%');
-                        if (evt.loaded == evt.total) {
-                            setTimeout(function(){ //popup after 1 second
-                                $('#progress').html('progress: done');
-                                alert("Firmware upgrade completed!\n\nPress OK to reboot the RemoteID device.");
-                                window.location.reload(1);
-                            }, 1000);
-                        }
-                    }
+                       var per = evt.loaded / evt.total;
+                       $('#progress').html('progress: ' + Math.round(per*100) + '%');
+                       if (evt.loaded == evt.total) {
+                           setTimeout(function(){ //popup after 2 second
+							   if (xhr.status === 200) {
+                                   $('#progress').html('progress: done');
+                                   alert("Firmware upgrade completed!\n\nPress OK to reboot the RemoteID device.");
+                                   window.location.reload(true);
+							   }
+                           }, 2000);
+                       }
+                   }
                 }, false);
                 return xhr;
             },
@@ -138,6 +140,11 @@
                 console.log('success!');
             },
             error: function (a, b, c) {
+				 setTimeout(function(){ //popup after 1 second
+                     $('#progress').html('progress: error');
+                     alert("Firmware upgrade FAILED!\n\nPlease check that:\na) you downloaded the OTA firmware (ending on _OTA.bin)\nb) you downloaded the correct file for your board\nc) if the LOCK_LEVEL has been set to 2 in your board, make sure you uploaded firmware that is signed with the correct key.");
+                     window.location.reload(true);
+                 }, 100);
             }
         });
     });

@@ -17,7 +17,7 @@ public:
     } app_descriptor_t;
 
     // check the firmware on the partition which will be updated by OTA
-    static bool check_OTA_next(const uint8_t *lead_bytes, uint32_t lead_length);
+    static bool check_OTA_next(const esp_partition_t *part, const uint8_t *lead_bytes, uint32_t lead_length);
     static bool check_OTA_running(void);
 
 private:
