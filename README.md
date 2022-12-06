@@ -3,7 +3,13 @@
 This is an implementation of a MAVLink and DroneCAN OpenDroneID
 transmitter. It aims to provide a transmitter solution for the FAA
 standard RemoteID requrement, meeting the transmitter component of the
-ASTM F3586-22 Means of Compliance.
+ASTM F3586-22 Means of Compliance. It also aims to be compliant with the 
+RemoteID regulation in the EU. 
+
+It is the responsibility of the user to configure the ArduRemoteID firmware
+in a way that it is compliant with the local RemoteID regulation. And example 
+is to configure an allowed transmission protocol like dual Bluetooth transmission
+(Bluetooth 4 + Bluetooth 5 Long Range) in the USA.
 
 ## Hardware Supported
 
@@ -12,8 +18,9 @@ are 4 boards supported so far with more to come:
 
  - the ESP32-S3 dev board: https://au.mouser.com/ProductDetail/356-ESP32S3DEVKTM1N8
  - the ESP32-C3 dev board: https://au.mouser.com/ProductDetail/Espressif-Systems/ESP32-C3-DevKitM-1
- - a Bluemark DB110 (legacy) from https://bluemark.io/ ([product page](https://dronescout.co/dronebeacon-mavlink-remote-id-transponder/) | [buy](https://dronescout.co/product/dronebeacon-mavlink-pcb-only-transponder/))
+ - a Bluemark DB110 (legacy) from https://bluemark.io/ ([product page](https://dronescout.co/dronebeacon-mavlink-remote-id-transponder/))
  - a Bluemark DB200 from https://bluemark.io/ ([product page](https://dronescout.co/dronebeacon-mavlink-remote-id-transponder/) | [buy](https://dronescout.co/product/dronebeacon-mavlink-db200-transponder/))
+ - a Bluemark DB201 from https://bluemark.io/ ([product page](https://dronescout.co/dronebeacon-mavlink-remote-id-transponder/) | [buy](https://dronescout.co/product/dronebeacon-mavlink-db201-transponder/))
 
 Hardware from https://wurzbachelectronics.com/ is expected to be added soon.
 
@@ -44,6 +51,7 @@ See board_config.h and Makefile for information on porting to new boards.
 
 This firmware supports the following transmission modes:
 
+ - WiFi Broadcast
  - WiFi NAN (Neighbour Awareness Networking)
  - Bluetooth 4 Legacy Advertising
  - Bluetooth 5 Long Range + Extended Advertising
@@ -85,6 +93,8 @@ the following options, after selecting the COMM port that the board is attached:
 
 subsequent re-flashing of newer releases should not require holding the "boot" button during power-up of the board as the USB cable is attached.
 
+If the board already runs ArduRemoteID, the preferred firmware upgrade method is to upload a new firmware file via the webinterface.
+
 ## Parameters
 
 The firmware comes with a set of parameters which are accessible from
@@ -104,7 +114,7 @@ Key parameters are:
    this is set you need to use a DroneCAN SecureCommand. There is an
    example script in scripts/secure_command.py which can change any
    parameter if you know a private key corresponding to one of the
-   public keys
+   public keys. 
 
  - UAS_TYPE, UAS_ID_TYPE and UAS_ID: these override the IDs in the
    RemoteID BasicID packet when they have all been set. These should
@@ -166,6 +176,12 @@ IDs for your board.
 
 Once signed you can upload the firmware via the web server.
 
+Set LOCK_LEVEL to -1 to skip any checks for the OTA upgrade like board ID 
+check, signed firmware with a valid key. For LOCK_LEVEL 0 or higher, only
+firmware files are accepted that match the board ID and are signed with a 
+valid key. (OTA firmware files in the ArduRemoteID github page are always
+signed with a valid key.)
+
 ## LOCK_LEVEL Parameter
 
 The LOCK_LEVEL parameter is the way a vendor can lock down the
@@ -179,6 +195,14 @@ Setting LOCK_LEVEL=2 will also cause the ESP32 eFuses to be set to
 prevent firmware updates except via the signed web interface. This is
 a permanent change and cannot be undone even if the LOCK_LEVEL is
 changed back to 0 or 1 via SecureCommand.
+
+Setting LOCK_LEVEL=-1 will skip any checks for upgrading the firmware 
+via the web server like board ID check, signed firmware with a valid key.
+
+The default LOCK_LEVEL=0 allows to change parameters and only allows 
+firmware upgrades via the web server that have been signed with a valid key.
+Also the board ID of the firmware file needs to match the board ID of the 
+device.
 
 ## Secure Parameter Update
 
