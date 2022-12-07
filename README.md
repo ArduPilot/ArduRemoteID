@@ -6,10 +6,11 @@ standard RemoteID requrement, meeting the transmitter component of the
 ASTM F3586-22 Means of Compliance. It also aims to be compliant with the 
 RemoteID regulation in the EU. 
 
-It is the responsibility of the user to configure the ArduRemoteID firmware
-in a way that it is compliant with the local RemoteID regulation. And example 
-is to configure an allowed transmission protocol like dual Bluetooth transmission
-(Bluetooth 4 + Bluetooth 5 Long Range) in the USA.
+It is the responsibility of the user/manufacturer to configure the 
+ArduRemoteID firmware in a way that it is compliant with the local 
+RemoteID regulation. For instance, in the USA it is mandatory that UAV 
+manufacturers submit a [DoC (Declaration of Conformance) to the FAA](https://uasdoc.faa.gov/login)
+where they state that their product is compliant with the RemoteID regulation. 
 
 ## Hardware Supported
 
