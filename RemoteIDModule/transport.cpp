@@ -56,7 +56,7 @@ uint8_t Transport::arm_status_check(const char *&reason)
     } else if (system.operator_latitude == 0 && system.operator_longitude == 0) {
         reason = "Bad operator location";
     } else if (reason == nullptr) {
-        status = MAV_ODID_GOOD_TO_ARM;
+        status = MAV_ODID_ARM_STATUS_GOOD_TO_ARM;
     }
 
     return status;
