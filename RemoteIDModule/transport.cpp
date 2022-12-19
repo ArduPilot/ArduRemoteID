@@ -37,11 +37,11 @@ uint8_t Transport::arm_status_check(const char *&reason)
     const uint32_t max_age_other_ms = 22000;
     const uint32_t now_ms = millis();
 
-    uint8_t status = MAV_ODID_PRE_ARM_FAIL_GENERIC;
+    uint8_t status = MAV_ODID_ARM_STATUS_PRE_ARM_FAIL_GENERIC;
 
     //return status OK if we have enabled the force arm option
     if (g.options & OPTIONS_FORCE_ARM_OK) {
-        status = MAV_ODID_GOOD_TO_ARM;
+        status = MAV_ODID_ARM_STATUS_GOOD_TO_ARM;
         return status;
     }
 
@@ -62,7 +62,7 @@ uint8_t Transport::arm_status_check(const char *&reason)
     } else if (system.operator_latitude == 0 && system.operator_longitude == 0) {
         reason = "Bad operator location";
     } else if (reason == nullptr) {
-        status = MAV_ODID_GOOD_TO_ARM;
+        status = MAV_ODID_ARM_STATUS_GOOD_TO_ARM;
     }
 
     return status;
