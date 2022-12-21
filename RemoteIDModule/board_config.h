@@ -67,6 +67,7 @@
 #define STATUS_LED_OK 1
 
 #define CAN_APP_NODE_NAME "JW TBD"
+
 #elif defined(BOARD_MRO_RID)
 #define BOARD_ID 6
 #define PIN_CAN_TX GPIO_NUM_0
@@ -77,6 +78,19 @@
 
 #define WS2812_LED_PIN GPIO_NUM_2
 #define CAN_APP_NODE_NAME "mRobotics RemoteID"
+
+#elif defined(BOARD_JWRID_ESP32S3)
+#define BOARD_ID 7
+#define PIN_CAN_TX GPIO_NUM_47
+#define PIN_CAN_RX GPIO_NUM_38
+
+#define PIN_UART_TX 37
+#define PIN_UART_RX 36
+
+#define WS2812_LED_PIN GPIO_NUM_5
+
+#define CAN_APP_NODE_NAME "JWRID_ESP32S3"
+
 #else
 #error "unsupported board"
 #endif
