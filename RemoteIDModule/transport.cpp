@@ -39,6 +39,12 @@ uint8_t Transport::arm_status_check(const char *&reason)
 
     uint8_t status = MAV_ODID_PRE_ARM_FAIL_GENERIC;
 
+    //return status OK if we have enabled the force arm option
+    if (g.options & OPTIONS_FORCE_ARM_OK) {
+        status = MAV_ODID_GOOD_TO_ARM;
+        return status;
+    }
+
     if (last_location_ms == 0 || now_ms - last_location_ms > max_age_location_ms) {
         reason = "missing location message";
     } else if (!g.have_basic_id_info() && (last_basic_id_ms == 0 || now_ms - last_basic_id_ms > max_age_other_ms)) {
