@@ -6,6 +6,7 @@
 #include "parameters.h"
 #include "util.h"
 #include "monocypher.h"
+#include <opendroneid.h>
 
 const char *Transport::parse_fail = "uninitialised";
 
@@ -36,6 +37,7 @@ uint8_t Transport::arm_status_check(const char *&reason)
     const uint32_t max_age_location_ms = 3000;
     const uint32_t max_age_other_ms = 22000;
     const uint32_t now_ms = millis();
+    const uint32_t required = g.get_required_features();
 
     uint8_t status = MAV_ODID_ARM_STATUS_PRE_ARM_FAIL_GENERIC;
 
@@ -47,34 +49,34 @@ uint8_t Transport::arm_status_check(const char *&reason)
 
     String ret = "";
 
-    if (last_location_ms == 0 || now_ms - last_location_ms > max_age_location_ms) {
+    if ((required & REG_REQUIRE_LOC) && (last_location_ms == 0 || now_ms - last_location_ms > max_age_location_ms)) {
         ret += "LOC ";
     }
-    if (!g.have_basic_id_info()) {
+    if ((required & REG_REQUIRE_BASIC_ID) && !g.have_basic_id_info()) {
         // if there is no basic ID data stored in the parameters give warning. If basic ID data are streamed to RID device,
         // it will store them in the parameters
         ret += "ID ";
     }
 
-    if (last_self_id_ms == 0  || now_ms - last_self_id_ms > max_age_other_ms) {
+    if ((required & REG_REQUIRE_SELF_ID) && (last_self_id_ms == 0  || now_ms - last_self_id_ms > max_age_other_ms)) {
         ret += "SELF_ID ";
     }
 
-    if (last_operator_id_ms == 0 || now_ms - last_operator_id_ms > max_age_other_ms) {
+    if ((required & REG_REQUIRE_OPERATOR_ID) && (last_operator_id_ms == 0 || now_ms - last_operator_id_ms > max_age_other_ms)) {
         ret += "OP_ID ";
     }
 
-    if (last_system_ms == 0 || now_ms - last_system_ms > max_age_location_ms) {
+    if ((required & REG_REQUIRE_SYSTEM) && (last_system_ms == 0 || now_ms - last_system_ms > max_age_location_ms)) {
         // we use location age limit for system as the operator location needs to come in as fast
         // as the vehicle location for FAA standard
         ret += "SYS ";
     }
 
-    if (location.latitude == 0 && location.longitude == 0) {
+    if ((required & REG_REQUIRE_LOC) && (location.latitude == 0 && location.longitude == 0)) {
         ret += "LOC ";
     }
 
-    if (system.operator_latitude == 0 && system.operator_longitude == 0) {
+    if ((required & REG_REQUIRE_OPERATOR_LOC) && (system.operator_latitude == 0 && system.operator_longitude == 0)) {
         ret += "OP_LOC ";
     }
 

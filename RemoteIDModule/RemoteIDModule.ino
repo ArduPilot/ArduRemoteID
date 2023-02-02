@@ -129,6 +129,33 @@ void setup()
 #define ODID_COPY_STR(to, from) strncpy(to, (const char*)from, IMIN(sizeof(to), sizeof(from)))
 
 /*
+  check if a UASID is valid as a serial number
+ */
+static bool valid_UASID_serialnum(const char *uasid)
+{
+    const auto uasid_len = strnlen(uasid, sizeof(UAS_data.BasicID[0].UASID));
+    // 5th char is length field
+    if (uasid_len < 5 || !isxdigit(uasid[4]) != 0) {
+        return false;
+    }
+    char str[2] {};
+    str[0] = uasid[4];
+    const uint8_t sn_length = strtol(str, NULL, 16) + 5;
+    if (sn_length != uasid_len && sn_length > 5) {
+        return false;
+    }
+    //check also for invalid chars
+    for (unsigned i = 0; i < uasid_len; i++) {
+        const auto c = uasid[i];
+        if (islower(c) || c == 'I' || c == 'O') {
+            // only capital letters and digits are allowed. Char I and O are not allowed.
+            return false;
+        }
+    }
+    return true;
+}
+
+/*
   check parsing of UAS_data, this checks ranges of values to ensure we
   will produce a valid pack
   returns nullptr on no error, or a string error
@@ -136,6 +163,7 @@ void setup()
 static const char *check_parse(void)
 {
     String ret = "";
+    const uint32_t required = g.get_required_features();
 
     {
         ODID_Location_encoded encoded {};
@@ -175,14 +203,83 @@ static const char *check_parse(void)
             ret += "OP_ID ";
         }
     }
+
+    bool serial_number_configured = false;
+    bool session_ID_configured = false;
+    bool CAA_registration_ID_configured = false; //only mandatory in Japan
+
+    // BasicID checks
+    if (UAS_data.BasicIDValid[0] == 1) {
+        if (UAS_data.BasicID[0].IDType == ODID_IDTYPE_SERIAL_NUMBER) {
+            serial_number_configured = true;
+        } else if (UAS_data.BasicID[0].IDType == ODID_IDTYPE_CAA_REGISTRATION_ID) {
+            CAA_registration_ID_configured = true;
+        } else if (UAS_data.BasicID[0].IDType == ODID_IDTYPE_SPECIFIC_SESSION_ID) {
+            session_ID_configured = true;
+        }
+    }
+
+    if (UAS_data.BasicIDValid[1] == 1) {
+        if (UAS_data.BasicID[1].IDType == ODID_IDTYPE_SERIAL_NUMBER) {
+            if (!serial_number_configured) { //only one serial number is allowed
+                serial_number_configured = true;
+            } else {
+                ret += "DBL_SER_NUM ";
+            }
+        } else if (UAS_data.BasicID[1].IDType == ODID_IDTYPE_CAA_REGISTRATION_ID) {
+            if (!CAA_registration_ID_configured) { //only one CAA registration ID is allowed
+                CAA_registration_ID_configured = true;
+            } else {
+                ret += "DBL_CAA_ID ";
+            }
+        } else if (UAS_data.BasicID[1].IDType== ODID_IDTYPE_SPECIFIC_SESSION_ID) {
+            if (!session_ID_configured) { //only one session ID is allowed
+                session_ID_configured = true;
+            } else {
+                ret += "DBL_SESS_ID ";
+            }
+        }
+    }
+
+    if (!serial_number_configured && (required & REG_REQUIRE_SERIAL_NUM)) {
+        ret += "SER_NUM ";
+    }
+
+    if (!serial_number_configured && !session_ID_configured && (required & REG_REQUIRE_SERIAL_OR_SESSION)) {
+        ret += "SER_SESS ";
+    }
+
+    if (!CAA_registration_ID_configured && (required & REG_REQUIRE_REG_ID)) {
+        ret += "REG_ID ";
+    }
+
+    if (strlen(UAS_data.OperatorID.OperatorId) <= 0 && (required & REG_REQUIRE_OPERATOR_ID)) {
+        // basic check if the operator field has data. For the EU legislation an additional check could be implemented.
+        ret += "OP_ID ";
+    }
+
+    if (UAS_data.BasicIDValid[0] == 1 &&
+        serial_number_configured &&
+        UAS_data.BasicID[0].IDType == ODID_IDTYPE_SERIAL_NUMBER &&
+        !valid_UASID_serialnum(UAS_data.BasicID[0].UASID)) {
+        ret += "SER_NUM_VAL ";
+    }
+
+    if (UAS_data.BasicIDValid[1] == 1 &&
+        UAS_data.BasicID[1].IDType == ODID_IDTYPE_SERIAL_NUMBER &&
+        !valid_UASID_serialnum(UAS_data.BasicID[1].UASID)) {
+        ret += "SER_NUM_VAL ";
+    }
+
     if (ret.length() > 0) {
         // if all errors would occur in this function, it will fit in
         // 50 chars that is also the max for the arm status message
         static char return_string[50];
         memset(return_string, 0, sizeof(return_string));
-        snprintf(return_string, sizeof(return_string-1), "bad %s data", ret.c_str());
+        snprintf(return_string, sizeof(return_string)-1, "bad %s data", ret.c_str());
         return return_string;
     }
+
     return nullptr;
 }
 
