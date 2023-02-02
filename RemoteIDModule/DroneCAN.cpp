@@ -153,28 +153,28 @@ void DroneCAN::onTransferReceived(CanardInstance* ins,
         handle_get_node_info(ins, transfer);
         break;
     case UAVCAN_PROTOCOL_RESTARTNODE_ID:
-        Serial.printf("RestartNode\n");
+        Serial.printf("DroneCAN: restartNode\n");
         delay(20);
         esp_restart();
         break;
     case DRONECAN_REMOTEID_BASICID_ID:
-        Serial.printf("Got BasicID\n");
+        Serial.printf("DroneCAN: got BasicID\n");
         handle_BasicID(transfer);
         break;
     case DRONECAN_REMOTEID_LOCATION_ID:
-        Serial.printf("Got Location\n");
+        Serial.printf("DroneCAN: got Location\n");
         handle_Location(transfer);
         break;
     case DRONECAN_REMOTEID_SELFID_ID:
-        Serial.printf("Got SelfID\n");
+        Serial.printf("DroneCAN: got SelfID\n");
         handle_SelfID(transfer);
         break;
     case DRONECAN_REMOTEID_SYSTEM_ID:
-        Serial.printf("Got System\n");
+        Serial.printf("DroneCAN: got System\n");
         handle_System(transfer);
         break;
     case DRONECAN_REMOTEID_OPERATORID_ID:
-        Serial.printf("Got OperatorID\n");
+        Serial.printf("DroneCAN: got OperatorID\n");
         handle_OperatorID(transfer);
         break;
     case UAVCAN_PROTOCOL_PARAM_GETSET_ID:
