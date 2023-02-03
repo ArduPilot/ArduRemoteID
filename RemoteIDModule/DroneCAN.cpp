@@ -92,7 +92,7 @@ void DroneCAN::arm_status_send(void)
     uint8_t buffer[DRONECAN_REMOTEID_ARMSTATUS_MAX_SIZE];
     dronecan_remoteid_ArmStatus arm_status {};
 
-    const uint8_t status = parse_fail==nullptr?MAV_ODID_GOOD_TO_ARM:MAV_ODID_PRE_ARM_FAIL_GENERIC;
+    const uint8_t status = parse_fail==nullptr?MAV_ODID_ARM_STATUS_GOOD_TO_ARM:MAV_ODID_ARM_STATUS_PRE_ARM_FAIL_GENERIC;
     const char *reason = parse_fail==nullptr?"":parse_fail;
 
     arm_status.status = status;

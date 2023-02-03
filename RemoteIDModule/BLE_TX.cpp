@@ -189,7 +189,7 @@ bool BLE_TX::transmit_legacy(ODID_UAS_Data &UAS_data)
         break;
     }
 
-    case  1:
+    case  1: {
         if (g.have_basic_id_info()) { 
             //only broadcast basic ID if it is set
             ODID_BasicID_encoded basicid_encoded;
@@ -259,7 +259,7 @@ bool BLE_TX::transmit_legacy(ODID_UAS_Data &UAS_data)
         break;
     }
 
-    case  5: //in case of dual basic ID
+    case  5: {//in case of dual basic ID
         if (UAS_data.BasicIDValid[1]) {
             ODID_BasicID_encoded basicid2_encoded;
             memset(&basicid2_encoded, 0, sizeof(basicid2_encoded));
@@ -275,7 +275,7 @@ bool BLE_TX::transmit_legacy(ODID_UAS_Data &UAS_data)
             legacy_length = sizeof(header) + 1 + sizeof(basicid2_encoded);
         }
         break;
-
+    }
     case  6: {
         //set BLE name
         char legacy_name[28] {};
@@ -292,9 +292,8 @@ bool BLE_TX::transmit_legacy(ODID_UAS_Data &UAS_data)
 
         legacy_length = sizeof(legacy_name_header) + strlen(legacy_name) + 1; //add extra char for \0
         break;
+    }   
     }
-    }
-
     legacy_phase++;
 
     if (UAS_data.BasicIDValid[1]) {
