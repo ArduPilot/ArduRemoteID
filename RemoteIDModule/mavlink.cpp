@@ -273,7 +273,7 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
 
 void MAVLinkSerial::arm_status_send(void)
 {
-    const uint8_t status = parse_fail==nullptr?MAV_ODID_ARM_STATUS_GOOD_TO_ARM:MAV_ODID_ARM_STATUS_PRE_ARM_FAIL_GENERIC;
+    const uint8_t status = parse_fail==nullptr?MAV_ODID_GOOD_TO_ARM:MAV_ODID_PRE_ARM_FAIL_GENERIC;
     const char *reason = parse_fail==nullptr?"":parse_fail;
     mavlink_msg_open_drone_id_arm_status_send(
         chan,
