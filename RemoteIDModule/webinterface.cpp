@@ -98,14 +98,25 @@ void WebInterface::init(void)
 
     /*handling uploading firmware file */
     server.on("/update", HTTP_POST, []() {
-        server.sendHeader("Connection", "close");
-        server.send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
-        ESP.restart();
+        if (Update.hasError()) {
+			server.sendHeader("Connection", "close");
+		    server.send(500, "text/plain","FAIL");
+		    Serial.printf("Update Failed: Update function has errors\n");
+		    delay(5000);
+		} else {
+			server.sendHeader("Connection", "close");
+			server.send(200, "text/plain","OK");
+			Serial.printf("Update Success: \nRebooting...\n");
+			delay(1000);
+			ESP.restart();
+		}
     }, [this]() {
         HTTPUpload& upload = server.upload();
+        static const esp_partition_t* partition_new_firmware = esp_ota_get_next_update_partition(NULL); //get OTA partion to which we will write new firmware file;
         if (upload.status == UPLOAD_FILE_START) {
             Serial.printf("Update: %s\n", upload.filename.c_str());
             lead_len = 0;
+
             if (!Update.begin(UPDATE_SIZE_UNKNOWN)) { //start with max available size
                 Update.printError(Serial);
             }
@@ -129,12 +140,21 @@ void WebInterface::init(void)
                 uint8_t ff = 0xff;
                 Update.write(&ff, 1);
             }
-            if (!CheckFirmware::check_OTA_next(lead_bytes, lead_len)) {
-                Serial.printf("failed firmware check\n");
+            if (!CheckFirmware::check_OTA_next(partition_new_firmware, lead_bytes, lead_len)) {
+                Serial.printf("Update Failed: firmware checks have errors\n");
+                server.sendHeader("Connection", "close");
+                server.send(500, "text/plain","FAIL");
+                delay(5000);
             } else if (Update.end(true)) {
                 Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
+                server.sendHeader("Connection", "close");
+                server.send(200, "text/plain","OK");
             } else {
                 Update.printError(Serial);
+                Serial.printf("Update Failed: Update.end function has errors\n");
+                server.sendHeader("Connection", "close");
+                server.send(500, "text/plain","FAIL");
+                delay(5000);
             }
         }
     });
