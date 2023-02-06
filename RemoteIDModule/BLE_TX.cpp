@@ -173,87 +173,92 @@ bool BLE_TX::transmit_legacy(ODID_UAS_Data &UAS_data)
     switch (legacy_phase)
     {
     case  0: {
-        ODID_Location_encoded location_encoded;
-        memset(&location_encoded, 0, sizeof(location_encoded));
-        if (encodeLocationMessage(&location_encoded, &UAS_data.Location) != ODID_SUCCESS) {
-            break;
+        if (UAS_data.LocationValid) {
+            ODID_Location_encoded location_encoded;
+            memset(&location_encoded, 0, sizeof(location_encoded));
+            if (encodeLocationMessage(&location_encoded, &UAS_data.Location) != ODID_SUCCESS) {
+                break;
+            }
+
+            memcpy(&legacy_payload[sizeof(header)], &msg_counters[ODID_MSG_COUNTER_LOCATION], 1); //set packet counter
+            msg_counters[ODID_MSG_COUNTER_LOCATION]++;
+            //msg_counters[ODID_MSG_COUNTER_LOCATION] %= 256; //likely not be needed as it is defined as unint_8
+
+            memcpy(&legacy_payload[sizeof(header) + 1], &location_encoded, sizeof(location_encoded));
+            legacy_length = sizeof(header) + 1 + sizeof(location_encoded);
         }
-
-        memcpy(&legacy_payload[sizeof(header)], &msg_counters[ODID_MSG_COUNTER_LOCATION], 1); //set packet counter
-        msg_counters[ODID_MSG_COUNTER_LOCATION]++;
-        //msg_counters[ODID_MSG_COUNTER_LOCATION] %= 256; //likely not be needed as it is defined as unint_8
-
-        memcpy(&legacy_payload[sizeof(header) + 1], &location_encoded, sizeof(location_encoded));
-        legacy_length = sizeof(header) + 1 + sizeof(location_encoded);
-
         break;
     }
 
     case  1: {
-        ODID_BasicID_encoded basicid_encoded;
-        memset(&basicid_encoded, 0, sizeof(basicid_encoded));
-        if (encodeBasicIDMessage(&basicid_encoded, &UAS_data.BasicID[0]) != ODID_SUCCESS) {
-            break;
+        if (UAS_data.BasicIDValid[0]) {
+            ODID_BasicID_encoded basicid_encoded;
+            memset(&basicid_encoded, 0, sizeof(basicid_encoded));
+            if (encodeBasicIDMessage(&basicid_encoded, &UAS_data.BasicID[0]) != ODID_SUCCESS) {
+                break;
+            }
+
+            memcpy(&legacy_payload[sizeof(header)], &msg_counters[ODID_MSG_COUNTER_BASIC_ID], 1); //set packet counter
+            msg_counters[ODID_MSG_COUNTER_BASIC_ID]++;
+            //msg_counters[ODID_MSG_COUNTER_BASIC_ID] %= 256; //likely not be needed as it is defined as unint_8
+
+            memcpy(&legacy_payload[sizeof(header) + 1], &basicid_encoded, sizeof(basicid_encoded));
+            legacy_length = sizeof(header) + 1 + sizeof(basicid_encoded);
         }
-
-        memcpy(&legacy_payload[sizeof(header)], &msg_counters[ODID_MSG_COUNTER_BASIC_ID], 1); //set packet counter
-        msg_counters[ODID_MSG_COUNTER_BASIC_ID]++;
-        //msg_counters[ODID_MSG_COUNTER_BASIC_ID] %= 256; //likely not be needed as it is defined as unint_8
-
-        memcpy(&legacy_payload[sizeof(header) + 1], &basicid_encoded, sizeof(basicid_encoded));
-        legacy_length = sizeof(header) + 1 + sizeof(basicid_encoded);
-
         break;
     }
 
     case  2: {
-        ODID_SelfID_encoded selfid_encoded;
-        memset(&selfid_encoded, 0, sizeof(selfid_encoded));
-        if (encodeSelfIDMessage(&selfid_encoded, &UAS_data.SelfID) != ODID_SUCCESS) {
-            break;
+        if (UAS_data.SelfIDValid) {
+            ODID_SelfID_encoded selfid_encoded;
+            memset(&selfid_encoded, 0, sizeof(selfid_encoded));
+            if (encodeSelfIDMessage(&selfid_encoded, &UAS_data.SelfID) != ODID_SUCCESS) {
+                break;
+            }
+
+            memcpy(&legacy_payload[sizeof(header)], &msg_counters[ODID_MSG_COUNTER_SELF_ID], 1); //set packet counter
+            msg_counters[ODID_MSG_COUNTER_SELF_ID]++;
+            //msg_counters[ODID_MSG_COUNTER_SELF_ID] %= 256; //likely not be needed as it is defined as uint_8
+
+            memcpy(&legacy_payload[sizeof(header) + 1], &selfid_encoded, sizeof(selfid_encoded));
+            legacy_length = sizeof(header) + 1 + sizeof(selfid_encoded);
         }
-
-        memcpy(&legacy_payload[sizeof(header)], &msg_counters[ODID_MSG_COUNTER_SELF_ID], 1); //set packet counter
-        msg_counters[ODID_MSG_COUNTER_SELF_ID]++;
-        //msg_counters[ODID_MSG_COUNTER_SELF_ID] %= 256; //likely not be needed as it is defined as uint_8
-
-        memcpy(&legacy_payload[sizeof(header) + 1], &selfid_encoded, sizeof(selfid_encoded));
-        legacy_length = sizeof(header) + 1 + sizeof(selfid_encoded);
-
         break;
     }
 
     case  3: {
-        ODID_System_encoded system_encoded;
-        memset(&system_encoded, 0, sizeof(system_encoded));
-        if (encodeSystemMessage(&system_encoded, &UAS_data.System) != ODID_SUCCESS) {
-            break;
+        if (UAS_data.SystemValid) {
+            ODID_System_encoded system_encoded;
+            memset(&system_encoded, 0, sizeof(system_encoded));
+            if (encodeSystemMessage(&system_encoded, &UAS_data.System) != ODID_SUCCESS) {
+                break;
+            }
+
+            memcpy(&legacy_payload[sizeof(header)], &msg_counters[ODID_MSG_COUNTER_SYSTEM], 1); //set packet counter
+            msg_counters[ODID_MSG_COUNTER_SYSTEM]++;
+            //msg_counters[ODID_MSG_COUNTER_SYSTEM] %= 256; //likely not be needed as it is defined as uint_8
+
+            memcpy(&legacy_payload[sizeof(header) + 1], &system_encoded, sizeof(system_encoded));
+            legacy_length = sizeof(header) + 1 + sizeof(system_encoded);
         }
-
-        memcpy(&legacy_payload[sizeof(header)], &msg_counters[ODID_MSG_COUNTER_SYSTEM], 1); //set packet counter
-        msg_counters[ODID_MSG_COUNTER_SYSTEM]++;
-        //msg_counters[ODID_MSG_COUNTER_SYSTEM] %= 256; //likely not be needed as it is defined as uint_8
-
-        memcpy(&legacy_payload[sizeof(header) + 1], &system_encoded, sizeof(system_encoded));
-        legacy_length = sizeof(header) + 1 + sizeof(system_encoded);
-
         break;
     }
 
     case  4: {
-        ODID_OperatorID_encoded operatorid_encoded;
-        memset(&operatorid_encoded, 0, sizeof(operatorid_encoded));
-        if (encodeOperatorIDMessage(&operatorid_encoded, &UAS_data.OperatorID) != ODID_SUCCESS) {
-            break;
+        if (UAS_data.OperatorIDValid) {
+            ODID_OperatorID_encoded operatorid_encoded;
+            memset(&operatorid_encoded, 0, sizeof(operatorid_encoded));
+            if (encodeOperatorIDMessage(&operatorid_encoded, &UAS_data.OperatorID) != ODID_SUCCESS) {
+                break;
+            }
+
+            memcpy(&legacy_payload[sizeof(header)], &msg_counters[ODID_MSG_COUNTER_OPERATOR_ID], 1); //set packet counter
+            msg_counters[ODID_MSG_COUNTER_OPERATOR_ID]++;
+            //msg_counters[ODID_MSG_COUNTER_OPERATOR_ID] %= 256; //likely not be needed as it is defined as uint_8
+
+            memcpy(&legacy_payload[sizeof(header) + 1], &operatorid_encoded, sizeof(operatorid_encoded));
+            legacy_length = sizeof(header) + 1 + sizeof(operatorid_encoded);
         }
-
-        memcpy(&legacy_payload[sizeof(header)], &msg_counters[ODID_MSG_COUNTER_OPERATOR_ID], 1); //set packet counter
-        msg_counters[ODID_MSG_COUNTER_OPERATOR_ID]++;
-        //msg_counters[ODID_MSG_COUNTER_OPERATOR_ID] %= 256; //likely not be needed as it is defined as uint_8
-
-        memcpy(&legacy_payload[sizeof(header) + 1], &operatorid_encoded, sizeof(operatorid_encoded));
-        legacy_length = sizeof(header) + 1 + sizeof(operatorid_encoded);
-
         break;
     }
 
