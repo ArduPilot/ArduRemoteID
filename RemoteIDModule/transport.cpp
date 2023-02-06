@@ -45,24 +45,64 @@ uint8_t Transport::arm_status_check(const char *&reason)
         return status;
     }
 
+    char return_string[200]; //make it bigger to accomodate all possible errors
+    memset(return_string, 0, 200);
+    strcpy (return_string, "missing ");
+
+    static char return_string_full[50];
+    memset(return_string_full, 0, 50);
+
     if (last_location_ms == 0 || now_ms - last_location_ms > max_age_location_ms) {
-        reason = "missing location message";
-    } else if (!g.have_basic_id_info() && (last_basic_id_ms == 0 || now_ms - last_basic_id_ms > max_age_other_ms)) {
-        reason = "missing basic_id message";
-    } else if (last_self_id_ms == 0  || now_ms - last_self_id_ms > max_age_other_ms) {
-        reason = "missing self_id message";
-    } else if (last_operator_id_ms == 0 || now_ms - last_operator_id_ms > max_age_other_ms) {
-        reason = "missing operator_id message";
-    } else if (last_system_ms == 0 || now_ms - last_system_ms > max_age_location_ms) {
+        strcat(return_string, "LOC ");
+    }
+    if (!g.have_basic_id_info()) {
+        // if there is no basic ID data stored in the parameters give warning. If basic ID data are streamed to RID device,
+        // it will store them in the parameters
+        strcat(return_string, "ID ");
+    }
+
+    if (last_self_id_ms == 0  || now_ms - last_self_id_ms > max_age_other_ms) {
+        strcat(return_string, "SELF_ID ");
+    }
+
+    if (last_operator_id_ms == 0 || now_ms - last_operator_id_ms > max_age_other_ms) {
+        strcat(return_string, "OP_ID ");
+    }
+
+    if (last_system_ms == 0 || now_ms - last_system_ms > max_age_location_ms) {
         // we use location age limit for system as the operator location needs to come in as fast
         // as the vehicle location for FAA standard
-        reason = "missing system message";
-    } else if (location.latitude == 0 && location.longitude == 0) {
-        reason = "Bad location";
-    } else if (system.operator_latitude == 0 && system.operator_longitude == 0) {
-        reason = "Bad operator location";
-    } else if (reason == nullptr) {
+        strcat(return_string, "SYS ");
+    }
+
+    if (location.latitude == 0 && location.longitude == 0) {
+        if (strcmp(return_string ,"missing ") == 0) {
+            //if the return string only contains the word missing, there is no error.
+            strcpy(return_string, "zero LOC ");
+        }
+        else {
+             strcat(return_string, "zero LOC ");
+        }
+    }
+
+    if (system.operator_latitude == 0 && system.operator_longitude == 0) {
+        if (strcmp(return_string ,"missing ") == 0) {
+            //if the return string only contains the word missing, there is no error.
+            strcpy(return_string, "zero OP_LOC ");
+        }
+        else {
+             strcat(return_string, "zero OP_LOC ");
+        }
+    }
+
+    if (return_string == nullptr && reason == nullptr) {
         status = MAV_ODID_ARM_STATUS_GOOD_TO_ARM;
+    } else {
+        if (reason!=nullptr) {
+            strncpy(return_string_full, reason, 49);
+        }
+        strncat(return_string_full, return_string, 49 - strlen(return_string_full));
+        reason = return_string_full;
     }
 
     return status;
@@ -128,4 +168,3 @@ bool Transport::check_signature(uint8_t sig_length, uint8_t data_len, uint32_t s
     }
     return false;
 }
-
