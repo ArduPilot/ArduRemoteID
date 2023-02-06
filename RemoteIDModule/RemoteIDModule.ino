@@ -134,35 +134,50 @@ void setup()
  */
 static const char *check_parse(void)
 {
+    static char return_string[50]; //if all errors would occur in this function, it will fit in 50 chars that is also the max for the arm status message
+    strcpy (return_string, "bad ");
+
     {
         ODID_Location_encoded encoded {};
         if (encodeLocationMessage(&encoded, &UAS_data.Location) != ODID_SUCCESS) {
-            return "bad LOCATION data";
+            strcat(return_string, "LOC ");
         }
     }
     {
         ODID_System_encoded encoded {};
         if (encodeSystemMessage(&encoded, &UAS_data.System) != ODID_SUCCESS) {
-            return "bad SYSTEM data";
+            strcat(return_string, "SYS ");
         }
     }
     {
         ODID_BasicID_encoded encoded {};
-        if (encodeBasicIDMessage(&encoded, &UAS_data.BasicID[0]) != ODID_SUCCESS) {
-            return "bad BASIC_ID data";
+        if (UAS_data.BasicIDValid[0] == 1) {
+            if (encodeBasicIDMessage(&encoded, &UAS_data.BasicID[0]) != ODID_SUCCESS) {
+                strcat(return_string, "ID_1 ");
+            }
+        }
+        memset(&encoded, 0, sizeof(encoded));
+        if (UAS_data.BasicIDValid[1] == 1) {
+            if (encodeBasicIDMessage(&encoded, &UAS_data.BasicID[1]) != ODID_SUCCESS) {
+                strcat(return_string, "ID_2 ");
+            }
         }
     }
     {
         ODID_SelfID_encoded encoded {};
         if (encodeSelfIDMessage(&encoded, &UAS_data.SelfID) != ODID_SUCCESS) {
-            return "bad SELF_ID data";
+            strcat(return_string, "SELF_ID ");
         }
     }
     {
         ODID_OperatorID_encoded encoded {};
         if (encodeOperatorIDMessage(&encoded, &UAS_data.OperatorID) != ODID_SUCCESS) {
-            return "bad OPERATOR_ID data";
+            strcat(return_string, "OP_ID ");
         }
+    }
+    if (strlen(return_string) > 4) { //only return  error messag if one or more encoding functions failed
+        strcat(return_string, "data ");
+        return return_string;
     }
     return nullptr;
 }
@@ -306,9 +321,7 @@ static void set_data(Transport &t)
     }
 
     const char *reason = check_parse();
-    if (reason == nullptr) {
-        t.arm_status_check(reason);
-    }
+    t.arm_status_check(reason);
     t.set_parse_fail(reason);
 
     arm_check_ok = (reason==nullptr);
