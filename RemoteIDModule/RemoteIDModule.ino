@@ -171,6 +171,8 @@ static void set_data(Transport &t)
     const auto &self_id = t.get_self_id();
     const auto &location = t.get_location();
 
+    odid_initUasData(&UAS_data);
+
     /*
       if we don't have BasicID info from parameters and we have it
       from the DroneCAN or MAVLink transport then copy it to the
