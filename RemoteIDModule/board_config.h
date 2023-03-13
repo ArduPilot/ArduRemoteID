@@ -91,6 +91,16 @@
 
 #define CAN_APP_NODE_NAME "JWRID_ESP32S3"
 
+#elif defined(BOARD_BLUEMARK_DB202)
+#define BOARD_ID 8
+
+#define PIN_UART_TX 7
+#define PIN_UART_RX 6
+
+#define PIN_STATUS_LED GPIO_NUM_8 // LED to signal the status
+// LED off when ready to arm
+#define STATUS_LED_OK 0
+
 #else
 #error "unsupported board"
 #endif
