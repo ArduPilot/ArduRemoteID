@@ -38,6 +38,7 @@ const Parameters::Param Parameters::params[] = {
     { "PUBLIC_KEY5",       Parameters::ParamType::CHAR64, (const void*)&g.public_keys[4], },
     { "MAVLINK_SYSID",     Parameters::ParamType::UINT8,  (const void*)&g.mavlink_sysid,    0, 0, 254 },
     { "OPTIONS",           Parameters::ParamType::UINT8,  (const void*)&g.options,          0, 0, 254 },
+    { "TO_DEFAULTS",     Parameters::ParamType::UINT8,  (const void*)&g.to_factory_defaults,    0, 0, 1 }, //if set to 1, reset to factory defaults and make 0.
     { "DONE_INIT",         Parameters::ParamType::UINT8,  (const void*)&g.done_init,        0, 0, 0, PARAM_FLAG_HIDDEN},
     { "",                  Parameters::ParamType::NONE,   nullptr,  },
 };
@@ -297,6 +298,34 @@ void Parameters::load_defaults(void)
     }
 }
 
+/*
+  set to factory defaults from parameter table
+ */
+void Parameters::reset_to_defaults(void)
+{
+    for (const auto &p : params) {
+        switch (p.ptype) {
+        case ParamType::UINT8:
+            p.set_uint32(uint8_t(p.default_value));
+            break;
+        case ParamType::UINT32:
+            p.set_uint32(uint32_t(p.default_value));
+            break;
+        case ParamType::FLOAT:
+            p.set_float(float(p.default_value));
+            break;
+        case ParamType::CHAR20: {
+            p.set_char20("");
+            break;
+        }
+        case ParamType::CHAR64: {
+            p.set_char64("");
+            break;
+        }
+        }
+    }
+}
+
 void Parameters::init(void)
 {
     load_defaults();
@@ -340,7 +369,11 @@ void Parameters::init(void)
                  mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
     }
-
+    if (g.to_factory_defaults == 1) {
+        reset_to_defaults(); //save to NVS
+        load_defaults();
+        set_by_name_uint8("to_factory_defaults", 0);
+    }
     if (g.done_init == 0) {
         set_by_name_uint8("DONE_INIT", 1);
         // setup public keys
