@@ -145,6 +145,11 @@ void Parameters::Param::set_uint8(uint8_t v) const
     auto *p = (uint8_t *)ptr;
     *p = v;
     nvs_set_u8(handle, name, *p);
+    if (strcmp(name, "TO_DEFAULTS") == 0) {
+        if (v == 1) {
+            esp_restart(); //reset, so the init function will set it to factory defaults
+        }
+    }
 }
 
 void Parameters::Param::set_int8(int8_t v) const
@@ -298,34 +303,6 @@ void Parameters::load_defaults(void)
     }
 }
 
-/*
-  set to factory defaults from parameter table
- */
-void Parameters::reset_to_defaults(void)
-{
-    for (const auto &p : params) {
-        switch (p.ptype) {
-        case ParamType::UINT8:
-            p.set_uint32(uint8_t(p.default_value));
-            break;
-        case ParamType::UINT32:
-            p.set_uint32(uint32_t(p.default_value));
-            break;
-        case ParamType::FLOAT:
-            p.set_float(float(p.default_value));
-            break;
-        case ParamType::CHAR20: {
-            p.set_char20("");
-            break;
-        }
-        case ParamType::CHAR64: {
-            p.set_char64("");
-            break;
-        }
-        }
-    }
-}
-
 void Parameters::init(void)
 {
     load_defaults();
@@ -372,7 +349,7 @@ void Parameters::init(void)
     if (g.to_factory_defaults == 1) {
         reset_to_defaults(); //save to NVS
         load_defaults();
-        set_by_name_uint8("to_factory_defaults", 0);
+        set_by_name_uint8("TO_DEFAULTS", 0);
     }
     if (g.done_init == 0) {
         set_by_name_uint8("DONE_INIT", 1);

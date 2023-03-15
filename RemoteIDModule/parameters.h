@@ -104,7 +104,6 @@ public:
 
 private:
     void load_defaults(void);
-    void reset_to_defaults(void);
 };
 
 // bits for OPTIONS parameter
