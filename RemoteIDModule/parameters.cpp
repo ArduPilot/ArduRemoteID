@@ -15,9 +15,13 @@ const Parameters::Param Parameters::params[] = {
     { "UAS_TYPE",          Parameters::ParamType::UINT8,  (const void*)&g.ua_type,          0, 0, 15 },
     { "UAS_ID_TYPE",       Parameters::ParamType::UINT8,  (const void*)&g.id_type,          0, 0, 4 },
     { "UAS_ID",            Parameters::ParamType::CHAR20, (const void*)&g.uas_id[0],        0, 0, 0 },
-    { "UAS_TYPE_2",        Parameters::ParamType::UINT8,  (const void*)&g.ua_type_2,          0, 0, 15 },
-    { "UAS_ID_TYPE_2",     Parameters::ParamType::UINT8,  (const void*)&g.id_type_2,          0, 0, 4 },
-    { "UAS_ID_2",          Parameters::ParamType::CHAR20, (const void*)&g.uas_id_2[0],        0, 0, 0 },
+    { "UAS_TYPE_2",        Parameters::ParamType::UINT8,  (const void*)&g.ua_type_2,        0, 0, 15 },
+    { "UAS_ID_TYPE_2",     Parameters::ParamType::UINT8,  (const void*)&g.id_type_2,        0, 0, 4 },
+    { "UAS_ID_2",          Parameters::ParamType::CHAR20, (const void*)&g.uas_id_2[0],      0, 0, 0 },
+    { "DESCRIPTION_TYPE",  Parameters::ParamType::UINT8,  (const void*)&g.description_type, 0, 0, 255 },
+    { "DESCRIPTION",       Parameters::ParamType::CHAR23, (const void*)&g.description[0],   0, 0, 0 },
+    { "OPERATOR_ID_TYPE",  Parameters::ParamType::UINT8,  (const void*)&g.operator_id_type, 0, 0, 255 },
+    { "OPERATOR_ID",       Parameters::ParamType::CHAR20, (const void*)&g.operator_id[0],   0, 0, 0 },
     { "BAUDRATE",          Parameters::ParamType::UINT32, (const void*)&g.baudrate,         57600, 9600, 921600 },
     { "WIFI_NAN_RATE",     Parameters::ParamType::FLOAT,  (const void*)&g.wifi_nan_rate,    0, 0, 5 },
     { "WIFI_BCN_RATE",     Parameters::ParamType::FLOAT,  (const void*)&g.wifi_beacon_rate,    0, 0, 5 },
@@ -171,6 +175,16 @@ void Parameters::Param::set_char20(const char *v) const
     nvs_set_str(handle, name, v);
 }
 
+void Parameters::Param::set_char23(const char *v) const
+{
+    if (min_len > 0 && strlen(v) < min_len) {
+        return;
+    }
+    memset((void*)ptr, 0, 24);
+    strncpy((char *)ptr, v, 23);
+    nvs_set_str(handle, name, v);
+}
+
 void Parameters::Param::set_char64(const char *v) const
 {
     if (min_len > 0 && strlen(v) < min_len) {
@@ -200,6 +214,12 @@ float Parameters::Param::get_float() const
 }
 
 const char *Parameters::Param::get_char20() const
+{
+    const char *p = (const char *)ptr;
+    return p;
+}
+
+const char *Parameters::Param::get_char23() const
 {
     const char *p = (const char *)ptr;
     return p;
@@ -296,6 +316,11 @@ void Parameters::init(void)
             nvs_get_str(handle, p.name, (char *)p.ptr, &len);
             break;
         }
+        case ParamType::CHAR23: {
+            size_t len = 24;
+            nvs_get_str(handle, p.name, (char *)p.ptr, &len);
+            break;
+        }
         case ParamType::CHAR64: {
             size_t len = 65;
             nvs_get_str(handle, p.name, (char *)p.ptr, &len);
@@ -339,6 +364,28 @@ bool Parameters::have_basic_id_2_info(void) const
     return strlen(g.uas_id_2) > 0 && g.id_type_2 > 0 && g.ua_type_2 > 0;
 }
 
+/**
+ * check if OperatorID info is filled in with parameters 
+ * 
+ * @retval true  Has OPERATOR ID information.
+ * @retval false Does not have OPERATOR ID information.
+ */
+bool Parameters::have_operator_id_info(void) const
+{
+    return strlen(g.operator_id) > 0;
+}
+
+/**
+ * check if SelfID info is filled in with parameters 
+ * 
+ * @retval true  Has SELF ID information.
+ * @retval false Does not have SELF ID information.
+ */
+bool Parameters::have_self_id_info(void) const
+{
+    return strlen(g.description) > 0;
+}
+
 bool Parameters::set_by_name_uint8(const char *name, uint8_t v)
 {
     const auto *f = find(name);
@@ -377,6 +424,9 @@ bool Parameters::set_by_name_string(const char *name, const char *s)
             return true;
         case ParamType::CHAR20:
             f->set_char20(s);
+            return true;
+        case ParamType::CHAR23:
+            f->set_char23(s);
             return true;
         case ParamType::CHAR64:
             f->set_char64(s);
