@@ -169,6 +169,7 @@ bool BLE_TX::transmit_legacy(ODID_UAS_Data &UAS_data)
     // combine header with payload
     memset(legacy_payload, 0, sizeof(legacy_payload));
     memcpy(legacy_payload, header, sizeof(header));
+    legacy_length = sizeof(header);
 
     switch (legacy_phase)
     {
