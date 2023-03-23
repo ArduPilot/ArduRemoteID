@@ -73,11 +73,11 @@ checkdev:
 
 upload-%: checkdev
 	@echo "Flashing ArduRemoteID-$*.bin"
-	$(ESPTOOL) --port $(SERDEV) write_flash 0x0 ArduRemoteID-$*.bin
+	@python3 $(ESPTOOL) --port $(SERDEV) write_flash 0x0 ArduRemoteID-$*.bin
 
 uploadota-%: checkdev
 	@echo "Flashing ArduRemoteID-$*_OTA.bin"
-	$(ESPTOOL) --port $(SERDEV) write_flash 0x10000 ArduRemoteID_$*_OTA.bin
+	@python3 $(ESPTOOL) --port $(SERDEV) write_flash 0x10000 ArduRemoteID_$*_OTA.bin
 
 upload: upload-ESP32S3_DEV
 
