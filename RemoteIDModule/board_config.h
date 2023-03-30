@@ -123,6 +123,22 @@
 #define CAN_APP_NODE_NAME "BlueMark DB210PRO"
 //#define PIN_CAN_TERM GPIO_NUM_42 // if set to ON, the termination resistors of the CAN bus are enabled
 
+#elif defined(BOARD_BLUEMARK_DB203)
+#define BOARD_ID 9
+
+#define PIN_CAN_TX GPIO_NUM_6
+#define PIN_CAN_RX GPIO_NUM_7
+
+#define PIN_UART_TX 5 // not used, but needed to avoid compilation errors
+#define PIN_UART_RX 4 // not used, but needed to avoid compilation errors
+
+#define CAN_APP_NODE_NAME "BlueMark DB203"
+
+
+#define PIN_STATUS_LED GPIO_NUM_8 // LED to signal the status
+// LED off when ready to arm
+#define STATUS_LED_OK 0
+
 #else
 #error "unsupported board"
 #endif
