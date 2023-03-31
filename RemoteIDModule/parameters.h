@@ -12,7 +12,7 @@
 
 class Parameters {
 public:
-    uint8_t lock_level;
+    int8_t lock_level;
     uint8_t can_node;
     uint8_t bcast_powerup;
     uint32_t baudrate = 57600;
@@ -47,6 +47,7 @@ public:
         FLOAT=3,
         CHAR20=4,
         CHAR64=5,
+        INT8=6,
     };
 
     struct Param {
@@ -60,10 +61,12 @@ public:
         uint8_t min_len;
         void set_float(float v) const;
         void set_uint8(uint8_t v) const;
+        void set_int8(int8_t v) const;
         void set_uint32(uint32_t v) const;
         void set_char20(const char *v) const;
         void set_char64(const char *v) const;
         uint8_t get_uint8() const;
+        int8_t get_int8() const;
         uint32_t get_uint32() const;
         float get_float() const;
         const char *get_char20() const;
@@ -83,6 +86,7 @@ public:
     bool have_basic_id_2_info(void) const;
 
     bool set_by_name_uint8(const char *name, uint8_t v);
+    bool set_by_name_int8(const char *name, int8_t v);
     bool set_by_name_char64(const char *name, const char *s);
     bool set_by_name_string(const char *name, const char *s);
 

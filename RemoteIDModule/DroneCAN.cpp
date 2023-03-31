@@ -608,6 +608,12 @@ void DroneCAN::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transf
                 }
                 vp->set_uint8(uint8_t(req.value.integer_value));
                 break;
+            case Parameters::ParamType::INT8:
+                if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE) {
+                    return;
+                }
+                vp->set_int8(int8_t(req.value.integer_value));
+                break;
             case Parameters::ParamType::UINT32:
                 if (req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE) {
                     return;
@@ -658,6 +664,16 @@ void DroneCAN::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transf
             pkt.min_value.integer_value = uint8_t(vp->min_value);
             pkt.max_value.union_tag = UAVCAN_PROTOCOL_PARAM_NUMERICVALUE_INTEGER_VALUE;
             pkt.max_value.integer_value = uint8_t(vp->max_value);
+            break;
+        case Parameters::ParamType::INT8:
+            pkt.value.union_tag = UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE;
+            pkt.value.integer_value = vp->get_int8();
+            pkt.default_value.union_tag = UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE;
+            pkt.default_value.integer_value = int8_t(vp->default_value);
+            pkt.min_value.union_tag = UAVCAN_PROTOCOL_PARAM_NUMERICVALUE_INTEGER_VALUE;
+            pkt.min_value.integer_value = int8_t(vp->min_value);
+            pkt.max_value.union_tag = UAVCAN_PROTOCOL_PARAM_NUMERICVALUE_INTEGER_VALUE;
+            pkt.max_value.integer_value = int8_t(vp->max_value);
             break;
         case Parameters::ParamType::UINT32:
             pkt.value.union_tag = UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE;

@@ -10,7 +10,7 @@ Parameters g;
 static nvs_handle handle;
 
 const Parameters::Param Parameters::params[] = {
-    { "LOCK_LEVEL",        Parameters::ParamType::UINT8,  (const void*)&g.lock_level,       0, 0, 2 },
+    { "LOCK_LEVEL",        Parameters::ParamType::INT8,  (const void*)&g.lock_level,       0, -1, 2 },
     { "CAN_NODE",          Parameters::ParamType::UINT8,  (const void*)&g.can_node,         0, 0, 127 },
     { "UAS_TYPE",          Parameters::ParamType::UINT8,  (const void*)&g.ua_type,          0, 0, 15 },
     { "UAS_ID_TYPE",       Parameters::ParamType::UINT8,  (const void*)&g.id_type,          0, 0, 4 },
@@ -54,6 +54,7 @@ uint16_t Parameters::param_count_float(void)
         }
         switch (p.ptype) {
         case ParamType::UINT8:
+        case ParamType::INT8:
         case ParamType::UINT32:
         case ParamType::FLOAT:
             count++;
@@ -76,6 +77,7 @@ int16_t Parameters::param_index_float(const Parameters::Param *f)
         }
         switch (p.ptype) {
         case ParamType::UINT8:
+        case ParamType::INT8:
         case ParamType::UINT32:
         case ParamType::FLOAT:
             if (&p == f) {
@@ -124,6 +126,7 @@ const Parameters::Param *Parameters::find_by_index_float(uint16_t index)
         }
         switch (p.ptype) {
         case ParamType::UINT8:
+        case ParamType::INT8:
         case ParamType::UINT32:
         case ParamType::FLOAT:
             if (index == count) {
@@ -141,6 +144,13 @@ void Parameters::Param::set_uint8(uint8_t v) const
     auto *p = (uint8_t *)ptr;
     *p = v;
     nvs_set_u8(handle, name, *p);
+}
+
+void Parameters::Param::set_int8(int8_t v) const
+{
+    auto *p = (int8_t *)ptr;
+    *p = v;
+    nvs_set_i8(handle, name, *p);
 }
 
 void Parameters::Param::set_uint32(uint32_t v) const
@@ -188,6 +198,12 @@ uint8_t Parameters::Param::get_uint8() const
     return *p;
 }
 
+int8_t Parameters::Param::get_int8() const
+{
+    const auto *p = (const int8_t *)ptr;
+    return *p;
+}
+
 uint32_t Parameters::Param::get_uint32() const
 {
     const auto *p = (const uint32_t *)ptr;
@@ -221,6 +237,9 @@ bool Parameters::Param::get_as_float(float &v) const
         case ParamType::UINT8:
             v = float(get_uint8());
             break;
+        case ParamType::INT8:
+            v = float(get_int8());
+            break;
         case ParamType::UINT32:
             v = float(get_uint32());
             break;
@@ -242,6 +261,9 @@ void Parameters::Param::set_as_float(float v) const
         case ParamType::UINT8:
             set_uint8(uint8_t(v));
             break;
+        case ParamType::INT8:
+            set_int8(int8_t(v));
+            break;
         case ParamType::UINT32:
             set_uint32(uint32_t(v));
             break;
@@ -261,6 +283,9 @@ void Parameters::load_defaults(void)
         switch (p.ptype) {
         case ParamType::UINT8:
             *(uint8_t *)p.ptr = uint8_t(p.default_value);
+            break;
+        case ParamType::INT8:
+            *(int8_t *)p.ptr = int8_t(p.default_value);
             break;
         case ParamType::UINT32:
             *(uint32_t *)p.ptr = uint32_t(p.default_value);
@@ -285,6 +310,9 @@ void Parameters::init(void)
         switch (p.ptype) {
         case ParamType::UINT8:
             nvs_get_u8(handle, p.name, (uint8_t *)p.ptr);
+            break;
+        case ParamType::INT8:
+            nvs_get_i8(handle, p.name, (int8_t *)p.ptr);
             break;
         case ParamType::UINT32:
             nvs_get_u32(handle, p.name, (uint32_t *)p.ptr);
@@ -350,6 +378,16 @@ bool Parameters::set_by_name_uint8(const char *name, uint8_t v)
     return true;
 }
 
+bool Parameters::set_by_name_int8(const char *name, int8_t v)
+{
+    const auto *f = find(name);
+    if (!f) {
+        return false;
+    }
+    f->set_int8(v);
+    return true;
+}
+
 bool Parameters::set_by_name_char64(const char *name, const char *s)
 {
     const auto *f = find(name);
@@ -369,6 +407,9 @@ bool Parameters::set_by_name_string(const char *name, const char *s)
     switch (f->ptype) {
         case ParamType::UINT8:
             f->set_uint8(uint8_t(strtoul(s, nullptr, 0)));
+            return true;
+        case ParamType::INT8:
+            f->set_int8(int8_t(strtoul(s, nullptr, 0)));
             return true;
         case ParamType::UINT32:
             f->set_uint32(strtoul(s, nullptr, 0));
