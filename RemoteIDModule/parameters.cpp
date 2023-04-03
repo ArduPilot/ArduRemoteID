@@ -147,7 +147,8 @@ void Parameters::Param::set_uint8(uint8_t v) const
     nvs_set_u8(handle, name, *p);
     if (strcmp(name, "TO_DEFAULTS") == 0) {
         if (v == 1) {
-            esp_restart(); //reset, so the init function will set it to factory defaults
+            nvs_flash_erase();
+            esp_restart();
         }
     }
 }
@@ -347,10 +348,11 @@ void Parameters::init(void)
 
     }
     if (g.to_factory_defaults == 1) {
-        reset_to_defaults(); //save to NVS
-        load_defaults();
-        set_by_name_uint8("TO_DEFAULTS", 0);
+        //should not happen, but in case the parameter is still set to 1, erase flash and reboot
+        nvs_flash_erase();
+        esp_restart();
     }
+
     if (g.done_init == 0) {
         set_by_name_uint8("DONE_INIT", 1);
         // setup public keys
