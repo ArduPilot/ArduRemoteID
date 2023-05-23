@@ -23,6 +23,7 @@ are 4 boards supported so far with more to come:
  - a Bluemark DB200 from https://bluemark.io/ ([product page](https://dronescout.co/dronebeacon-mavlink-remote-id-transponder/) | [buy](https://dronescout.co/product/dronebeacon-mavlink-db200-transponder/))
  - a Bluemark DB201 from https://bluemark.io/ ([product page](https://dronescout.co/dronebeacon-mavlink-remote-id-transponder/) | [buy](https://dronescout.co/product/dronebeacon-mavlink-db201-transponder/))
  - a Bluemark DB202mav from https://bluemark.io/ ([product page](https://dronescout.co/dronebeacon-mavlink-remote-id-transponder/) | [buy](https://dronescout.co/product/dronebeacon-mavlink-db202mav-transponder/))
+ - a Bluemark DB210pro from https://bluemark.io/ ([product page](https://dronescout.co/dronebeacon-mavlink-remote-id-transponder/) | [buy](https://dronescout.co/product/dronebeacon-mavlink-dronecan-db210pro-transponder/))
 
 Hardware from https://wurzbachelectronics.com/ is expected to be added soon.
 
