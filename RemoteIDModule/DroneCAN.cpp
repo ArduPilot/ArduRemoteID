@@ -46,6 +46,12 @@ static bool shouldAcceptTransfer_trampoline(const CanardInstance* ins, uint64_t*
 
 void DroneCAN::init(void)
 {
+
+#if defined(BOARD_BLUEMARK_DB210)
+    gpio_reset_pin(GPIO_NUM_19);
+    gpio_reset_pin(GPIO_NUM_20);
+#endif
+
     can_driver.init(1000000);
 
     canardInit(&canard, (uint8_t *)canard_memory_pool, sizeof(canard_memory_pool),
@@ -92,7 +98,7 @@ void DroneCAN::arm_status_send(void)
     uint8_t buffer[DRONECAN_REMOTEID_ARMSTATUS_MAX_SIZE];
     dronecan_remoteid_ArmStatus arm_status {};
 
-    const uint8_t status = parse_fail==nullptr?MAV_ODID_ARM_STATUS_GOOD_TO_ARM:MAV_ODID_ARM_STATUS_PRE_ARM_FAIL_GENERIC;
+    const uint8_t status = parse_fail==nullptr? MAV_ODID_GOOD_TO_ARM:MAV_ODID_PRE_ARM_FAIL_GENERIC;
     const char *reason = parse_fail==nullptr?"":parse_fail;
 
     arm_status.status = status;
@@ -731,7 +737,7 @@ void DroneCAN::handle_SecureCommand(CanardInstance* ins, CanardRxTransfer* trans
         reply.result = DRONECAN_REMOTEID_SECURECOMMAND_RESPONSE_RESULT_DENIED;
         goto send_reply;
     }
-    
+
     switch (req.operation) {
     case DRONECAN_REMOTEID_SECURECOMMAND_REQUEST_SECURE_COMMAND_GET_REMOTEID_SESSION_KEY: {
         make_session_key(session_key);

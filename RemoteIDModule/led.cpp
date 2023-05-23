@@ -48,10 +48,12 @@ void Led::update(void)
     switch (state) {
     case LedState::ARM_OK:
         ledStrip.setPixelColor(0, ledStrip.Color(0, 255, 0));
+        ledStrip.setPixelColor(0, ledStrip.Color(1, 255, 0)); //for db210pro, set the second LED to have the same output (for now)
         break;
 
     default:
         ledStrip.setPixelColor(0, ledStrip.Color(255, 0, 0));
+        ledStrip.setPixelColor(1, ledStrip.Color(255, 0, 0)); //for db210pro, set the second LED to have the same output (for now)
         break;
     }
     if (now_ms - last_led_strip_ms >= 200) {
