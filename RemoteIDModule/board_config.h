@@ -101,6 +101,28 @@
 // LED off when ready to arm
 #define STATUS_LED_OK 0
 
+#elif defined(BOARD_BLUEMARK_DB210)
+#define BOARD_ID 10
+#define PIN_CAN_TX GPIO_NUM_19
+#define PIN_CAN_RX GPIO_NUM_20
+
+#define PIN_UART_TX 7
+#define PIN_UART_RX 6
+//#define PIN_UART_CTS 15 //not used, perhaps useful if TELEM 1 is used for different purpose
+//#define PIN_UART_RTS 16 //not used, perhaps useful if TELEM 1 is used for different purpose
+
+//#define PIN_UART_TX_2 2 //TELEM 2
+//#define PIN_UART_RX_2 1 //TELEM 2
+//#define PIN_UART_CTS_2 5 //TELEM 2, not used, perhaps useful if TELEM is used for different purpose
+//#define PIN_UART_RTS_2 4 //TELEM 2, not used, perhaps useful if TELEM is used for different purpose
+
+#define BUZZER_PIN GPIO_NUM_39 //at the moment easiest is to have active buzzer support. (Buzzer on if GPIO is high)
+
+#define WS2812_LED_PIN GPIO_NUM_8 //there are two WS2812 LEDs on this GPIO
+
+#define CAN_APP_NODE_NAME "BlueMark DB210PRO"
+//#define PIN_CAN_TERM GPIO_NUM_42 // if set to ON, the termination resistors of the CAN bus are enabled
+
 #else
 #error "unsupported board"
 #endif

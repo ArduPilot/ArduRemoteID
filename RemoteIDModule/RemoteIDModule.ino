@@ -25,6 +25,7 @@
 #include "efuse.h"
 #include "led.h"
 
+
 #if AP_DRONECAN_ENABLED
 static DroneCAN dronecan;
 #endif
@@ -49,7 +50,7 @@ static WebInterface webif;
 #include "soc/rtc_cntl_reg.h"
 
 static bool arm_check_ok = false; // goes true for LED arm check status
-static bool pfst_check_ok = false; 
+static bool pfst_check_ok = false;
 
 /*
   setup serial ports
@@ -106,6 +107,12 @@ void setup()
     // optional CAN termination control
     pinMode(PIN_CAN_TERM, OUTPUT);
     digitalWrite(PIN_CAN_TERM, HIGH);
+#endif
+
+#if defined(BUZZER_PIN)
+    //set BuZZER OUTPUT ACTIVE, just to show it works
+    pinMode(GPIO_NUM_39, OUTPUT);
+    digitalWrite(GPIO_NUM_39, HIGH);
 #endif
 
     pfst_check_ok = true;   // note - this will need to be expanded to better capture PFST test status

@@ -29,7 +29,7 @@ private:
 
 #ifdef WS2812_LED_PIN
     uint32_t last_led_strip_ms;
-    Adafruit_NeoPixel ledStrip{1, WS2812_LED_PIN, NEO_GRB + NEO_KHZ800};
+    Adafruit_NeoPixel ledStrip{2, WS2812_LED_PIN, NEO_GRB + NEO_KHZ800}; //the BlueMark db210pro boards has two LEDs, therefore we need to use 2.
 #endif
 };
 
