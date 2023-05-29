@@ -402,7 +402,7 @@ void loop()
     static uint32_t last_update_bt4_ms;
     int bt4_states = UAS_data.BasicIDValid[1] ? 7 : 6;
     if (g.bt4_rate > 0 &&
-        now_ms - last_update_bt4_ms > (1000.0f/(bt4_states - 1))/g.bt4_rate) {
+        now_ms - last_update_bt4_ms > (1000.0f/bt4_states)/g.bt4_rate) {
         last_update_bt4_ms = now_ms;
         ble.transmit_legacy(UAS_data);
     }
