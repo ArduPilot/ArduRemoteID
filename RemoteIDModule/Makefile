@@ -50,14 +50,16 @@ setup:
 	$(ARDUINO_CLI) core install esp32:esp32@$(ESP32_VER)
 	$(ARDUINO_CLI) lib install "Adafruit NeoPixel"
 
-headers:
+gitversion:
 	@../scripts/git-version.sh
+
+headers: gitversion
 	@cd .. && scripts/regen_headers.sh
 
 romfs_files.h: web/*.html web/js/*.js web/styles/*css web/images/*.jpg web/images/*.png public_keys/*.dat
 	@../scripts/make_romfs.py romfs_files.h web/*.html web/js/*.js web/styles/*css web/images/*.jpg web/images/*.png public_keys/*.dat
 
-ArduRemoteID-%.bin: *.cpp *.ino *.h romfs_files.h
+ArduRemoteID-%.bin: gitversion *.cpp *.ino *.h romfs_files.h
 	@echo "Building $* on $(CHIP)"
 	@BUILD_FLAGS="-DBOARD_$*"
 	@rm -rf build build-$*
