@@ -84,6 +84,9 @@ uploadota-%: checkdev
 
 upload: upload-ESP32S3_DEV
 
+submodule_update:
+	git submodule update --recursive --force --init
+
 clean:
 	rm -rf ..esp32* *.bin build* romfs_files.h
 
