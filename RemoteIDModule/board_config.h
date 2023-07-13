@@ -139,6 +139,16 @@
 // LED off when ready to arm
 #define STATUS_LED_OK 0
 
+#elif defined(BOARD_Holybro_RemoteID)
+#define BOARD_ID 11
+#define PIN_CAN_TX GPIO_NUM_5
+#define PIN_CAN_RX GPIO_NUM_4
+
+#define PIN_UART_TX 3
+#define PIN_UART_RX 2
+
+#define WS2812_LED_PIN GPIO_NUM_8
+
 #else
 #error "unsupported board"
 #endif

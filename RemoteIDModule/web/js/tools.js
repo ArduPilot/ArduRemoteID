@@ -72,6 +72,11 @@ function page_fill_json_html(json) {
                     document.getElementById("STATUS:BOARD").innerText = "BlueMark db203can";
                     document.getElementById("documentation").innerHTML = "<ul><li><a href='https://download.bluemark.io/db200.pdf'>db200 series manual</a></li><li><a href='https://ardupilot.org/ardupilot/index.html'>ArduPilot Project</a></li><li><a href='https://github.com/ArduPilot/ArduRemoteID'>ArduRemoteID Project</a></li><li><a href='https://ardupilot.org/plane/docs/common-remoteid.html'>ArduPilot RemoteID Documentation</a></li><li><a href='https://www.opendroneid.org/'>OpenDroneID Website</a></li></ul>";
                     document.body.style.background = "#fafafa";
+                } else if (json[v] == "11") {
+                    document.getElementById("logo").src="images/holybro.jpg";
+                    document.getElementById("logo").alt="Holybro";
+                    document.getElementById("STATUS:BOARD").innerText = "Holybro RemoteID";
+                    document.getElementById("documentation").innerHTML = "<ul><li><a href='https://ardupilot.org/ardupilot/index.html'>ArduPilot Project</a></li><li><a href='https://github.com/ArduPilot/ArduRemoteID'>ArduRemoteID Project</a></li><li><a href='https://ardupilot.org/plane/docs/common-remoteid.html'>ArduPilot RemoteID Documentation</a></li><li><a href='https://www.opendroneid.org/'>OpenDroneID Website</a></li></ul>";
                 } else {
                     document.getElementById("logo").src="images/logo.jpg";
                     document.getElementById("logo").alt="ArduPilot";

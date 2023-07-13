@@ -15,7 +15,7 @@ export PATH := $(HOME)/.local/bin:$(PATH)
 
 .PHONY: headers
 
-all: headers esp32s3dev esp32c3dev bluemark-db200 bluemark-db110 jw-tbd mro-rid jwrid-esp32s3 bluemark-db202 bluemark-db210 bluemark-db203
+all: headers esp32s3dev esp32c3dev bluemark-db200 bluemark-db110 jw-tbd mro-rid jwrid-esp32s3 bluemark-db202 bluemark-db210 bluemark-db203 holybro-RemoteID
 
 esp32s3dev: CHIP=esp32s3
 esp32s3dev: ArduRemoteID-ESP32S3_DEV.bin
@@ -46,6 +46,9 @@ bluemark-db210: ArduRemoteID-BLUEMARK_DB210.bin
 
 bluemark-db203: CHIP=esp32c3
 bluemark-db203: ArduRemoteID-BLUEMARK_DB203.bin
+
+holybro-RemoteID: CHIP=esp32c3
+holybro-RemoteID: ArduRemoteID-Holybro_RemoteID.bin
 
 setup:
 	@echo "Installing ESP32 support"
