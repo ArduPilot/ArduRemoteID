@@ -149,6 +149,17 @@
 
 #define WS2812_LED_PIN GPIO_NUM_8
 
+#elif defined(BOARD_CUAV_RID)
+#define BOARD_ID 12
+#define PIN_CAN_TX GPIO_NUM_47
+#define PIN_CAN_RX GPIO_NUM_38
+#define PIN_CAN_nSILENT GPIO_NUM_1
+
+#define PIN_UART_TX 18
+#define PIN_UART_RX 17
+
+#define WS2812_LED_PIN GPIO_NUM_48
+
 #else
 #error "unsupported board"
 #endif
