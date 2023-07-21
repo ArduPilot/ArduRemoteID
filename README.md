@@ -236,6 +236,24 @@ bits is not undone. You will be able to change parameters but you will
 not be able to flash firmware via the USB port. You can still flash a
 signed firmware using the web interface.
 
+## Secure Command over support.ardupilot.org
+
+If using secure_command.py remotely via a link forwarded over
+support.ardupilot.org then you would run the following:
+
+```
+scripts/secure_command.py mavcan:udpout:support.ardupilot.org:AAAAA --signing-passphrase=XXXXXXX --target-node=NNN --private-key=my_private_key.dat UAS_TYPE=3
+```
+
+where
+
+ - AAAAA is your support.ardupilot.org remote support ID (the support engineer ID, not the customers ID)
+ - NNN is the target CAN node ID on the remote flight controller
+ - add --bus-num=2 if the node is on the 2nd CAN bus
+
+As the link may be slow you may also need a higher value for the
+--timeout option.
+
 ## ArduPilot Support
 
 Support for OpenDroneID is in ArduPilot master and is also in the
