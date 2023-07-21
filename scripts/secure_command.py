@@ -23,6 +23,7 @@ parser.add_argument("--target-node", default=None, type=int, help="target node I
 parser.add_argument("--private-key", default=None, type=str, help="private key file")
 parser.add_argument("--bus-num", default=1, type=int, help="MAVCAN bus number")
 parser.add_argument("--signing-passphrase", help="MAVLink2 signing passphrase", default=None)
+parser.add_argument("--timeout", help="DroneCAN message timeout", type=float, default=3)
 parser.add_argument("uri", default=None, type=str, help="CAN URI")
 parser.add_argument("paramop", default=None, type=str, help="parameter operation")
 args = parser.parse_args()
@@ -98,7 +99,8 @@ def request_session_key():
             sequence=sequence,
             operation=SECURE_COMMAND_GET_REMOTEID_SESSION_KEY,
             sig_length=len(sig),
-            data=sig),
+            data=sig,
+            timeout=args.timeout),
         args.target_node,
         get_session_key_response)
     sequence = (sequence+1) % (1<<32)
@@ -127,7 +129,8 @@ def send_config_change():
             sequence=sequence,
             operation=SECURE_COMMAND_SET_REMOTEID_CONFIG,
             sig_length=len(sig),
-            data=req+sig),
+            data=req+sig,
+            timeout=args.timeout),
         args.target_node,
         config_change_response)
     sequence = (sequence+1) % (1<<32)
