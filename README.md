@@ -254,6 +254,35 @@ where
 As the link may be slow you may also need a higher value for the
 --timeout option.
 
+## Secure Command using DroneCAN GUI Tool
+
+For a CAN attached ArduRemoteID module you can use DroneCAN GUI tool
+to update parameters securely.
+
+Get the latest DroneCAN GUI tool here:
+
+  https://firmware.ardupilot.org/Tools/CAN_GUI/
+
+You will need version 1.2.23 or later.
+
+After connecting, select the RemoteID panel:
+
+![RemoteID Panel1](images/RemoteID_panel1.jpg "RemoteID Panel1")
+
+then use like this:
+
+![RemoteID Panel2](images/RemoteID_panel2.jpg "RemoteID Panel2")
+
+The command is of the form "PARAMETERNAME=VALUE".
+
+When you are using DroneCAN GUI tool over a support.ardupilot.org
+signed link you will need to enter the URI like this:
+
+![GUI Signed](images/GUI_signed.jpg "GUI Signed")
+
+where 999999 is replaced with your support engineer ID.
+
+
 ## ArduPilot Support
 
 Support for OpenDroneID is in ArduPilot master and is also in the
