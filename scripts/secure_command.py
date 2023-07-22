@@ -60,7 +60,7 @@ node_monitor = dronecan.app.node_monitor.NodeMonitor(node)
 
 def get_session_key_response(reply):
     if not reply:
-        # timed out
+        print("Session key timed out")
         return
     global session_key
     session_key = bytearray(reply.response.data)
@@ -99,16 +99,16 @@ def request_session_key():
             sequence=sequence,
             operation=SECURE_COMMAND_GET_REMOTEID_SESSION_KEY,
             sig_length=len(sig),
-            data=sig,
-            timeout=args.timeout),
+            data=sig),
         args.target_node,
-        get_session_key_response)
+        get_session_key_response,
+        timeout=args.timeout)
     sequence = (sequence+1) % (1<<32)
     print("Requested session key")
 
 def config_change_response(reply):
     if not reply:
-        # timed out
+        print("Config change timed out")
         return
     result_map = {
         0: "ACCEPTED",
@@ -129,20 +129,20 @@ def send_config_change():
             sequence=sequence,
             operation=SECURE_COMMAND_SET_REMOTEID_CONFIG,
             sig_length=len(sig),
-            data=req+sig,
-            timeout=args.timeout),
+            data=req+sig),
         args.target_node,
-        config_change_response)
+        config_change_response,
+        timeout=args.timeout)
     sequence = (sequence+1) % (1<<32)
     print("Requested config change")
     
 def update():
     now = time.time()
     global last_session_key_req, last_set_config, session_key
-    if session_key is None and now - last_session_key_req > 2.0:
+    if session_key is None and now - last_session_key_req > args.timeout+1:
         last_session_key_req = now
         request_session_key()
-    if session_key is not None and now - last_set_config > 2.0:
+    if session_key is not None and now - last_set_config > args.timeout+1:
         last_set_config = now
         send_config_change()
 
