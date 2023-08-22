@@ -108,5 +108,6 @@ private:
 
 // bits for OPTIONS parameter
 #define OPTIONS_FORCE_ARM_OK 1U<<0
+#define OPTIONS_DONT_SAVE_BASIC_ID_TO_PARAMETERS 1U<<1
 
 extern Parameters g;
