@@ -192,7 +192,7 @@ static void set_data(Transport &t)
       don't persist the BasicID2 if provided via mavlink to allow
       users to change BasicID2 on different days
      */
-    if (!g.have_basic_id_info() && !OPTIONS_DONT_SAVE_BASIC_ID_TO_PARAMETERS) {
+    if (!g.have_basic_id_info() && !(g.options & OPTIONS_DONT_SAVE_BASIC_ID_TO_PARAMETERS)) {
         if (basic_id.ua_type != 0 &&
             basic_id.id_type != 0 &&
             strnlen((const char *)basic_id.uas_id, 20) > 0) {
@@ -205,7 +205,7 @@ static void set_data(Transport &t)
     }
 
     // BasicID
-    if (g.have_basic_id_info()) {
+    if (g.have_basic_id_info() && !(g.options & OPTIONS_DONT_SAVE_BASIC_ID_TO_PARAMETERS)) {
         // from parameters
         UAS_data.BasicID[0].UAType = (ODID_uatype_t)g.ua_type;
         UAS_data.BasicID[0].IDType = (ODID_idtype_t)g.id_type;
@@ -219,7 +219,7 @@ static void set_data(Transport &t)
             UAS_data.BasicID[1].IDType = (ODID_idtype_t)g.id_type_2;
             ODID_COPY_STR(UAS_data.BasicID[1].UASID, g.uas_id_2);
             UAS_data.BasicIDValid[1] = 1;
-        } else if (strcmp((const char*)g.uas_id, (const char*)basic_id.uas_id) != 0 && !OPTIONS_DONT_SAVE_BASIC_ID_TO_PARAMETERS) {
+        } else if (strcmp((const char*)g.uas_id, (const char*)basic_id.uas_id) != 0 && !(g.options & OPTIONS_DONT_SAVE_BASIC_ID_TO_PARAMETERS)) {
             /*
               no BasicID 2 in the parameters, if one is provided on MAVLink
               and it is a different uas_id from the basicID1 then use it as BasicID2
@@ -235,7 +235,7 @@ static void set_data(Transport &t)
         }
     }
 
-    if (OPTIONS_DONT_SAVE_BASIC_ID_TO_PARAMETERS) {
+    if (g.options & OPTIONS_DONT_SAVE_BASIC_ID_TO_PARAMETERS) {
         if (basic_id.ua_type != 0 &&
         basic_id.id_type != 0 &&
         strnlen((const char *)basic_id.uas_id, 20) > 0) {
