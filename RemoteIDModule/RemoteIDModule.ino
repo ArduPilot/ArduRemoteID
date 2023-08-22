@@ -219,7 +219,7 @@ static void set_data(Transport &t)
             UAS_data.BasicID[1].IDType = (ODID_idtype_t)g.id_type_2;
             ODID_COPY_STR(UAS_data.BasicID[1].UASID, g.uas_id_2);
             UAS_data.BasicIDValid[1] = 1;
-        } else if (strcmp((const char*)g.uas_id, (const char*)basic_id.uas_id) != 0 && !(g.options & OPTIONS_DONT_SAVE_BASIC_ID_TO_PARAMETERS)) {
+        } else if (strcmp((const char*)g.uas_id, (const char*)basic_id.uas_id) != 0) {
             /*
               no BasicID 2 in the parameters, if one is provided on MAVLink
               and it is a different uas_id from the basicID1 then use it as BasicID2
