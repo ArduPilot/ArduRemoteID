@@ -131,52 +131,56 @@ void setup()
 /*
   check parsing of UAS_data, this checks ranges of values to ensure we
   will produce a valid pack
+  returns nullptr on no error, or a string error
  */
 static const char *check_parse(void)
 {
-    static char return_string[50]; //if all errors would occur in this function, it will fit in 50 chars that is also the max for the arm status message
-    strcpy (return_string, "bad ");
+    String ret = "";
 
     {
         ODID_Location_encoded encoded {};
         if (encodeLocationMessage(&encoded, &UAS_data.Location) != ODID_SUCCESS) {
-            strcat(return_string, "LOC ");
+            ret += "LOC ";
         }
     }
     {
         ODID_System_encoded encoded {};
         if (encodeSystemMessage(&encoded, &UAS_data.System) != ODID_SUCCESS) {
-            strcat(return_string, "SYS ");
+            ret += "SYS ";
         }
     }
     {
         ODID_BasicID_encoded encoded {};
         if (UAS_data.BasicIDValid[0] == 1) {
             if (encodeBasicIDMessage(&encoded, &UAS_data.BasicID[0]) != ODID_SUCCESS) {
-                strcat(return_string, "ID_1 ");
+                ret += "ID_1 ";
             }
         }
         memset(&encoded, 0, sizeof(encoded));
         if (UAS_data.BasicIDValid[1] == 1) {
             if (encodeBasicIDMessage(&encoded, &UAS_data.BasicID[1]) != ODID_SUCCESS) {
-                strcat(return_string, "ID_2 ");
+                ret += "ID_2 ";
             }
         }
     }
     {
         ODID_SelfID_encoded encoded {};
         if (encodeSelfIDMessage(&encoded, &UAS_data.SelfID) != ODID_SUCCESS) {
-            strcat(return_string, "SELF_ID ");
+            ret += "SELF_ID ";
         }
     }
     {
         ODID_OperatorID_encoded encoded {};
         if (encodeOperatorIDMessage(&encoded, &UAS_data.OperatorID) != ODID_SUCCESS) {
-            strcat(return_string, "OP_ID ");
+            ret += "OP_ID ";
         }
     }
-    if (strlen(return_string) > 4) { //only return  error messag if one or more encoding functions failed
-        strcat(return_string, "data ");
+    if (ret.length() > 0) {
+        // if all errors would occur in this function, it will fit in
+        // 50 chars that is also the max for the arm status message
+        static char return_string[50];
+        memset(return_string, 0, sizeof(return_string));
+        snprintf(return_string, sizeof(return_string-1), "bad %s data", ret.c_str());
         return return_string;
     }
     return nullptr;

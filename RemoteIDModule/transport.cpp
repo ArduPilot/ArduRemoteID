@@ -45,64 +45,49 @@ uint8_t Transport::arm_status_check(const char *&reason)
         return status;
     }
 
-    char return_string[200]; //make it bigger to accomodate all possible errors
-    memset(return_string, 0, 200);
-    strcpy (return_string, "missing ");
-
-    static char return_string_full[50];
-    memset(return_string_full, 0, 50);
+    String ret = "";
 
     if (last_location_ms == 0 || now_ms - last_location_ms > max_age_location_ms) {
-        strcat(return_string, "LOC ");
+        ret += "LOC ";
     }
     if (!g.have_basic_id_info()) {
         // if there is no basic ID data stored in the parameters give warning. If basic ID data are streamed to RID device,
         // it will store them in the parameters
-        strcat(return_string, "ID ");
+        ret += "ID ";
     }
 
     if (last_self_id_ms == 0  || now_ms - last_self_id_ms > max_age_other_ms) {
-        strcat(return_string, "SELF_ID ");
+        ret += "SELF_ID ";
     }
 
     if (last_operator_id_ms == 0 || now_ms - last_operator_id_ms > max_age_other_ms) {
-        strcat(return_string, "OP_ID ");
+        ret += "OP_ID ";
     }
 
     if (last_system_ms == 0 || now_ms - last_system_ms > max_age_location_ms) {
         // we use location age limit for system as the operator location needs to come in as fast
         // as the vehicle location for FAA standard
-        strcat(return_string, "SYS ");
+        ret += "SYS ";
     }
 
     if (location.latitude == 0 && location.longitude == 0) {
-        if (strcmp(return_string ,"missing ") == 0) {
-            //if the return string only contains the word missing, there is no error.
-            strcpy(return_string, "zero LOC ");
-        }
-        else {
-             strcat(return_string, "zero LOC ");
-        }
+        ret += "LOC ";
     }
 
     if (system.operator_latitude == 0 && system.operator_longitude == 0) {
-        if (strcmp(return_string ,"missing ") == 0) {
-            //if the return string only contains the word missing, there is no error.
-            strcpy(return_string, "zero OP_LOC ");
-        }
-        else {
-             strcat(return_string, "zero OP_LOC ");
-        }
+        ret += "OP_LOC ";
     }
 
-    if (return_string == nullptr && reason == nullptr) {
+    if (ret.length() == 0 && reason == nullptr) {
         status = MAV_ODID_ARM_STATUS_GOOD_TO_ARM;
     } else {
-        if (reason!=nullptr) {
-            strncpy(return_string_full, reason, 49);
+        static char return_string[200];
+        memset(return_string, 0, sizeof(return_string));
+        if (reason != nullptr) {
+            strlcpy(return_string, reason, sizeof(return_string));
         }
-        strncat(return_string_full, return_string, 49 - strlen(return_string_full));
-        reason = return_string_full;
+        strlcat(return_string, ret.c_str(), sizeof(return_string));
+        reason = return_string;
     }
 
     return status;
