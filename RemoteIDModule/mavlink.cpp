@@ -242,7 +242,7 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
             return;
         }
         p->get_as_float(value);
-        if (g.lock_level != 0 &&
+        if (g.lock_level > 0 &&
             (strcmp(p->name, "LOCK_LEVEL") != 0 ||
              uint8_t(pkt.param_value) <= uint8_t(value))) {
             // only param set allowed is to increase lock level

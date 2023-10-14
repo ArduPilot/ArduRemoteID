@@ -597,7 +597,7 @@ void DroneCAN::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transf
     }
     if (vp != nullptr && req.name.len != 0 &&
         req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_EMPTY) {
-        if (g.lock_level != 0) {
+        if (g.lock_level > 0) {
             can_printf("Parameters locked");
         } else {
             // param set
