@@ -33,8 +33,14 @@
 CANDriver::CANDriver()
 {}
 
-void CANDriver::init(uint32_t bitrate)
+static const twai_timing_config_t t_config = TWAI_TIMING_CONFIG_1MBITS();
+static twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
+
+void CANDriver::init(uint32_t bitrate, uint32_t acceptance_code, uint32_t acceptance_mask)
 {
+    f_config.acceptance_code = acceptance_code;
+    f_config.acceptance_mask = acceptance_mask;
+    f_config.single_filter = true;
     init_bus(bitrate);
 }
 
@@ -44,9 +50,6 @@ static const twai_general_config_t g_config =                      {.mode = TWAI
                                                                     .alerts_enabled = TWAI_ALERT_NONE,  .clkout_divider = 0,        \
                                                                     .intr_flags = ESP_INTR_FLAG_LEVEL2
                                                                    };
-
-static const twai_timing_config_t t_config = TWAI_TIMING_CONFIG_1MBITS();
-static const twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
 
 void CANDriver::init_once(bool enable_irq)
 {

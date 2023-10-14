@@ -4,7 +4,7 @@ struct CANFrame;
 class CANDriver {
 public:
     CANDriver();
-    void init(uint32_t bitrate);
+    void init(uint32_t bitrate, uint32_t acceptance_code, uint32_t acceptance_mask);
 
     bool send(const CANFrame &frame);
     bool receive(CANFrame &out_frame);

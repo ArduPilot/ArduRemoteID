@@ -52,7 +52,25 @@ void DroneCAN::init(void)
     gpio_reset_pin(GPIO_NUM_20);
 #endif
 
-    can_driver.init(1000000);
+    /*
+      the ESP32 has a very inefficient CAN (TWAI) stack. If we let it
+      receive all message types then when the bus is busy it will
+      spend all its time in processRx(). To cope we need to use
+      acceptance filters so we don't see most traffic. Unfortunately
+      the ESP32 has a very rudimentary acceptance filter system which
+      cannot be setup to block the high rate messages (such as ESC
+      commands) while still allowing all of the RemoteID messages we
+      need. The best we can do is use the message priority. The high
+      rate messages all have a low valued priority number (which means
+      a high priority). So by setting a single bit acceptance code in
+      the top bit of the 3 bit priority field we only see messages
+      that have a priority number of 16 or higher (which means
+      CANARD_TRANSFER_PRIORITY_MEDIUM or lower priority)
+    */
+    const uint32_t acceptance_code = 0x10000000U<<3;
+    const uint32_t acceptance_mask = 0x0FFFFFFFU<<3;
+
+    can_driver.init(1000000, acceptance_code, acceptance_mask);
 
     canardInit(&canard, (uint8_t *)canard_memory_pool, sizeof(canard_memory_pool),
                onTransferReceived_trampoline, shouldAcceptTransfer_trampoline, NULL);
