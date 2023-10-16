@@ -180,7 +180,7 @@ static const char *check_parse(void)
         // 50 chars that is also the max for the arm status message
         static char return_string[50];
         memset(return_string, 0, sizeof(return_string));
-        snprintf(return_string, sizeof(return_string-1), "bad %s data", ret.c_str());
+        snprintf(return_string, sizeof(return_string)-1, "bad %s data", ret.c_str());
         return return_string;
     }
     return nullptr;
