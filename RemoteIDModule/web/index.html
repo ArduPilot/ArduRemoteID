@@ -100,11 +100,12 @@
   </div>
   <h2>Firmware Update</h2>
 
+  <div id='progress'>upload progress: 0%</div>
   <form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>
     <input type='file' name='update'>
     <input type='submit' value='Update'>
   </form>
-  <div id='progress'>upload progress: 0%</div>
+  <p>
 
   <script>
     $('form').submit(function(e) {
