@@ -46,7 +46,7 @@ void CANDriver::init(uint32_t bitrate, uint32_t acceptance_code, uint32_t accept
 
 static const twai_general_config_t g_config =                      {.mode = TWAI_MODE_NORMAL, .tx_io = PIN_CAN_TX, .rx_io = PIN_CAN_RX, \
                                                                     .clkout_io = TWAI_IO_UNUSED, .bus_off_io = TWAI_IO_UNUSED,      \
-                                                                    .tx_queue_len = 5, .rx_queue_len = 5,                           \
+                                                                    .tx_queue_len = 5, .rx_queue_len = 50,                           \
                                                                     .alerts_enabled = TWAI_ALERT_NONE,  .clkout_divider = 0,        \
                                                                     .intr_flags = ESP_INTR_FLAG_LEVEL2
                                                                    };

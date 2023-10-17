@@ -267,7 +267,8 @@ void DroneCAN::processTx(void)
 void DroneCAN::processRx(void)
 {
     CANFrame rxmsg;
-    while (can_driver.receive(rxmsg)) {
+    uint8_t count = 60;
+    while (count-- && can_driver.receive(rxmsg)) {
         CanardCANFrame rx_frame {};
         uint64_t timestamp = micros64();
         rx_frame.data_len = CANFrame::dlcToDataLength(rxmsg.dlc);
