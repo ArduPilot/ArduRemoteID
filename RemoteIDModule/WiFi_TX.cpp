@@ -15,7 +15,6 @@ bool WiFi_TX::init(void)
     if (initialised) {
         return true;
     }
-    initialised = true;
 
     //use a local MAC address to avoid tracking transponders based on their MAC address
     uint8_t mac_addr[6];
@@ -25,12 +24,18 @@ bool WiFi_TX::init(void)
     mac_addr[0] &= 0xFE;  // unset MAC multicast bit
 
     //set MAC address
-    esp_base_mac_addr_set(mac_addr);
+    if (esp_base_mac_addr_set(mac_addr) != ESP_OK) {
+        return false;
+    }
 
     if (g.webserver_enable == 0) {
-        WiFi.softAP(g.wifi_ssid, g.wifi_password, g.wifi_channel, false, 0); //make it visible and allow no connection
+        if (!WiFi.softAP(g.wifi_ssid, g.wifi_password, g.wifi_channel, false, 0) /* make it visible and allow no connection */ ) { 
+            return false;
+        }
     } else {
-        WiFi.softAP(g.wifi_ssid, g.wifi_password, g.wifi_channel, false, 1); //make it visible and allow only 1 connection
+        if (!WiFi.softAP(g.wifi_ssid, g.wifi_password, g.wifi_channel, false, 1) /* make it visible and allow only 1 connection */ ) {
+            return false;
+        }
     }
 
     if (esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20) != ESP_OK) {
@@ -39,14 +44,20 @@ bool WiFi_TX::init(void)
 
     memcpy(WiFi_mac_addr,mac_addr,6); //use generated random MAC address for OpenDroneID messages
 
-    esp_wifi_set_max_tx_power(dBm_to_tx_power(g.wifi_power));
+    if (esp_wifi_set_max_tx_power(dBm_to_tx_power(g.wifi_power)) != ESP_OK) {
+        return false;
+    }
+
+    initialised = true;
 
     return true;
 }
 
 bool WiFi_TX::transmit_nan(ODID_UAS_Data &UAS_data)
 {
-    init();
+    if (!init()) {
+        return false;
+    }
 
     uint8_t buffer[1024] {};
 
@@ -72,7 +83,9 @@ bool WiFi_TX::transmit_nan(ODID_UAS_Data &UAS_data)
 //update the payload of the beacon frames in this function
 bool WiFi_TX::transmit_beacon(ODID_UAS_Data &UAS_data)
 {
-    init();
+    if (!init()) {
+        return false;
+    }
 
     uint8_t buffer[1024] {};
 

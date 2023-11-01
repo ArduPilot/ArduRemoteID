@@ -326,6 +326,7 @@ static void set_data(Transport &t)
 
     const char *reason = check_parse();
     t.arm_status_check(reason);
+    if (reason == nullptr && !pfst_check_ok) { reason = "pfst failed"; }
     t.set_parse_fail(reason);
 
     arm_check_ok = (reason==nullptr);
@@ -334,7 +335,7 @@ static void set_data(Transport &t)
         arm_check_ok = true;
     }
 
-    led.set_state(pfst_check_ok && arm_check_ok? Led::LedState::ARM_OK : Led::LedState::ARM_FAIL);
+    led.set_state(arm_check_ok? Led::LedState::ARM_OK : Led::LedState::ARM_FAIL);
 
     uint32_t now_ms = millis();
     uint32_t location_age_ms = now_ms - t.get_last_location_ms();
@@ -416,30 +417,46 @@ void loop()
     static uint32_t last_update_wifi_nan_ms;
     if (g.wifi_nan_rate > 0 &&
         now_ms - last_update_wifi_nan_ms > 1000/g.wifi_nan_rate) {
-        last_update_wifi_nan_ms = now_ms;
-        wifi.transmit_nan(UAS_data);
+        if (wifi.transmit_nan(UAS_data)) {
+            last_update_wifi_nan_ms = now_ms;
+        }
     }
 
     static uint32_t last_update_wifi_beacon_ms;
     if (g.wifi_beacon_rate > 0 &&
         now_ms - last_update_wifi_beacon_ms > 1000/g.wifi_beacon_rate) {
-        last_update_wifi_beacon_ms = now_ms;
-        wifi.transmit_beacon(UAS_data);
+        if(wifi.transmit_beacon(UAS_data)) {
+            last_update_wifi_beacon_ms = now_ms;
+        }
     }
 
     static uint32_t last_update_bt5_ms;
     if (g.bt5_rate > 0 &&
         now_ms - last_update_bt5_ms > 1000/g.bt5_rate) {
-        last_update_bt5_ms = now_ms;
-        ble.transmit_longrange(UAS_data);
+        if(ble.transmit_longrange(UAS_data)) {
+            last_update_bt5_ms = now_ms;
+        }
     }
 
     static uint32_t last_update_bt4_ms;
     int bt4_states = UAS_data.BasicIDValid[1] ? 7 : 6;
     if (g.bt4_rate > 0 &&
         now_ms - last_update_bt4_ms > (1000.0f/bt4_states)/g.bt4_rate) {
-        last_update_bt4_ms = now_ms;
-        ble.transmit_legacy(UAS_data);
+        if(ble.transmit_legacy(UAS_data)) {
+            last_update_bt4_ms = now_ms;
+        }
+    }
+
+    if (now_ms - last_update_wifi_nan_ms > 5000.0 &&
+        now_ms - last_update_wifi_beacon_ms > 5000.0 &&
+        (now_ms - last_update_bt5_ms > 5000.0 ||
+        now_ms - last_update_bt4_ms > 5000.0)) {
+        // transmitter failure
+        pfst_check_ok = false;
+    
+    } else {
+        // transmitter is healthy if wifi nan or wifi beacon or both Bluetooth transmissions work successfully
+        pfst_check_ok = true;
     }
 
     // sleep for a bit for power saving
