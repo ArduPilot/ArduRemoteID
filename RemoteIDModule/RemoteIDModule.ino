@@ -288,16 +288,17 @@ static void set_data(Transport &t)
 
     // System
     if (system.timestamp != 0) {
-        UAS_data.System.OperatorLocationType = (ODID_operator_location_type_t)system.operator_location_type;
-        UAS_data.System.ClassificationType = (ODID_classification_type_t)system.classification_type;
+        UAS_data.System.OperatorLocationType = (ODID_operator_location_type_t)g.operator_location_type;
+        UAS_data.System.ClassificationType = (ODID_classification_type_t)g.classification_type;
         UAS_data.System.OperatorLatitude = system.operator_latitude * 1.0e-7;
         UAS_data.System.OperatorLongitude = system.operator_longitude * 1.0e-7;
-        UAS_data.System.AreaCount = system.area_count;
-        UAS_data.System.AreaRadius = system.area_radius;
-        UAS_data.System.AreaCeiling = system.area_ceiling;
-        UAS_data.System.AreaFloor = system.area_floor;
-        UAS_data.System.CategoryEU = (ODID_category_EU_t)system.category_eu;
-        UAS_data.System.ClassEU = (ODID_class_EU_t)system.class_eu;
+
+        UAS_data.System.AreaCount = g.area_count;
+        UAS_data.System.AreaRadius = g.area_radius;
+        UAS_data.System.AreaCeiling = g.area_ceiling;
+        UAS_data.System.AreaFloor = g.area_floor;
+        UAS_data.System.CategoryEU = (ODID_category_EU_t)g.category_eu;
+        UAS_data.System.ClassEU = (ODID_class_EU_t)g.class_eu;
         UAS_data.System.OperatorAltitudeGeo = system.operator_altitude_geo;
         UAS_data.System.Timestamp = system.timestamp;
         UAS_data.SystemValid = 1;
