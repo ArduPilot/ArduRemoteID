@@ -192,6 +192,44 @@ void MAVLinkSerial::process_packet(mavlink_status_t &status, mavlink_message_t &
             //only update the timestamp if we receive information with a different timestamp
             last_system_ms = millis();
             last_system_timestamp = system.timestamp;
+
+            //save values to parameters if they are different + check range
+            if (system.class_eu != g.class_eu) {
+                if (system.class_eu <= 3) {
+                    g.class_eu = system.class_eu;
+                }
+            }
+            if (system.category_eu != g.category_eu) {
+                if (system.category_eu <= 7) {
+                    g.category_eu = system.category_eu;
+                }
+            }
+            if (system.classification_type != g.classification_type) {
+                if (system.classification_type <= 1) {
+                    g.classification_type = system.classification_type;
+                }
+            }
+            if (system.operator_location_type != g.operator_location_type) {
+                if (system.operator_location_type <= 2) {
+                    g.operator_location_type = system.operator_location_type;
+                }
+            }
+            if (system.area_count != g.area_count) {
+                if (system.area_count <= 65000) {
+                    g.area_count = system.area_count;
+                }
+            }
+            if (system.area_radius != g.area_radius) {
+                if (system.area_radius <= 250){
+                    g.area_radius = system.area_radius;
+                }
+            }
+            if (system.area_ceiling != g.area_ceiling) {
+                g.area_ceiling = system.area_ceiling;
+            }
+            if (system.area_floor != g.area_floor) {
+                g.area_floor = system.area_floor;
+            }
         }
         break;
     }
