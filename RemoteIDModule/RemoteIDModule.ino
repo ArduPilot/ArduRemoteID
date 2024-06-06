@@ -24,7 +24,9 @@
 #include <esp_ota_ops.h>
 #include "efuse.h"
 #include "led.h"
+#include "Serial_Comms.h"
 
+#include <ArduinoNmeaParser.h>
 
 #if AP_DRONECAN_ENABLED
 static DroneCAN dronecan;
@@ -51,6 +53,33 @@ static WebInterface webif;
 
 static bool arm_check_ok = false; // goes true for LED arm check status
 static bool pfst_check_ok = false;
+
+char incomingByte = 0;
+String str;
+
+const byte numChars = 100;
+char receivedChars[numChars];
+char transmitChars[numChars];
+
+boolean newData = false;
+
+static boolean recvInProgress = false;
+static byte ndx = 0;
+char startMarker = '$';
+char endMarker = '\r';
+char rc;
+
+char* ext_NMEA_data;
+char* ext_NMEA_data_sep; 
+char* NMEA_Lat; 
+char* NMEA_Lon;
+char NMEA_NS, NMEA_EW;
+double ext_gps_lat;
+double ext_gps_lon;
+float ext_gps_direction, ext_gps_speed_H, ext_gps_alt_geo, ext_gps_time;
+
+//ArduinoNmeaParser parser(onRmcUpdate, onGgaUpdate);
+
 
 /*
   setup serial ports
@@ -123,6 +152,102 @@ void setup()
     esp_log_level_set("*", ESP_LOG_DEBUG);
 
     esp_ota_mark_app_valid_cancel_rollback();
+}
+
+float GpsToDecimalDegrees(const char* nmeaPos, char quadrant)
+{
+  float v= 0;
+  if(strlen(nmeaPos)>5)
+  {
+    char integerPart[3+1];
+    int digitCount= (nmeaPos[4]=='.' ? 2 : 3);
+    memcpy(integerPart, nmeaPos, digitCount);
+    integerPart[digitCount]= 0;
+    nmeaPos+= digitCount;
+    v= atoi(integerPart) + atof(nmeaPos)/60.;
+    if(quadrant=='W' || quadrant=='S')
+      v= -v;
+  }
+  return v;
+}
+
+void onRmcUpdate(nmea::RmcData const);
+void onGgaUpdate(nmea::GgaData const);
+
+ArduinoNmeaParser parser(onRmcUpdate, onGgaUpdate);
+
+void onRmcUpdate(nmea::RmcData const rmc)
+{
+  Serial.print("RMC ");
+
+  if      (rmc.source == nmea::RmcSource::GPS)     Serial.print("GPS");
+  else if (rmc.source == nmea::RmcSource::GLONASS) Serial.print("GLONASS");
+  else if (rmc.source == nmea::RmcSource::Galileo) Serial.print("Galileo");
+  else if (rmc.source == nmea::RmcSource::GNSS)    Serial.print("GNSS");
+  else if (rmc.source == nmea::RmcSource::BDS)     Serial.print("BDS");
+
+  Serial.print(" ");
+  Serial.print(rmc.time_utc.hour);
+  Serial.print(":");
+  Serial.print(rmc.time_utc.minute);
+  Serial.print(":");
+  Serial.print(rmc.time_utc.second);
+  Serial.print(".");
+  Serial.print(rmc.time_utc.microsecond);
+
+  if (rmc.is_valid)
+  {
+    Serial.print(" : LON ");
+    Serial.print(rmc.longitude);
+    Serial.print(" ° | LAT ");
+    Serial.print(rmc.latitude);
+    Serial.print(" ° | VEL ");
+    Serial.print(rmc.speed);
+    Serial.print(" m/s | HEADING ");
+    Serial.print(rmc.course);
+    Serial.print(" °");
+  }
+
+  Serial.println();
+}
+
+void onGgaUpdate(nmea::GgaData const gga)
+{
+  Serial.print("GGA ");
+
+  if      (gga.source == nmea::GgaSource::GPS)     Serial.print("GPS");
+  else if (gga.source == nmea::GgaSource::GLONASS) Serial.print("GLONASS");
+  else if (gga.source == nmea::GgaSource::Galileo) Serial.print("Galileo");
+  else if (gga.source == nmea::GgaSource::GNSS)    Serial.print("GNSS");
+  else if (gga.source == nmea::GgaSource::BDS)     Serial.print("BDS");
+
+  Serial.print(" ");
+  Serial.print(gga.time_utc.hour);
+  Serial.print(":");
+  Serial.print(gga.time_utc.minute);
+  Serial.print(":");
+  Serial.print(gga.time_utc.second);
+  Serial.print(".");
+  Serial.print(gga.time_utc.microsecond);
+
+  if (gga.fix_quality != nmea::FixQuality::Invalid)
+  {
+    Serial.print(" : LON ");
+    Serial.print(gga.longitude);
+    Serial.print(" ° | LAT ");
+    Serial.print(gga.latitude);
+    Serial.print(" ° | Num Sat. ");
+    Serial.print(gga.num_satellites);
+    Serial.print(" | HDOP =  ");
+    Serial.print(gga.hdop);
+    Serial.print(" m | Altitude ");
+    Serial.print(gga.altitude);
+    Serial.print(" m | Geoidal Separation ");
+    Serial.print(gga.geoidal_separation);
+    Serial.print(" m");
+  }
+
+  Serial.println();
 }
 
 #define IMIN(x,y) ((x)<(y)?(x):(y))
@@ -323,6 +448,12 @@ static void set_data(Transport &t)
         UAS_data.Location.TimeStamp = location.timestamp;
         UAS_data.LocationValid = 1;
     }
+	//Serial.print(ext_gps_lat);
+        UAS_data.Location.Latitude = ext_gps_lat;
+	UAS_data.Location.Longitude = ext_gps_lon;
+	//UAS_data.Location.Direction = ext_gps_direction;
+	UAS_data.Location.SpeedHorizontal = ext_gps_speed_H;
+	UAS_data.LocationValid = 1;
 
     const char *reason = check_parse();
     t.arm_status_check(reason);
@@ -441,7 +572,99 @@ void loop()
         last_update_bt4_ms = now_ms;
         ble.transmit_legacy(UAS_data);
     }
+/*incomingByte = Serial.read();
+if (Serial.available() > 0) {
+	str = Serial.readStringUntil(13);
+	str.trim();
+	if(str.startsWith("$GPR")){
+		Serial.println(str);
+	}*/
+	//parser.encode((char)Serial.read());
+	//onGgaUpdate();
+	//void onRmcUpdate(nmea::RmcData const rmc)
+	//	{
+	//		Serial.print(nmea::RmcSource);
+	//	}
+	//}
+
+	while (Serial.available() > 0 ) {
+        	rc = Serial.read();
+	        if (recvInProgress == true) {
+			if (rc != endMarker) {
+				receivedChars[ndx] = rc;
+				ndx++;
+				if (ndx >= numChars) {
+					ndx = numChars - 1;
+				}
+			} else {
+				receivedChars[ndx] = '\0'; // terminate the string
+				recvInProgress = false;
+				ndx = 0;
+				newData = true;
+				//Serial.print('.');
+				//break;
+			}
+        	} else if (rc == startMarker) {
+			recvInProgress = true;
+		}
+	//}
+	if (newData == true) {
+		if(receivedChars[4] == 'C'){
+			strcpy(transmitChars, receivedChars);
+			int N = 0;
+			//ext_NMEA_data = &transmitChars[0];	
+			ext_NMEA_data = strtok(transmitChars, ",");//old method 
+			//ext_NMEA_data = strsep(transmitChars, ",");
+			while (ext_NMEA_data != NULL) { //Old method
+			//while((ext_NMEA_data_sep = strsep(transmitChars, ",")) != NULL) {
+			if(N == 1){
+                                //ext_gps_time = *ext_NMEA_data_sep;
+                                //Serial.println(ext_gps_time);
+				//Serial.print(ext_NMEA_data_sep);
+                                }				
+			if(N == 3){
+				NMEA_Lat = ext_NMEA_data;		
+				//Serial.println(NMEA_Lat);
+				}
+			else if (N == 4){
+				NMEA_NS = *ext_NMEA_data;
+				//Serial.println(NMEA_NS);
+			}
+
+ 			else if (N == 5){
+                               	NMEA_Lon = ext_NMEA_data;
+                                //Serial.println(NMEA_Lon);
+                        }
+                   	else if (N == 6){
+                                NMEA_EW = *ext_NMEA_data;
+                                //Serial.println(NMEA_EW);
+                        }
+			else if (N == 7){
+                                ext_gps_speed_H = atof(ext_NMEA_data);
+                                Serial.println(ext_gps_speed_H);
+                        }
+                        else if (N == 8){
+                                ext_gps_direction = atof(ext_NMEA_data);
+                                Serial.println(ext_gps_direction);
+                        }
+			//ext_NMEA_data = strtok(NULL, ",");
+			N++;
+			}
+		//Serial.print(GpsToDecimalDegrees(NMEA_Lat, NMEA_NS), 5);
+		ext_gps_lat = GpsToDecimalDegrees(NMEA_Lat, NMEA_NS);
+		ext_gps_lon = GpsToDecimalDegrees(NMEA_Lon, NMEA_EW);	
+		}
+		newData = false;
+	}
+	
+}	
+/*
+struct ODID_Location_data *LocationPointer;
+LocationPointer = &UAS_data.Location;
+printLocation_data(LocationPointer);
+*/
+
 
     // sleep for a bit for power saving
-    delay(1);
+    //delay(1);
 }

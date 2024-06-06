@@ -15,7 +15,7 @@ public:
     int8_t lock_level;
     uint8_t can_node;
     uint8_t bcast_powerup;
-    uint32_t baudrate = 57600;
+    uint32_t baudrate = 9600;
     uint8_t ua_type;
     uint8_t id_type;
     char uas_id[21] = "ABCD123456789";
