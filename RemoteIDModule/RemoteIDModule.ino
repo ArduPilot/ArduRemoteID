@@ -77,7 +77,6 @@ char NMEA_NS, NMEA_EW;
 double ext_gps_lat;
 double ext_gps_lon;
 float ext_gps_direction, ext_gps_speed_H, ext_gps_alt_geo, ext_gps_time;
-
 //ArduinoNmeaParser parser(onRmcUpdate, onGgaUpdate);
 
 
@@ -612,57 +611,60 @@ if (Serial.available() > 0) {
 		if(receivedChars[4] == 'C'){
 			strcpy(transmitChars, receivedChars);
 			int N = 0;
-			//ext_NMEA_data = &transmitChars[0];	
-			ext_NMEA_data = strtok(transmitChars, ",");//old method 
+			ext_NMEA_data = strdup(transmitChars);	
+			//ext_NMEA_data = strtok(transmitChars, ",");//old method 
 			//ext_NMEA_data = strsep(transmitChars, ",");
-			while (ext_NMEA_data != NULL) { //Old method
-			//while((ext_NMEA_data_sep = strsep(transmitChars, ",")) != NULL) {
+			//while (ext_NMEA_data != NULL) { //Old method
+			while((ext_NMEA_data_sep = strsep(&ext_NMEA_data, ",")) != NULL) {
 			if(N == 1){
-                                //ext_gps_time = *ext_NMEA_data_sep;
+                                ext_gps_time = atof(ext_NMEA_data_sep);
                                 //Serial.println(ext_gps_time);
 				//Serial.print(ext_NMEA_data_sep);
                                 }				
 			if(N == 3){
-				NMEA_Lat = ext_NMEA_data;		
+				NMEA_Lat = ext_NMEA_data_sep;		
 				//Serial.println(NMEA_Lat);
 				}
 			else if (N == 4){
-				NMEA_NS = *ext_NMEA_data;
+				NMEA_NS = *ext_NMEA_data_sep;
 				//Serial.println(NMEA_NS);
 			}
 
  			else if (N == 5){
-                               	NMEA_Lon = ext_NMEA_data;
+                               	NMEA_Lon = ext_NMEA_data_sep;
                                 //Serial.println(NMEA_Lon);
                         }
                    	else if (N == 6){
-                                NMEA_EW = *ext_NMEA_data;
+                                NMEA_EW = *ext_NMEA_data_sep;
                                 //Serial.println(NMEA_EW);
                         }
 			else if (N == 7){
-                                ext_gps_speed_H = atof(ext_NMEA_data);
-                                Serial.println(ext_gps_speed_H);
+                                ext_gps_speed_H = atof(ext_NMEA_data_sep);
+                                //Serial.println(ext_gps_speed_H);
                         }
                         else if (N == 8){
-                                ext_gps_direction = atof(ext_NMEA_data);
-                                Serial.println(ext_gps_direction);
+                                ext_gps_direction = atof(ext_NMEA_data_sep);
+                                //Serial.println(ext_gps_direction);
                         }
 			//ext_NMEA_data = strtok(NULL, ",");
 			N++;
 			}
 		//Serial.print(GpsToDecimalDegrees(NMEA_Lat, NMEA_NS), 5);
-		ext_gps_lat = GpsToDecimalDegrees(NMEA_Lat, NMEA_NS);
-		ext_gps_lon = GpsToDecimalDegrees(NMEA_Lon, NMEA_EW);	
+		ext_gps_lat = GpsToDecimalDegrees(NMEA_Lat, NMEA_NS); //needed
+		ext_gps_lon = GpsToDecimalDegrees(NMEA_Lon, NMEA_EW); //needed	
 		}
 		newData = false;
 	}
 	
 }	
-/*
-struct ODID_Location_data *LocationPointer;
-LocationPointer = &UAS_data.Location;
-printLocation_data(LocationPointer);
-*/
+
+if(Serial1.read() == 2){
+Send_RemoteID_Serial(UAS_data);
+}
+//struct ODID_Location_data *LocationPointer;
+//LocationPointer = &UAS_data.Location;
+//printLocation_data(LocationPointer);
+
 
 
     // sleep for a bit for power saving
