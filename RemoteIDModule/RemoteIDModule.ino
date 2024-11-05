@@ -277,6 +277,23 @@ static void set_data(Transport &t)
         UAS_data.OperatorID.OperatorIdType = (ODID_operatorIdType_t)operator_id.operator_id_type;
         ODID_COPY_STR(UAS_data.OperatorID.OperatorId, operator_id.operator_id);
         UAS_data.OperatorIDValid = 1;
+
+        //copy to parameters if is not stored yet.
+        if (strcmp((const char*)g.operator_id, (const char*)operator_id.operator_id) != 0) {
+            g.set_by_name_uint8("OPERATOR_ID_TYPE", operator_id.operator_id_type);
+            char operator_id_tmp[ODID_ID_SIZE + 1] {};
+            ODID_COPY_STR(operator_id_tmp, operator_id.operator_id);
+            g.set_by_name_string("OPERATOR_ID", operator_id_tmp);
+        }
+    }
+    else
+    {
+        if (g.have_operator_id_info()) {
+            // from parameters
+            UAS_data.OperatorID.OperatorIdType  = (ODID_operatorIdType_t)g.operator_id_type;
+            ODID_COPY_STR(UAS_data.OperatorID.OperatorId, g.operator_id);
+            UAS_data.OperatorIDValid = 1;
+        }
     }
 
     // SelfID

@@ -18,6 +18,8 @@ const Parameters::Param Parameters::params[] = {
     { "UAS_TYPE_2",        Parameters::ParamType::UINT8,  (const void*)&g.ua_type_2,          0, 0, 15 },
     { "UAS_ID_TYPE_2",     Parameters::ParamType::UINT8,  (const void*)&g.id_type_2,          0, 0, 4 },
     { "UAS_ID_2",          Parameters::ParamType::CHAR20, (const void*)&g.uas_id_2[0],        0, 0, 0 },
+    { "OPERATOR_ID",       Parameters::ParamType::CHAR20, (const void*)&g.operator_id[0],        0, 0, 0 },
+    { "OPERATOR_ID_TYPE",  Parameters::ParamType::UINT8,  (const void*)&g.operator_id_type,          0, 0, 0 },
     { "BAUDRATE",          Parameters::ParamType::UINT32, (const void*)&g.baudrate,         57600, 9600, 921600 },
     { "WIFI_NAN_RATE",     Parameters::ParamType::FLOAT,  (const void*)&g.wifi_nan_rate,    0, 0, 5 },
     { "WIFI_BCN_RATE",     Parameters::ParamType::FLOAT,  (const void*)&g.wifi_beacon_rate,    0, 0, 5 },
@@ -379,6 +381,12 @@ bool Parameters::have_basic_id_2_info(void) const
 {
     return strlen(g.uas_id_2) > 0 && g.id_type_2 > 0 && g.ua_type_2 > 0;
 }
+
+bool Parameters::have_operator_id_info(void) const
+{
+    return strlen(g.operator_id) > 0; //at the moment the operator type can only be zero. So no checking on the type.
+}
+
 
 bool Parameters::set_by_name_uint8(const char *name, uint8_t v)
 {
