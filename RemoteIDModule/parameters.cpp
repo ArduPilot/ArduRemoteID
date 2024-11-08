@@ -18,6 +18,14 @@ const Parameters::Param Parameters::params[] = {
     { "UAS_TYPE_2",        Parameters::ParamType::UINT8,  (const void*)&g.ua_type_2,          0, 0, 15 },
     { "UAS_ID_TYPE_2",     Parameters::ParamType::UINT8,  (const void*)&g.id_type_2,          0, 0, 4 },
     { "UAS_ID_2",          Parameters::ParamType::CHAR20, (const void*)&g.uas_id_2[0],        0, 0, 0 },
+    { "EU_CLASS",          Parameters::ParamType::UINT8,  (const void*)&g.class_eu,          0, 0, 3 },
+    { "EU_CATEGORY",       Parameters::ParamType::UINT8,  (const void*)&g.category_eu,       0, 0, 7 },
+    { "CLASSIFICATION",    Parameters::ParamType::UINT8,  (const void*)&g.classification_type,  0, 0, 1 },
+    { "OP_LOC_TYPE",       Parameters::ParamType::UINT8,  (const void*)&g.operator_location_type,  0, 0, 2 },
+    { "AREA_COUNT",        Parameters::ParamType::UINT32,  (const void*)&g.area_count,      1, 1, 65000 }, //based on F3411-22 range
+    { "AREA_RADIUS",       Parameters::ParamType::UINT8,  (const void*)&g.area_radius,     0, 0, 250 }, //based on F3411-22 range
+    { "AREA_CEILING",      Parameters::ParamType::UINT32,  (const void*)&g.area_ceiling,     0, 0, 65535 }, //based on F3411-22 range
+    { "AREA_FLOOR",        Parameters::ParamType::UINT32,  (const void*)&g.area_floor,       0, 0, 65535 }, //based on F3411-22 range
     { "BAUDRATE",          Parameters::ParamType::UINT32, (const void*)&g.baudrate,         57600, 9600, 921600 },
     { "WIFI_NAN_RATE",     Parameters::ParamType::FLOAT,  (const void*)&g.wifi_nan_rate,    0, 0, 5 },
     { "WIFI_BCN_RATE",     Parameters::ParamType::FLOAT,  (const void*)&g.wifi_beacon_rate,    0, 0, 5 },
