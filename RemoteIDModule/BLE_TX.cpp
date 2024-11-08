@@ -91,7 +91,7 @@ bool BLE_TX::init(void)
     if (initialised) {
         return true;
     }
-    initialised = true;
+    
     BLEDevice::init("");
 
     // setup power levels
@@ -111,20 +111,22 @@ bool BLE_TX::init(void)
     // set as a bluetooth random static address
     mac_addr[0] |= 0xc0;
 
-    advert.setAdvertisingParams(0, &legacy_adv_params);
-    advert.setInstanceAddress(0, mac_addr);
+    if (!advert.setAdvertisingParams(0, &legacy_adv_params)) { return false; }
+    if (!advert.setInstanceAddress(0, mac_addr)) { return false; }
     advert.setDuration(0);
 
-    advert.setAdvertisingParams(1, &ext_adv_params_coded);
+    if (!advert.setAdvertisingParams(1, &ext_adv_params_coded)) { return false; }
     advert.setDuration(1);
-    advert.setInstanceAddress(1, mac_addr);
+    if (!advert.setInstanceAddress(1, mac_addr)) { return false; }
 
     // prefer S8 coding
     if (esp_ble_gap_set_prefered_default_phy(ESP_BLE_GAP_PHY_OPTIONS_PREF_S8_CODING, ESP_BLE_GAP_PHY_OPTIONS_PREF_S8_CODING) != ESP_OK) {
         Serial.printf("Failed to setup S8 coding\n");
+        return false;
     }
 
     memset(&msg_counters,0, sizeof(msg_counters));
+    initialised = true;
     return true;
 }
 
@@ -132,7 +134,10 @@ bool BLE_TX::init(void)
 
 bool BLE_TX::transmit_longrange(ODID_UAS_Data &UAS_data)
 {
-    init();
+    if (!init()) {
+        return false;
+    }
+
     // create a packed UAS data message
     uint8_t payload[250];
     int length = odid_message_build_pack(&UAS_data, payload, 255);
@@ -148,11 +153,15 @@ bool BLE_TX::transmit_longrange(ODID_UAS_Data &UAS_data)
     memcpy(&longrange_payload[sizeof(header)], payload, length);
     int longrange_length = sizeof(header) + length;
 
-    advert.setAdvertisingData(1, longrange_length, longrange_payload);
+    if (!advert.setAdvertisingData(1, longrange_length, longrange_payload)) {
+        return false;
+    }
 
     // we start advertising when we have the first lot of data to send
     if (!started) {
-        advert.start();
+        if (!advert.start()) {
+            return false;
+        }
     }
     started = true;
 
@@ -161,7 +170,10 @@ bool BLE_TX::transmit_longrange(ODID_UAS_Data &UAS_data)
 
 bool BLE_TX::transmit_legacy(ODID_UAS_Data &UAS_data)
 {
-    init();
+    if (!init()) { 
+        return false; 
+    }
+
     static uint8_t legacy_phase = 0;
     int legacy_length = 0;
     // setup ASTM header
@@ -307,10 +319,14 @@ bool BLE_TX::transmit_legacy(ODID_UAS_Data &UAS_data)
         legacy_phase %= 6;
     }
 
-    advert.setAdvertisingData(0, legacy_length, legacy_payload);
+    if (!advert.setAdvertisingData(0, legacy_length, legacy_payload)) {
+        return false;
+    }
 
     if (!started) {
-        advert.start();
+        if (!advert.start()) {
+            return false;
+        }
     }
     started = true;
 
