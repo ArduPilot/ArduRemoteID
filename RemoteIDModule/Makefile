@@ -20,38 +20,6 @@ all: headers esp32s3dev esp32c3dev bluemark-db200 bluemark-db110 jw-tbd mro-rid 
 esp32s3dev: CHIP=esp32s3
 esp32s3dev: ArduRemoteID-ESP32S3_DEV.bin
 
-esp32c3dev: CHIP=esp32c3
-esp32c3dev: ArduRemoteID-ESP32C3_DEV.bin
-
-bluemark-db200: CHIP=esp32c3
-bluemark-db200: ArduRemoteID-BLUEMARK_DB200.bin
-
-bluemark-db110: CHIP=esp32c3
-bluemark-db110: ArduRemoteID-BLUEMARK_DB110.bin
-
-jw-tbd: CHIP=esp32s3
-jw-tbd: ArduRemoteID-JW_TBD.bin
-
-jwrid-esp32s3: CHIP=esp32s3
-jwrid-esp32s3: ArduRemoteID-JWRID_ESP32S3.bin
-
-mro-rid: CHIP=esp32c3
-mro-rid: ArduRemoteID-MRO_RID.bin
-
-bluemark-db202: CHIP=esp32c3
-bluemark-db202: ArduRemoteID-BLUEMARK_DB202.bin
-
-bluemark-db210: CHIP=esp32s3
-bluemark-db210: ArduRemoteID-BLUEMARK_DB210.bin
-
-bluemark-db203: CHIP=esp32c3
-bluemark-db203: ArduRemoteID-BLUEMARK_DB203.bin
-
-holybro-RemoteID: CHIP=esp32c3
-holybro-RemoteID: ArduRemoteID-Holybro_RemoteID.bin
-
-CUAV-RID: CHIP=esp32s3
-CUAV-RID: ArduRemoteID-CUAV_RID.bin
 
 setup:
 	@echo "Installing ESP32 support"
