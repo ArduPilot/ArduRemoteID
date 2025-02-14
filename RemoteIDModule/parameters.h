@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "board_config.h"
 
 #define MAX_PUBLIC_KEYS 5
 #define PUBLIC_KEY_LEN 32
@@ -12,6 +13,9 @@
 
 class Parameters {
 public:
+#if defined(PIN_CAN_TERM)
+    uint8_t can_term = !CAN_TERM_EN;
+#endif
     int8_t lock_level;
     uint8_t can_node;
     uint8_t bcast_powerup;
