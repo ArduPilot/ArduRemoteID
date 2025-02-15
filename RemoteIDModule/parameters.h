@@ -15,6 +15,10 @@
 #define WIFI_SSID_PREFIX "RID"
 #endif
 
+#ifndef WIFI_PASSWORD
+#define WIFI_PASSWORD "ArduRemoteID"
+#endif
+
 class Parameters {
 public:
 #if defined(PIN_CAN_TERM)
@@ -41,7 +45,7 @@ public:
     uint8_t webserver_enable;
     uint8_t mavlink_sysid;
     char wifi_ssid[21] = "";
-    char wifi_password[21] = "ArduRemoteID";
+    char wifi_password[21] = WIFI_PASSWORD;
     uint8_t wifi_channel = 6;
     uint8_t to_factory_defaults = 0;
     uint8_t options;

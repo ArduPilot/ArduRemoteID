@@ -173,6 +173,7 @@
 #define CAN_APP_NODE_NAME "net.cuav.c-rid"
 
 #define WIFI_SSID_PREFIX "C-RID"
+#define WIFI_PASSWORD "cuav12345678"
 
 #else
 #error "unsupported board"
