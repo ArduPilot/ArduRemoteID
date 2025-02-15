@@ -11,6 +11,10 @@
 #define PARAM_FLAG_PASSWORD (1U<<0)
 #define PARAM_FLAG_HIDDEN (1U<<1)
 
+#ifndef WIFI_SSID_PREFIX
+#define WIFI_SSID_PREFIX "RID"
+#endif
+
 class Parameters {
 public:
 #if defined(PIN_CAN_TERM)

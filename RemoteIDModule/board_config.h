@@ -172,6 +172,8 @@
 #define CAN_TERM_EN  LOW
 #define CAN_APP_NODE_NAME "net.cuav.c-rid"
 
+#define WIFI_SSID_PREFIX "C-RID"
+
 #else
 #error "unsupported board"
 #endif
