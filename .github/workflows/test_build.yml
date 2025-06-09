@@ -37,7 +37,7 @@ jobs:
           allow_failure: true
 
       - name: Archive build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
            name: binaries
            path: RemoteIDModule/ArduRemoteID*.bin
