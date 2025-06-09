@@ -22,6 +22,14 @@ public:
     uint8_t ua_type_2;
     uint8_t id_type_2;
     char uas_id_2[21] = "ABCD123456789";
+    uint8_t class_eu;
+    uint8_t category_eu;
+    uint8_t classification_type;
+    uint8_t operator_location_type;
+    uint16_t area_count;
+    uint8_t area_radius;
+    uint16_t area_ceiling;
+    uint16_t area_floor;
     float wifi_nan_rate;
     float wifi_beacon_rate;
     float wifi_power;
