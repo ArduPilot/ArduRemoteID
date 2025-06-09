@@ -4,6 +4,7 @@
  */
 #include <Arduino.h>
 #include "board_config.h"
+#include "log.hpp"
 #include "version.h"
 #include <time.h>
 #include "DroneCAN.h"
@@ -153,28 +154,28 @@ void DroneCAN::onTransferReceived(CanardInstance* ins,
         handle_get_node_info(ins, transfer);
         break;
     case UAVCAN_PROTOCOL_RESTARTNODE_ID:
-        Serial.printf("DroneCAN: restartNode\n");
+        serial_log("DroneCAN: restartNode\n");
         delay(20);
         esp_restart();
         break;
     case DRONECAN_REMOTEID_BASICID_ID:
-        Serial.printf("DroneCAN: got BasicID\n");
+        serial_log("DroneCAN: got BasicID\n");
         handle_BasicID(transfer);
         break;
     case DRONECAN_REMOTEID_LOCATION_ID:
-        Serial.printf("DroneCAN: got Location\n");
+        serial_log("DroneCAN: got Location\n");
         handle_Location(transfer);
         break;
     case DRONECAN_REMOTEID_SELFID_ID:
-        Serial.printf("DroneCAN: got SelfID\n");
+        serial_log("DroneCAN: got SelfID\n");
         handle_SelfID(transfer);
         break;
     case DRONECAN_REMOTEID_SYSTEM_ID:
-        Serial.printf("DroneCAN: got System\n");
+        serial_log("DroneCAN: got System\n");
         handle_System(transfer);
         break;
     case DRONECAN_REMOTEID_OPERATORID_ID:
-        Serial.printf("DroneCAN: got OperatorID\n");
+        serial_log("DroneCAN: got OperatorID\n");
         handle_OperatorID(transfer);
         break;
     case UAVCAN_PROTOCOL_PARAM_GETSET_ID:
