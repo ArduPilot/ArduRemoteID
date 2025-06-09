@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python3 -m pip install empy
+python3 -m pip install empy==3.3.4
 python3 -m pip install pymavlink
 python3 -m pip install dronecan
 python3 -m pip install pyserial
