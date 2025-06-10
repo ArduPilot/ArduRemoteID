@@ -104,9 +104,18 @@ void setup()
 #endif
 
 #if defined(PIN_CAN_TERM)
+#if !defined(CAN_TERM_EN)
+#define CAN_TERM_EN HIGH
+#endif
+
     // optional CAN termination control
     pinMode(PIN_CAN_TERM, OUTPUT);
-    digitalWrite(PIN_CAN_TERM, HIGH);
+
+    if (g.can_term == 1) {
+        digitalWrite(PIN_CAN_TERM, CAN_TERM_EN);
+    } else {
+        digitalWrite(PIN_CAN_TERM, !CAN_TERM_EN);
+    }
 #endif
 
 #if defined(BUZZER_PIN)

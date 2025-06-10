@@ -160,6 +160,9 @@
 
 #define WS2812_LED_PIN GPIO_NUM_48
 
+#define PIN_CAN_TERM GPIO_NUM_37
+#define CAN_TERM_EN  LOW
+
 #else
 #error "unsupported board"
 #endif
