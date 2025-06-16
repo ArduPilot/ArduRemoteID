@@ -162,6 +162,7 @@
 
 #define PIN_CAN_TERM GPIO_NUM_37
 #define CAN_TERM_EN  LOW
+#define CAN_APP_NODE_NAME "net.cuav.c-rid"
 
 #else
 #error "unsupported board"

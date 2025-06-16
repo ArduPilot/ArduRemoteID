@@ -363,6 +363,8 @@ void Parameters::init(void)
         set_by_name_char64("PUBLIC_KEY2", ROMFS::find_string("public_keys/ArduPilot_public_key2.dat"));
 #if defined(BOARD_BLUEMARK_DB200) || defined(BOARD_BLUEMARK_DB110) || defined(BOARD_BLUEMARK_DB202) || defined(BOARD_BLUEMARK_DB210) || defined(BOARD_BLUEMARK_DB203)
         set_by_name_char64("PUBLIC_KEY3", ROMFS::find_string("public_keys/BlueMark_public_key1.dat"));
+#elif defined(BOARD_CUAV_RID)
+        set_by_name_char64("PUBLIC_KEY3", ROMFS::find_string("public_keys/CUAV_public_key1.dat"));
 #else
         set_by_name_char64("PUBLIC_KEY3", ROMFS::find_string("public_keys/ArduPilot_public_key3.dat"));
 #endif
