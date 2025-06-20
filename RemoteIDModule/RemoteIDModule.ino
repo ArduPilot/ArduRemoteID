@@ -226,9 +226,15 @@ static void set_data(Transport &t)
             strnlen((const char *)basic_id.uas_id, 20) > 0) {
             g.set_by_name_uint8("UAS_TYPE", basic_id.ua_type);
             g.set_by_name_uint8("UAS_ID_TYPE", basic_id.id_type);
-            char uas_id[21] {};
-            ODID_COPY_STR(uas_id, basic_id.uas_id);
-            g.set_by_name_string("UAS_ID", uas_id);
+            if (basic_id.id_type == 1 || basic_id.id_type == 2) {
+                // Serial Numbers and CAA Assigned can be treated like strings
+                char uas_id[21] {};
+                ODID_COPY_STR(uas_id, basic_id.uas_id);
+                g.set_by_name_string("UAS_ID", uas_id);  // this internally does a strncpy()
+            } else {
+                // any other ID Type should be treated as bytes
+                memcpy(g.uas_id, basic_id.uas_id, 20);
+            }
         }
     }
 
@@ -237,7 +243,7 @@ static void set_data(Transport &t)
         // from parameters
         UAS_data.BasicID[0].UAType = (ODID_uatype_t)g.ua_type;
         UAS_data.BasicID[0].IDType = (ODID_idtype_t)g.id_type;
-        ODID_COPY_STR(UAS_data.BasicID[0].UASID, g.uas_id);
+        memcpy(UAS_data.BasicID[0].UASID, g.uas_id, 20);
         UAS_data.BasicIDValid[0] = 1;
 
         // BasicID 2
@@ -245,7 +251,7 @@ static void set_data(Transport &t)
             // from parameters
             UAS_data.BasicID[1].UAType = (ODID_uatype_t)g.ua_type_2;
             UAS_data.BasicID[1].IDType = (ODID_idtype_t)g.id_type_2;
-            ODID_COPY_STR(UAS_data.BasicID[1].UASID, g.uas_id_2);
+            memcpy(UAS_data.BasicID[1].UASID, g.uas_id_2, 20);
             UAS_data.BasicIDValid[1] = 1;
         } else if (strcmp((const char*)g.uas_id, (const char*)basic_id.uas_id) != 0) {
             /*
@@ -257,7 +263,7 @@ static void set_data(Transport &t)
                 strnlen((const char *)basic_id.uas_id, 20) > 0) {
                 UAS_data.BasicID[1].UAType = (ODID_uatype_t)basic_id.ua_type;
                 UAS_data.BasicID[1].IDType = (ODID_idtype_t)basic_id.id_type;
-                ODID_COPY_STR(UAS_data.BasicID[1].UASID, basic_id.uas_id);
+                memcpy(UAS_data.BasicID[1].UASID, basic_id.uas_id, 20);
                 UAS_data.BasicIDValid[1] = 1;
             }
         }
@@ -270,12 +276,12 @@ static void set_data(Transport &t)
             if (strcmp((const char*)UAS_data.BasicID[0].UASID, (const char*)basic_id.uas_id) != 0 && strnlen((const char *)basic_id.uas_id, 20) > 0) {
                 UAS_data.BasicID[1].UAType = (ODID_uatype_t)basic_id.ua_type;
                 UAS_data.BasicID[1].IDType = (ODID_idtype_t)basic_id.id_type;
-                ODID_COPY_STR(UAS_data.BasicID[1].UASID, basic_id.uas_id);
+                memcpy(UAS_data.BasicID[1].UASID, basic_id.uas_id, 20);
                 UAS_data.BasicIDValid[1] = 1;
             } else {
                 UAS_data.BasicID[0].UAType = (ODID_uatype_t)basic_id.ua_type;
                 UAS_data.BasicID[0].IDType = (ODID_idtype_t)basic_id.id_type;
-                ODID_COPY_STR(UAS_data.BasicID[0].UASID, basic_id.uas_id);
+                memcpy(UAS_data.BasicID[0].UASID, basic_id.uas_id, 20);
                 UAS_data.BasicIDValid[0] = 1;
             }
         }
