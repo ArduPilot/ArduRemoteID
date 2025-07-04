@@ -13,6 +13,7 @@
 #define PIN_UART_RX 17
 
 #define WS2812_LED_PIN GPIO_NUM_48
+#define WS2812_LED_NUM 1
 
 #elif defined(BOARD_ESP32C3_DEV)
 #define BOARD_ID 2
@@ -23,6 +24,7 @@
 #define PIN_UART_RX 2
 
 #define WS2812_LED_PIN GPIO_NUM_8
+#define WS2812_LED_NUM 1
 
 #elif defined(BOARD_BLUEMARK_DB200)
 #define BOARD_ID 3
@@ -77,6 +79,8 @@
 #define PIN_UART_RX 5
 
 #define WS2812_LED_PIN GPIO_NUM_2
+#define WS2812_LED_NUM 1
+
 #define CAN_APP_NODE_NAME "mRobotics RemoteID"
 
 #elif defined(BOARD_JWRID_ESP32S3)
@@ -88,6 +92,7 @@
 #define PIN_UART_RX 36
 
 #define WS2812_LED_PIN GPIO_NUM_5
+#define WS2812_LED_NUM 1
 
 #define CAN_APP_NODE_NAME "JWRID_ESP32S3"
 
@@ -119,6 +124,7 @@
 #define BUZZER_PIN GPIO_NUM_39 //at the moment easiest is to have active buzzer support. (Buzzer on if GPIO is high)
 
 #define WS2812_LED_PIN GPIO_NUM_8 //there are two WS2812 LEDs on this GPIO
+#define WS2812_LED_NUM 2
 
 #define CAN_APP_NODE_NAME "BlueMark DB210PRO"
 //#define PIN_CAN_TERM GPIO_NUM_42 // if set to ON, the termination resistors of the CAN bus are enabled
@@ -148,6 +154,7 @@
 #define PIN_UART_RX 2
 
 #define WS2812_LED_PIN GPIO_NUM_8
+#define WS2812_LED_NUM 1
 
 #elif defined(BOARD_CUAV_RID)
 #define BOARD_ID 12
@@ -159,10 +166,14 @@
 #define PIN_UART_RX 17
 
 #define WS2812_LED_PIN GPIO_NUM_48
+#define WS2812_LED_NUM 1
 
 #define PIN_CAN_TERM GPIO_NUM_37
 #define CAN_TERM_EN  LOW
 #define CAN_APP_NODE_NAME "net.cuav.c-rid"
+
+#define WIFI_SSID_PREFIX "C-RID"
+#define WIFI_PASSWORD "cuav12345678"
 
 #else
 #error "unsupported board"

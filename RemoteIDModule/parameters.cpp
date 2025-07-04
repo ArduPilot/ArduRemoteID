@@ -346,7 +346,7 @@ void Parameters::init(void)
     if (strlen(g.wifi_ssid) == 0) {
         uint8_t mac[6] {};
         esp_read_mac(mac, ESP_MAC_WIFI_STA);
-        snprintf(wifi_ssid, 20, "RID_%02x%02x%02x%02x%02x%02x",
+        snprintf(wifi_ssid, 20, WIFI_SSID_PREFIX "_%02x%02x%02x%02x%02x%02x",
                  mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
     }
