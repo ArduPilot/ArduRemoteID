@@ -11,6 +11,26 @@
 #define PARAM_FLAG_PASSWORD (1U<<0)
 #define PARAM_FLAG_HIDDEN (1U<<1)
 
+enum class Region : uint8_t {
+    WORLD=0,
+    USA=1,
+    JAPAN=2,
+    EU=3,
+};
+
+/*
+  bits for which fields are required. Based on the region
+ */
+#define REG_REQUIRE_LOC          (1U<<0)
+#define REG_REQUIRE_BASIC_ID     (1U<<1)
+#define REG_REQUIRE_SELF_ID      (1U<<2)
+#define REG_REQUIRE_OPERATOR_ID  (1U<<3)
+#define REG_REQUIRE_SYSTEM       (1U<<4)
+#define REG_REQUIRE_OPERATOR_LOC (1U<<5)
+#define REG_REQUIRE_SERIAL_NUM   (1U<<6)
+#define REG_REQUIRE_SERIAL_OR_SESSION (1U<<7)
+#define REG_REQUIRE_REG_ID       (1U<<8)
+
 class Parameters {
 public:
 #if defined(PIN_CAN_TERM)
@@ -41,6 +61,8 @@ public:
     uint8_t wifi_channel = 6;
     uint8_t to_factory_defaults = 0;
     uint8_t options;
+    Region region;
+
     struct {
         char b64_key[64];
     } public_keys[MAX_PUBLIC_KEYS];
@@ -105,6 +127,9 @@ public:
 
     static uint16_t param_count_float(void);
     static int16_t param_index_float(const Param *p);
+
+    // get the REG_REQUIRE features for the region
+    uint32_t get_required_features(void) const;
 
 private:
     void load_defaults(void);

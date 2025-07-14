@@ -41,7 +41,8 @@ const Parameters::Param Parameters::params[] = {
     { "PUBLIC_KEY5",       Parameters::ParamType::CHAR64, (const void*)&g.public_keys[4], },
     { "MAVLINK_SYSID",     Parameters::ParamType::UINT8,  (const void*)&g.mavlink_sysid,    0, 0, 254 },
     { "OPTIONS",           Parameters::ParamType::UINT8,  (const void*)&g.options,          0, 0, 254 },
-    { "TO_DEFAULTS",     Parameters::ParamType::UINT8,  (const void*)&g.to_factory_defaults,    0, 0, 1 }, //if set to 1, reset to factory defaults and make 0.
+    { "TO_DEFAULTS",       Parameters::ParamType::UINT8,  (const void*)&g.to_factory_defaults,    0, 0, 1 }, //if set to 1, reset to factory defaults and make 0.
+    { "REGION",            Parameters::ParamType::UINT8,  (const void*)&g.region,    0, 0, 3 }, // 0 = world, 1 = USA, 2 = Japan, 3 = EU
     { "DONE_INIT",         Parameters::ParamType::UINT8,  (const void*)&g.done_init,        0, 0, 0, PARAM_FLAG_HIDDEN},
     { "",                  Parameters::ParamType::NONE,   nullptr,  },
 };
@@ -501,3 +502,25 @@ bool Parameters::remove_public_key(uint8_t i)
     name[strlen(name)-2] = '1'+i;
     return set_by_name_char64(name, "");
 }
+
+/*
+  get required features based on region
+  There are 4 regions: 0 = world, 1 = USA, 2 = Japan, 3 = EU
+  for now region world is treated the same as the USA
+  checks are based on this table: https://github.com/opendroneid/opendroneid-core-c#comparison
+  and requirements on the serial number (ANSI/CTA-2063-A)
+*/
+uint32_t Parameters::get_required_features(void) const
+{
+    switch (region) {
+    case Region::EU:
+        return REG_REQUIRE_LOC | REG_REQUIRE_BASIC_ID | REG_REQUIRE_OPERATOR_ID | REG_REQUIRE_OPERATOR_LOC | REG_REQUIRE_OPERATOR_ID | REG_REQUIRE_SERIAL_NUM;
+    case Region::JAPAN:
+        return REG_REQUIRE_LOC | REG_REQUIRE_BASIC_ID | REG_REQUIRE_OPERATOR_ID | REG_REQUIRE_OPERATOR_LOC | REG_REQUIRE_SERIAL_NUM;
+    case Region::WORLD:
+    case Region::USA:
+    default:
+        return REG_REQUIRE_LOC | REG_REQUIRE_BASIC_ID | REG_REQUIRE_OPERATOR_ID | REG_REQUIRE_SYSTEM | REG_REQUIRE_OPERATOR_LOC | REG_REQUIRE_SERIAL_OR_SESSION;
+    }
+}
+
